@@ -1,18 +1,18 @@
 // import { lazy } from 'react';
-import HomePage from "@pages/HomePage.jsx";
-import { ProtectedRoute } from "./ProtectedRoute/ProtectedRoute.jsx";
+import HomePage from '@pages/HomePage.jsx'
+import { ProtectedRoute } from './ProtectedRoute.jsx'
 
 const PrivateRoute = [
   {
-    path: "/",
+    path: '/',
     element: <ProtectedRoute />,
     children: [
       {
-        path: "homepage",
-        element: <HomePage />,
-      },
-    ],
-  },
-];
+        path: 'homepage',
+        element: <HomePage />
+      }
+    ]
+  }
+]
 
-export default PrivateRoute;
+export default PrivateRoute

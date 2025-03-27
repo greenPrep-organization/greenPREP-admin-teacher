@@ -2,10 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  font-family: "Poppins", sans-serif !important;
-}
 .ant-layout {
   background: #f3f4f6 !important;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+html {
+  box-sizing: border-box;
+}
+* {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif !important;
+}
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+:root {
+  --primary-color: #003366;
+}
+
+input,
+textarea,
+select,
+button {
+  outline: none;
+}
+input {
+  line-height: normal;
+}
+label,
+button {
+  cursor: pointer;
+}
+a {
+  text-decoration: none;
+}
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.primary-color {
+  color: var(--primary-color);
+}
+
+.bg-primary-color {
+  background-color: var(--primary-color);
+}
+
+.custom-sidebar-menu .ant-menu-item {
+  color: white !important;
+}
+
+.custom-sidebar-menu .ant-menu-item-selected {
+  color: black !important;
 }

@@ -1,10 +1,11 @@
-// Define public routes accessible to all users
+import DashboardPage from '@pages/DashboardPage'
 
 const PublicRoute = [
   {
-    path: "login",
-    element: "login",
-  },
-];
+    path: '/dashboard',
+    element: <DashboardPage />
+  }
+  // ...existing routes...
+]
 
-export default PublicRoute;
+export default PublicRoute
