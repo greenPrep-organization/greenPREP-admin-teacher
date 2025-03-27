@@ -34,7 +34,7 @@ const SharedHeader = ({ collapsed, setCollapsed }) => {
         >
           <span className="flex items-center space-x-1">
             <span>Hi,</span>
-            <span className="">Student name</span>
+            <span className="">Teacher</span>
           </span>
           <span className="flex h-8 w-8 items-center justify-center rounded-full border border-black bg-white font-bold text-black md:h-10 md:w-10 md:rounded-[50%]">
             Y

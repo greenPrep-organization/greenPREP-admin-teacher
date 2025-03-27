@@ -1,5 +1,4 @@
 // import { lazy } from 'react';
-import HomePage from '@pages/HomePage.jsx'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 
 const PrivateRoute = [
@@ -9,7 +8,7 @@ const PrivateRoute = [
     children: [
       {
         path: 'homepage',
-        element: <HomePage />
+        element: 'homepage'
       }
     ]
   }
