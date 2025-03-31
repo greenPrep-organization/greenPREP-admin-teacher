@@ -1,6 +1,6 @@
-import { getInitials } from '@/shared/lib/utils/avatarutils'
-import { Avatar, Breadcrumb } from 'antd'
+import { getDefaultAvatar } from '@/shared/lib/utils/avatarUtils'
 import StudentSessionInformation from '@features/session/StudentSessionInformation'
+import { Avatar, Breadcrumb } from 'antd'
 
 export default function StudentProfilePage() {
   const studentData = {
@@ -45,7 +45,7 @@ export default function StudentProfilePage() {
                   />
                 ) : (
                   <Avatar size={215} className="bg-gray-500 text-white">
-                    {getInitials(studentData.name)}
+                    {getDefaultAvatar(studentData.name)}
                   </Avatar>
                 )}
               </div>
