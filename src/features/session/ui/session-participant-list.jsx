@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Table, Input, Button, Tabs, Select, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
-import { COLORS } from '@/shared/constants/colors'
+import { COLORS } from '@shared/lib/constants/colors'
 
 const SessionParticipantList = () => {
   const [loading, setLoading] = useState(false)
