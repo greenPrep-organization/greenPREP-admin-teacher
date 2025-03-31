@@ -1,5 +1,6 @@
+import { getInitials } from '@/shared/lib/utils/avatarutils'
 import { Avatar, Breadcrumb } from 'antd'
-import StudentSessionInformation from '../features/session/StudentSessionInformation'
+import StudentSessionInformation from '@features/session/StudentSessionInformation'
 
 export default function StudentProfilePage() {
   const studentData = {
@@ -12,11 +13,6 @@ export default function StudentProfilePage() {
     avatar: '' // Nếu không có ảnh, avatar sẽ dùng chữ cái đầu
   }
 
-  // Lấy chữ cái đầu của tên
-  const getInitials = name => {
-    return name ? name.charAt(0).toUpperCase() : '?'
-  }
-
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
       <div className="flex flex-1">
@@ -24,9 +20,9 @@ export default function StudentProfilePage() {
           <div className="mb-4 flex items-center gap-2 text-sm">
             <Breadcrumb className="mb-4">
               <Breadcrumb.Item>Classes</Breadcrumb.Item>
-              <Breadcrumb.Item>Class List</Breadcrumb.Item>
-              <Breadcrumb.Item>Class Details</Breadcrumb.Item>
-              <Breadcrumb.Item>Sessions List</Breadcrumb.Item>
+              <Breadcrumb.Item>GCD1111</Breadcrumb.Item>
+              <Breadcrumb.Item>Feb_2025</Breadcrumb.Item>
+              <Breadcrumb.Item>A Nguyen</Breadcrumb.Item>
             </Breadcrumb>
           </div>
 
