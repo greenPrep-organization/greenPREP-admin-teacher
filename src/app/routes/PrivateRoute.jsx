@@ -13,12 +13,12 @@ const PrivateRoute = [
         element: 'homepage'
       },
       {
-        path: 'student',
-        element: <StudentProfilePage />
-      },
-      {
         path: 'classes',
         element: <ClassDetailPage />
+      },
+      {
+        path: 'student',
+        element: <StudentProfilePage />
       }
     ]
   }

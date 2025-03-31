@@ -1,3 +1,4 @@
+import { Breadcrumb } from 'antd'
 import StudentSessionInformation from '../features/session/StudentSessionInformation'
 
 export default function StudentProfilePage() {
@@ -11,19 +12,18 @@ export default function StudentProfilePage() {
     // avatar: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-YXdrhlLuX0ffQOH0xGCVIo8FZ6TYrz.png'
   }
 
-  // const breadcrumbItems = [
-  //   { label: 'Dashboard', path: '/dashboard' },
-  //   { label: 'Classes', path: '/classes' },
-  //   { label: 'CLASS01', path: '/classes/class01' },
-  //   { label: 'Feb_2025', path: '/classes/class01/feb_2025' },
-  //   { label: 'A Nguyen', path: '#' }
-  // ]
-
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
       <div className="flex flex-1">
         <main className="flex-1 p-6">
-          <div className="mb-4 flex items-center gap-2 text-sm"></div>
+          <div className="mb-4 flex items-center gap-2 text-sm">
+            <Breadcrumb className="mb-4">
+              <Breadcrumb.Item>Classes</Breadcrumb.Item>
+              <Breadcrumb.Item>Class List</Breadcrumb.Item>
+              <Breadcrumb.Item>Class Details</Breadcrumb.Item>
+              <Breadcrumb.Item>Sessions List</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
 
           <button className="mb-4 rounded-md bg-blue-600 px-3 py-1 text-sm text-white">← Back</button>
 
