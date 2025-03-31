@@ -72,16 +72,22 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
       <Form form={form} layout="vertical" className="px-4">
         <Form.Item
           name="name"
-          label={<span>Session name</span>}
-          rules={[{ required: true, message: 'Please enter session name' }]}
+          label={
+            <span>
+              Session name <span className="text-red-500">*</span>
+            </span>
+          }
         >
           <Input placeholder="Enter session name" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
         </Form.Item>
 
         <Form.Item
           name="key"
-          label={<span>Session key </span>}
-          rules={[{ required: true, message: 'Please enter session key' }]}
+          label={
+            <span>
+              Session key <span className="text-red-500">*</span>
+            </span>
+          }
         >
           <Input placeholder="Enter session key" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
         </Form.Item>
@@ -89,8 +95,11 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
             name="startDate"
-            label={<span>Start date </span>}
-            rules={[{ required: true, message: 'Please select start date' }]}
+            label={
+              <span>
+                Start date <span className="text-red-500">*</span>
+              </span>
+            }
           >
             <DatePicker
               showTime
@@ -103,8 +112,11 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
 
           <Form.Item
             name="endDate"
-            label={<span>End date </span>}
-            rules={[{ required: true, message: 'Please select end date' }]}
+            label={
+              <span>
+                End date <span className="text-red-500">*</span>
+              </span>
+            }
           >
             <DatePicker
               showTime
