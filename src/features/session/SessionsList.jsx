@@ -2,6 +2,7 @@ import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant
 import { formatDate } from '@shared/lib/utils/index'
 import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import EditSession from '@/features/session/ui/edit-session'
 
 const generateFakeData = () => {
   const statuses = ['Not Started', 'Ongoing', 'Completed']
@@ -40,6 +41,8 @@ const SessionsList = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchText, setSearchText] = useState('')
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [selectedSession, setSelectedSession] = useState(null)
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -87,6 +90,23 @@ const SessionsList = () => {
   const handleViewSession = useCallback(id => {
     message.info(`Navigating to session details for ${id}`)
   }, [])
+
+  const handleEdit = useCallback(session => {
+    setSelectedSession(session)
+    setEditModalVisible(true)
+  }, [])
+
+  const handleUpdate = useCallback(
+    updatedSession => {
+      setSessions(prevSessions =>
+        prevSessions.map(session => (session.id === selectedSession.id ? { ...session, ...updatedSession } : session))
+      )
+      setEditModalVisible(false)
+      setSelectedSession(null)
+      message.success('Session updated successfully')
+    },
+    [selectedSession]
+  )
 
   const columns = useMemo(
     () => [
@@ -170,7 +190,7 @@ const SessionsList = () => {
               <Button
                 type="text"
                 icon={<EditOutlined className="text-green-500" />}
-                onClick={() => message.info(`Edit session ${record.id}`)}
+                onClick={() => handleEdit(record)}
               />
             </Tooltip>
             <Tooltip title="Delete">
@@ -184,7 +204,7 @@ const SessionsList = () => {
         )
       }
     ],
-    [handleDelete]
+    [handleDelete, handleEdit]
   )
 
   if (error) {
@@ -223,6 +243,16 @@ const SessionsList = () => {
           className="w-full md:w-80"
         />
       </div>
+
+      <EditSession
+        open={editModalVisible}
+        onCancel={() => {
+          setEditModalVisible(false)
+          setSelectedSession(null)
+        }}
+        onUpdate={handleUpdate}
+        initialValues={selectedSession}
+      />
 
       {loading ? (
         <div className="flex h-64 items-center justify-center">
