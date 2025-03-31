@@ -1,5 +1,6 @@
 // import { lazy } from 'react';
 import ClassDetailPage from '@/pages/ClassDetailPage'
+import TeacherProfile from '../../features/profile/ui/teacher-profile'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 
 const PrivateRoute = [
@@ -14,6 +15,10 @@ const PrivateRoute = [
       {
         path: 'classes',
         element: <ClassDetailPage />
+      },
+      {
+        path: 'teacher',
+        element: <TeacherProfile userId={123} />
       }
     ]
   }
