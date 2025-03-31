@@ -1,11 +1,7 @@
 import SessionsList from '@features/session/SessionsList'
 
 const ClassDetailPage = () => {
-  return (
-    <div>
-      <SessionsList />
-    </div>
-  )
+  return <SessionsList />
 }
 
 export default ClassDetailPage
