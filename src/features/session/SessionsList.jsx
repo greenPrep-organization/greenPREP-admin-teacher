@@ -1,5 +1,4 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
 import { formatDate } from '@shared/lib/utils/index'
 import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -41,7 +40,6 @@ const SessionsList = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchText, setSearchText] = useState('')
-  const [deleteSessionId, setDeleteSessionId] = useState(null)
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -78,111 +76,116 @@ const SessionsList = () => {
     setFilteredSessions(filtered)
   }, [searchText, sessions])
 
-  const handleDelete = async () => {
-    if (!deleteSessionId) return
-    setSessions(prevSessions => prevSessions.filter(session => session.id !== deleteSessionId))
-    setDeleteSessionId(null)
-    message.success('Session deleted successfully')
-  }
+  const handleDelete = useCallback(
+    id => {
+      message.success(`Session ${id} deleted successfully`)
+      const updatedSessions = sessions.filter(session => session.id !== id)
+      setSessions(updatedSessions)
+    },
+    [sessions]
+  )
   const handleViewSession = useCallback(id => {
     message.info(`Navigating to session details for ${id}`)
   }, [])
 
-  const columns = useMemo(() => [
-    {
-      title: 'Session Name',
-      dataIndex: 'name',
-      key: 'name',
-      align: 'center',
-      render: (text, record) => (
-        <a onClick={() => handleViewSession(record.id)} className="text-blue-600 hover:text-blue-800">
-          {text}
-        </a>
-      )
-    },
-    {
-      title: 'Session Key',
-      dataIndex: 'key',
-      key: 'key',
-      align: 'center'
-    },
-    {
-      title: 'Start Date',
-      dataIndex: 'startTime',
-      key: 'startTime',
-      align: 'center',
-      render: date => formatDate(date),
-      sorter: (a, b) => a.startTime.getTime() - b.startTime.getTime(),
-      defaultSortOrder: 'descend'
-    },
-    {
-      title: 'End Date',
-      dataIndex: 'endTime',
-      key: 'endTime',
-      align: 'center',
-      render: date => formatDate(date)
-    },
-    {
-      title: 'Number of Participants',
-      dataIndex: 'participants',
-      key: 'participants',
-      align: 'center'
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      align: 'center',
-      render: status => {
-        let color = ''
-        switch (status) {
-          case 'Not Started':
-            color = 'bg-blue-100 text-blue-800'
-            break
-          case 'Ongoing':
-            color = 'bg-purple-100 text-purple-800'
-            break
-          case 'Completed':
-            color = 'bg-green-100 text-green-800'
-            break
-        }
-        return (
-          <span className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${color}`}>
-            {status}
-          </span>
+  const columns = useMemo(
+    () => [
+      {
+        title: 'Session Name',
+        dataIndex: 'name',
+        key: 'name',
+        align: 'center',
+        render: (text, record) => (
+          <a onClick={() => handleViewSession(record.id)} className="text-blue-600 hover:text-blue-800">
+            {text}
+          </a>
         )
       },
-      filters: [
-        { text: 'Not Started', value: 'Not Started' },
-        { text: 'Ongoing', value: 'Ongoing' },
-        { text: 'Completed', value: 'Completed' }
-      ],
-      onFilter: (value, record) => record.status === value
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      align: 'center',
-      render: (_, record) => (
-        <Space size="middle">
-          <Tooltip title="Edit">
-            <Button
-              type="text"
-              icon={<EditOutlined className="text-green-500" />}
-              onClick={() => message.info(`Edit session ${record.id}`)}
-            />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              type="text"
-              icon={<DeleteOutlined className="text-red-500" />}
-              onClick={() => setDeleteSessionId(record.id)}
-            />
-          </Tooltip>
-        </Space>
-      )
-    }
-  ])
+      {
+        title: 'Session Key',
+        dataIndex: 'key',
+        key: 'key',
+        align: 'center'
+      },
+      {
+        title: 'Start Date',
+        dataIndex: 'startTime',
+        key: 'startTime',
+        align: 'center',
+        render: date => formatDate(date),
+        sorter: (a, b) => a.startTime.getTime() - b.startTime.getTime(),
+        defaultSortOrder: 'descend'
+      },
+      {
+        title: 'End Date',
+        dataIndex: 'endTime',
+        key: 'endTime',
+        align: 'center',
+        render: date => formatDate(date)
+      },
+      {
+        title: 'Number of Participants',
+        dataIndex: 'participants',
+        key: 'participants',
+        align: 'center'
+      },
+      {
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+        align: 'center',
+        render: status => {
+          let color = ''
+          switch (status) {
+            case 'Not Started':
+              color = 'bg-blue-100 text-blue-800'
+              break
+            case 'Ongoing':
+              color = 'bg-purple-100 text-purple-800'
+              break
+            case 'Completed':
+              color = 'bg-green-100 text-green-800'
+              break
+          }
+          return (
+            <span className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${color}`}>
+              {status}
+            </span>
+          )
+        },
+        filters: [
+          { text: 'Not Started', value: 'Not Started' },
+          { text: 'Ongoing', value: 'Ongoing' },
+          { text: 'Completed', value: 'Completed' }
+        ],
+        onFilter: (value, record) => record.status === value
+      },
+      {
+        title: 'Action',
+        key: 'action',
+        align: 'center',
+        render: (_, record) => (
+          <Space size="middle">
+            <Tooltip title="Edit">
+              <Button
+                type="text"
+                icon={<EditOutlined className="text-green-500" />}
+                onClick={() => message.info(`Edit session ${record.id}`)}
+              />
+            </Tooltip>
+            <Tooltip title="Delete">
+              <Button
+                type="text"
+                icon={<DeleteOutlined className="text-red-500" />}
+                onClick={() => handleDelete(record.id)}
+              />
+            </Tooltip>
+          </Space>
+        )
+      }
+    ],
+    [handleDelete]
+  )
 
   if (error) {
     return (
@@ -246,13 +249,6 @@ const SessionsList = () => {
             Create Session
           </Button>
         </Empty>
-      )}
-      {deleteSessionId && (
-        <DeleteSessionPopup
-          isOpen={!!deleteSessionId}
-          onClose={() => setDeleteSessionId(null)}
-          onDelete={handleDelete}
-        />
       )}
     </div>
   )
