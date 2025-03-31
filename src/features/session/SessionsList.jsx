@@ -1,22 +1,21 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
-import { formatDate } from '@shared/lib/utils/index'
-import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import CreateSessionModal from '@features/session/ui/create-new-session'
-
+import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
+import { formatDate, getStatusColor } from '@shared/lib/utils/index'
+import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tag, Tooltip } from 'antd'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 const generateFakeData = () => {
-  const statuses = ['Not Started', 'Ongoing', 'Completed']
+  const statuses = ['Pending', 'In Progress', 'Completed']
   const now = new Date()
 
   return Array.from({ length: 50 }, (_, i) => {
     let startTime, endTime
     const status = statuses[i % 3]
 
-    if (status === 'Not Started') {
+    if (status === 'Pending') {
       startTime = new Date(now.getTime() + 86400000 * ((i % 10) + 1))
       endTime = new Date(startTime.getTime() + 10800000)
-    } else if (status === 'Ongoing') {
+    } else if (status === 'In Progress') {
       startTime = new Date(now.getTime() - 3600000)
       endTime = new Date(now.getTime() + 3600000)
     } else {
@@ -106,7 +105,7 @@ const SessionsList = () => {
           startTime: sessionData.startTime,
           endTime: sessionData.endTime,
           participants: 0,
-          status: 'Not Started'
+          status: 'Pending'
         }
 
         const updatedSessions = [newSession, ...sessions]
@@ -167,27 +166,17 @@ const SessionsList = () => {
         key: 'status',
         align: 'center',
         render: status => {
-          let color = ''
-          switch (status) {
-            case 'Not Started':
-              color = 'bg-blue-100 text-blue-800'
-              break
-            case 'Ongoing':
-              color = 'bg-purple-100 text-purple-800'
-              break
-            case 'Completed':
-              color = 'bg-green-100 text-green-800'
-              break
-          }
           return (
-            <span className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${color}`}>
+            <Tag
+              className={`rounded-md border-0 px-4 py-1 ${getStatusColor(status).bg} ${getStatusColor(status).text}`}
+            >
               {status}
-            </span>
+            </Tag>
           )
         },
         filters: [
-          { text: 'Not Started', value: 'Not Started' },
-          { text: 'Ongoing', value: 'Ongoing' },
+          { text: 'Pending', value: 'Pending' },
+          { text: 'In Progress', value: 'In Progress' },
           { text: 'Completed', value: 'Completed' }
         ],
         onFilter: (value, record) => record.status === value

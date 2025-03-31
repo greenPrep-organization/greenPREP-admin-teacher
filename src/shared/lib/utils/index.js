@@ -28,15 +28,15 @@ export const getStatusColor = status => {
   const statusClasses = {
     Completed: {
       bg: 'bg-completed',
-      text: 'text-completed'
+      text: 'text-white'
     },
     'In Progress': {
       bg: 'bg-progress',
-      text: 'text-progress'
+      text: 'text-white'
     },
     Pending: {
       bg: 'bg-pending',
-      text: 'text-pending'
+      text: 'text-white'
     }
   }
   return (
