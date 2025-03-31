@@ -48,7 +48,7 @@ const SessionDetail = () => {
     )
   }
 
-  const statusColor = getStatusColor(sessionData?.status || 'Pending')
+  const statusColors = getStatusColor(sessionData?.status || 'Pending')
 
   return (
     <div className="rounded-lg bg-white p-4">
@@ -68,13 +68,7 @@ const SessionDetail = () => {
           </div>
           <div>
             <p className="mb-2 text-sm text-gray-500">Status</p>
-            <Tag
-              className="rounded-full border-0 px-4 py-1"
-              style={{
-                backgroundColor: statusColor.bg,
-                color: statusColor.text
-              }}
-            >
+            <Tag className={`rounded-full border-0 px-4 py-1 ${statusColors.bg} ${statusColors.text}`}>
               {sessionData?.status || 'Pending'}
             </Tag>
           </div>
