@@ -1,5 +1,4 @@
 import dayjs from 'dayjs'
-import { COLORS } from '@shared/lib/constants/colors'
 
 export const formatDateTime = dateString => {
   return dayjs(dateString).format('DD/MM/YYYY HH:mm')
@@ -26,10 +25,10 @@ export const createSlug = text => {
 }
 
 export const getStatusColor = status => {
-  const statusColors = {
-    Completed: { bg: COLORS.STATUS_COMPLETED_BG, text: COLORS.STATUS_COMPLETED_TEXT },
-    'In Progress': { bg: COLORS.STATUS_IN_PROGRESS_BG, text: COLORS.STATUS_IN_PROGRESS_TEXT },
-    Pending: { bg: COLORS.STATUS_PENDING_BG, text: COLORS.STATUS_PENDING_TEXT }
+  const statusClasses = {
+    Completed: 'bg-status-completed-bg text-status-completed-text',
+    'In Progress': 'bg-status-in-progress-bg text-status-in-progress-text',
+    Pending: 'bg-status-pending-bg text-status-pending-text'
   }
-  return statusColors[status] || { bg: COLORS.STATUS_DEFAULT_BG, text: COLORS.STATUS_DEFAULT_TEXT }
+  return statusClasses[status] || 'bg-status-default-bg text-status-default-text'
 }
