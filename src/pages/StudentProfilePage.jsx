@@ -1,15 +1,20 @@
-import { Breadcrumb } from 'antd'
+import { Avatar, Breadcrumb } from 'antd'
 import StudentSessionInformation from '../features/session/StudentSessionInformation'
 
 export default function StudentProfilePage() {
   const studentData = {
-    // name: 'A Nguyen',
-    // id: 'GDD210011',
-    // class: 'GCD1111',
-    // email: 'QWER@gmail.com',
-    // phone: '0123456789',
-    // dob: '25/03/2025',
-    // avatar: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-YXdrhlLuX0ffQOH0xGCVIo8FZ6TYrz.png'
+    name: 'A Nguyen',
+    id: 'GDD210011',
+    class: 'GCD1111',
+    email: 'QWER@gmail.com',
+    phone: '0123456789',
+    dob: '25/03/2025',
+    avatar: '' // Nếu không có ảnh, avatar sẽ dùng chữ cái đầu
+  }
+
+  // Lấy chữ cái đầu của tên
+  const getInitials = name => {
+    return name ? name.charAt(0).toUpperCase() : '?'
   }
 
   return (
@@ -35,12 +40,18 @@ export default function StudentProfilePage() {
             </div>
 
             <div className="lg:col-span-1">
-              <div className="overflow-hidden rounded-lg bg-white shadow-md">
-                <img
-                  src={studentData.avatar || '/placeholder.svg'}
-                  alt={`${studentData.name}'s avatar`}
-                  className="h-auto w-full object-cover"
-                />
+              <div className="flex items-center justify-center overflow-hidden rounded-lg bg-white p-4 shadow-md">
+                {studentData.avatar ? (
+                  <img
+                    src={studentData.avatar}
+                    alt={`${studentData.name}'s avatar`}
+                    className="h-24 w-24 rounded-full object-cover"
+                  />
+                ) : (
+                  <Avatar size={215} className="bg-gray-500 text-white">
+                    {getInitials(studentData.name)}
+                  </Avatar>
+                )}
               </div>
             </div>
           </div>
