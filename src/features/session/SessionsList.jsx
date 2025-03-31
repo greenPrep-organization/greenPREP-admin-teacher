@@ -1,7 +1,9 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
 import { formatDate } from '@shared/lib/utils/index'
 import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import CreateSessionModal from '@features/session/ui/create-new-session'
 
 const generateFakeData = () => {
   const statuses = ['Not Started', 'Ongoing', 'Completed']
@@ -40,6 +42,13 @@ const SessionsList = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchText, setSearchText] = useState('')
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [testSets] = useState([
+    { id: '1', name: 'Test Set 1' },
+    { id: '2', name: 'Test Set 2' },
+    { id: '3', name: 'Test Set 3' }
+  ])
+  const [deleteSessionId, setDeleteSessionId] = useState(null)
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -72,21 +81,41 @@ const SessionsList = () => {
 
       return matchesSearch
     })
-
     setFilteredSessions(filtered)
   }, [searchText, sessions])
 
-  const handleDelete = useCallback(
-    id => {
-      message.success(`Session ${id} deleted successfully`)
-      const updatedSessions = sessions.filter(session => session.id !== id)
-      setSessions(updatedSessions)
-    },
-    [sessions]
-  )
+  const handleDelete = async () => {
+    if (!deleteSessionId) return
+    setSessions(prevSessions => prevSessions.filter(session => session.id !== deleteSessionId))
+    setDeleteSessionId(null)
+    message.success('Session deleted successfully')
+  }
   const handleViewSession = useCallback(id => {
     message.info(`Navigating to session details for ${id}`)
   }, [])
+  const handleCreateSession = useCallback(
+    async sessionData => {
+      try {
+        const newSession = {
+          id: `session-${sessions.length + 1}`,
+          name: sessionData.name,
+          key: sessionData.key,
+          startTime: sessionData.startTime,
+          endTime: sessionData.endTime,
+          participants: 0,
+          status: 'Not Started'
+        }
+
+        setSessions(prev => [newSession, ...prev])
+
+        setFilteredSessions(prev => [newSession, ...prev])
+      } catch (err) {
+        message.error('Failed to create session')
+        console.error(err)
+      }
+    },
+    [sessions.length]
+  )
 
   const columns = useMemo(
     () => [
@@ -99,93 +128,101 @@ const SessionsList = () => {
           <a onClick={() => handleViewSession(record.id)} className="text-blue-600 hover:text-blue-800">
             {text}
           </a>
+  const columns = useMemo(() => [
+    {
+      title: 'Session Name',
+      dataIndex: 'name',
+      key: 'name',
+      align: 'center',
+      render: (text, record) => (
+        <a onClick={() => handleViewSession(record.id)} className="text-blue-600 hover:text-blue-800">
+          {text}
+        </a>
+      )
+    },
+    {
+      title: 'Session Key',
+      dataIndex: 'key',
+      key: 'key',
+      align: 'center'
+    },
+    {
+      title: 'Start Date',
+      dataIndex: 'startTime',
+      key: 'startTime',
+      align: 'center',
+      render: date => formatDate(date),
+      sorter: (a, b) => a.startTime.getTime() - b.startTime.getTime(),
+      defaultSortOrder: 'descend'
+    },
+    {
+      title: 'End Date',
+      dataIndex: 'endTime',
+      key: 'endTime',
+      align: 'center',
+      render: date => formatDate(date)
+    },
+    {
+      title: 'Number of Participants',
+      dataIndex: 'participants',
+      key: 'participants',
+      align: 'center'
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      align: 'center',
+      render: status => {
+        let color = ''
+        switch (status) {
+          case 'Not Started':
+            color = 'bg-blue-100 text-blue-800'
+            break
+          case 'Ongoing':
+            color = 'bg-purple-100 text-purple-800'
+            break
+          case 'Completed':
+            color = 'bg-green-100 text-green-800'
+            break
+        }
+        return (
+          <span className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${color}`}>
+            {status}
+          </span>
         )
       },
-      {
-        title: 'Session Key',
-        dataIndex: 'key',
-        key: 'key',
-        align: 'center'
-      },
-      {
-        title: 'Start Date',
-        dataIndex: 'startTime',
-        key: 'startTime',
-        align: 'center',
-        render: date => formatDate(date),
-        sorter: (a, b) => a.startTime.getTime() - b.startTime.getTime(),
-        defaultSortOrder: 'descend'
-      },
-      {
-        title: 'End Date',
-        dataIndex: 'endTime',
-        key: 'endTime',
-        align: 'center',
-        render: date => formatDate(date)
-      },
-      {
-        title: 'Number of Participants',
-        dataIndex: 'participants',
-        key: 'participants',
-        align: 'center'
-      },
-      {
-        title: 'Status',
-        dataIndex: 'status',
-        key: 'status',
-        align: 'center',
-        render: status => {
-          let color = ''
-          switch (status) {
-            case 'Not Started':
-              color = 'bg-blue-100 text-blue-800'
-              break
-            case 'Ongoing':
-              color = 'bg-purple-100 text-purple-800'
-              break
-            case 'Completed':
-              color = 'bg-green-100 text-green-800'
-              break
-          }
-          return (
-            <span className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${color}`}>
-              {status}
-            </span>
-          )
-        },
-        filters: [
-          { text: 'Not Started', value: 'Not Started' },
-          { text: 'Ongoing', value: 'Ongoing' },
-          { text: 'Completed', value: 'Completed' }
-        ],
-        onFilter: (value, record) => record.status === value
-      },
-      {
-        title: 'Action',
-        key: 'action',
-        align: 'center',
-        render: (_, record) => (
-          <Space size="middle">
-            <Tooltip title="Edit">
-              <Button
-                type="text"
-                icon={<EditOutlined className="text-green-500" />}
-                onClick={() => message.info(`Edit session ${record.id}`)}
-              />
-            </Tooltip>
-            <Tooltip title="Delete">
-              <Button
-                type="text"
-                icon={<DeleteOutlined className="text-red-500" />}
-                onClick={() => handleDelete(record.id)}
-              />
-            </Tooltip>
-          </Space>
-        )
-      }
-    ],
-    [handleDelete]
-  )
+      filters: [
+        { text: 'Not Started', value: 'Not Started' },
+        { text: 'Ongoing', value: 'Ongoing' },
+        { text: 'Completed', value: 'Completed' }
+      ],
+      onFilter: (value, record) => record.status === value
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      align: 'center',
+      render: (_, record) => (
+        <Space size="middle">
+          <Tooltip title="Edit">
+            <Button
+              type="text"
+              icon={<EditOutlined className="text-green-500" />}
+              onClick={() => message.info(`Edit session ${record.id}`)}
+            />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button
+              type="text"
+              icon={<DeleteOutlined className="text-red-500" />}
+              onClick={() => setDeleteSessionId(record.id)}
+            />
+          </Tooltip>
+        </Space>
+      )
+    }
+  ])
 
   if (error) {
     return (
@@ -209,7 +246,7 @@ const SessionsList = () => {
 
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Sessions List</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => message.info('Create new session')}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
           Create Session
         </Button>
       </div>
@@ -245,10 +282,23 @@ const SessionsList = () => {
           description="No sessions found. Click here to create a new session."
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         >
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => message.info('Create new session')}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
             Create Session
           </Button>
         </Empty>
+      )}
+      <CreateSessionModal
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onSubmit={handleCreateSession}
+        testSets={testSets}
+      />
+      {deleteSessionId && (
+        <DeleteSessionPopup
+          isOpen={!!deleteSessionId}
+          onClose={() => setDeleteSessionId(null)}
+          onDelete={handleDelete}
+        />
       )}
     </div>
   )
