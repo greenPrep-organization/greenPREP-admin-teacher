@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Table, Input, Button, Tabs, Select, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
+import { COLORS } from '@/shared/constants/colors'
 
 const SessionParticipantList = () => {
   const [loading, setLoading] = useState(false)
@@ -22,16 +23,13 @@ const SessionParticipantList = () => {
     { value: 'C2', label: 'C2' }
   ]
 
-  // Kiểm tra xem học sinh có đủ điều kiện để chọn level không
   const canSelectLevel = record => {
     return !Object.values(record.scores).includes('Ungraded')
   }
 
-  // Lưu level khi người dùng chọn
   const handleLevelChange = async (value, record) => {
     try {
       setLoading(true)
-      // TODO: Gọi API để lưu level
       await new Promise(resolve => setTimeout(resolve, 500))
 
       const newData = data.map(item => {
@@ -44,7 +42,6 @@ const SessionParticipantList = () => {
 
       message.success('Level updated successfully')
 
-      // Kiểm tra nút Ready to Publish
       const allHaveLevel = newData.every(item => item.level)
       setReadyToPublish(allHaveLevel)
     } catch {
@@ -122,11 +119,9 @@ const SessionParticipantList = () => {
     }
   ]
 
-  // Fetch data từ server
   const fetchData = async (params = {}) => {
     try {
       setLoading(true)
-      // TODO: Thay thế bằng API call thực tế
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       const mockData = Array.from({ length: 50 }, (_, index) => ({
@@ -151,7 +146,6 @@ const SessionParticipantList = () => {
         total: filtered.length
       })
 
-      // Kiểm tra nút Ready to Publish
       const allHaveLevel = filtered.every(item => item.level)
       setReadyToPublish(allHaveLevel)
     } catch {
@@ -181,7 +175,6 @@ const SessionParticipantList = () => {
       message.warning('Please ensure all students have been assigned a level')
       return
     }
-    // TODO: Implement publish logic
     message.success('Session ready to be published')
   }
 
@@ -191,7 +184,7 @@ const SessionParticipantList = () => {
       label: (
         <div className="flex items-center gap-2 font-medium">
           <div className="px-4 py-1">Participants List</div>
-          <div className="h-[2px] w-full bg-[#003366]"></div>
+          <div className="h-[2px] w-full" style={{ backgroundColor: COLORS.PRIMARY }}></div>
         </div>
       ),
       children: (
@@ -199,31 +192,33 @@ const SessionParticipantList = () => {
           <div className="mb-4 flex justify-between">
             <div className="relative">
               <Input
-                placeholder="Search student name"
-                prefix={<SearchOutlined />}
-                className="w-[300px]"
+                placeholder="Search by student name"
+                prefix={<SearchOutlined style={{ color: COLORS.TEXT_SECONDARY }} />}
+                value={searchText}
                 onChange={e => handleSearch(e.target.value)}
-                allowClear
+                className="w-64"
               />
             </div>
-            <Button type="primary" className="bg-blue-700" onClick={handleReadyToPublish} disabled={!readyToPublish}>
-              Ready to publish
+            <Button
+              type="primary"
+              disabled={!readyToPublish}
+              onClick={handleReadyToPublish}
+              style={{
+                backgroundColor: readyToPublish ? COLORS.PRIMARY : COLORS.BG_GRAY,
+                color: readyToPublish ? '#fff' : COLORS.TEXT_DISABLED
+              }}
+            >
+              Ready to Publish
             </Button>
           </div>
 
           <Table
             columns={columns}
             dataSource={data}
-            pagination={{
-              ...pagination,
-              showSizeChanger: false,
-              showQuickJumper: true,
-              showTotal: total => `Total ${total} items`
-            }}
+            pagination={pagination}
             onChange={handleTableChange}
             loading={loading}
             scroll={{ x: 1200 }}
-            className="participants-table"
           />
         </div>
       )

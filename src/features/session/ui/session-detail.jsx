@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Tag, Spin, Alert } from 'antd'
-import dayjs from 'dayjs'
+import { formatDateTime, getStatusColor } from '@/shared/utils'
 
 const SessionDetail = () => {
   const [loading, setLoading] = useState(true)
@@ -12,11 +12,7 @@ const SessionDetail = () => {
       try {
         setLoading(true)
         setError(null)
-
-        // Giả lập delay API
         await new Promise(resolve => setTimeout(resolve, 500))
-
-        // Data mẫu
         const mockData = {
           sessionName: 'FALL_P1_2024',
           sessionKey: 'ABCDEF',
@@ -34,20 +30,7 @@ const SessionDetail = () => {
     }
 
     fetchSessionData()
-  }, []) // Chỉ chạy 1 lần khi mount
-
-  const formatDateTime = dateString => {
-    return dayjs(dateString).format('DD/MM/YYYY HH:mm')
-  }
-
-  const getStatusColor = status => {
-    const statusColors = {
-      Completed: { bg: '#E5FAF5', text: '#00B087' },
-      'In Progress': { bg: '#E5F6FF', text: '#0091FF' },
-      Pending: { bg: '#FFF5E5', text: '#FF9500' }
-    }
-    return statusColors[status] || { bg: '#F5F5F5', text: '#666666' }
-  }
+  }, [])
 
   if (loading) {
     return (
