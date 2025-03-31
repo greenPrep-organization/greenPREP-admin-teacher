@@ -5,7 +5,6 @@ const PublicRoute = [
     path: '/dashboard',
     element: <DashboardPage />
   }
-  // ...existing routes...
 ]
 
 export default PublicRoute

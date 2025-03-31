@@ -1,5 +1,5 @@
 // import { lazy } from 'react';
-import ClassDetailPage from '../../pages/ClassdetailPage'
+import ClassDetailPage from '@/pages/ClassDetailPage'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 
 const PrivateRoute = [
