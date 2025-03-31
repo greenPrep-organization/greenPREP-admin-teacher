@@ -2,6 +2,7 @@ import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant
 import { formatDate } from '@shared/lib/utils/index'
 import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import CreateSessionModal from '@features/session/ui/create-new-session'
 
 const generateFakeData = () => {
   const statuses = ['Not Started', 'Ongoing', 'Completed']
@@ -40,6 +41,12 @@ const SessionsList = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchText, setSearchText] = useState('')
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [testSets] = useState([
+    { id: '1', name: 'Test Set 1' },
+    { id: '2', name: 'Test Set 2' },
+    { id: '3', name: 'Test Set 3' }
+  ])
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -87,6 +94,30 @@ const SessionsList = () => {
   const handleViewSession = useCallback(id => {
     message.info(`Navigating to session details for ${id}`)
   }, [])
+
+  const handleCreateSession = useCallback(
+    async sessionData => {
+      try {
+        const newSession = {
+          id: `session-${sessions.length + 1}`,
+          name: sessionData.name,
+          key: sessionData.key,
+          startTime: sessionData.startTime,
+          endTime: sessionData.endTime,
+          participants: 0,
+          status: 'Not Started'
+        }
+
+        setSessions(prev => [newSession, ...prev])
+
+        setFilteredSessions(prev => [newSession, ...prev])
+      } catch (err) {
+        message.error('Failed to create session')
+        console.error(err)
+      }
+    },
+    [sessions.length]
+  )
 
   const columns = useMemo(
     () => [
@@ -209,7 +240,7 @@ const SessionsList = () => {
 
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Sessions List</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => message.info('Create new session')}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
           Create Session
         </Button>
       </div>
@@ -245,11 +276,18 @@ const SessionsList = () => {
           description="No sessions found. Click here to create a new session."
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         >
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => message.info('Create new session')}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
             Create Session
           </Button>
         </Empty>
       )}
+
+      <CreateSessionModal
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onSubmit={handleCreateSession}
+        testSets={testSets}
+      />
     </div>
   )
 }
