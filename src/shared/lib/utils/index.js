@@ -25,7 +25,7 @@ export const createSlug = text => {
 }
 
 export const getStatusColor = status => {
-  const statusMap = {
+  const statusClasses = {
     Completed: {
       bg: 'bg-completed',
       text: 'text-completed'
@@ -40,7 +40,7 @@ export const getStatusColor = status => {
     }
   }
   return (
-    statusMap[status] || {
+    statusClasses[status] || {
       bg: 'bg-default',
       text: 'text-default'
     }
