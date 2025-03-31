@@ -1,22 +1,21 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
-import { formatDate } from '@shared/lib/utils/index'
-import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
-import { useCallback, useEffect, useMemo, useState } from 'react'
 import CreateSessionModal from '@features/session/ui/create-new-session'
-
+import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
+import { formatDate, getStatusColor } from '@shared/lib/utils/index'
+import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tag, Tooltip } from 'antd'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 const generateFakeData = () => {
-  const statuses = ['Not Started', 'Ongoing', 'Completed']
+  const statuses = ['Pending', 'In Progress', 'Completed']
   const now = new Date()
 
   return Array.from({ length: 50 }, (_, i) => {
     let startTime, endTime
     const status = statuses[i % 3]
 
-    if (status === 'Not Started') {
+    if (status === 'Pending') {
       startTime = new Date(now.getTime() + 86400000 * ((i % 10) + 1))
       endTime = new Date(startTime.getTime() + 10800000)
-    } else if (status === 'Ongoing') {
+    } else if (status === 'In Progress') {
       startTime = new Date(now.getTime() - 3600000)
       endTime = new Date(now.getTime() + 3600000)
     } else {
@@ -55,7 +54,6 @@ const SessionsList = () => {
       try {
         const data = generateFakeData()
         const sortedData = [...data].sort((a, b) => b.startTime.getTime() - a.startTime.getTime())
-
         setSessions(sortedData)
         setFilteredSessions(sortedData)
         setLoading(false)
@@ -86,13 +84,17 @@ const SessionsList = () => {
 
   const handleDelete = async () => {
     if (!deleteSessionId) return
-    setSessions(prevSessions => prevSessions.filter(session => session.id !== deleteSessionId))
+    const updatedSessions = sessions.filter(session => session.id !== deleteSessionId)
+    setSessions(updatedSessions)
+    setFilteredSessions(updatedSessions)
     setDeleteSessionId(null)
     message.success('Session deleted successfully')
   }
+
   const handleViewSession = useCallback(id => {
     message.info(`Navigating to session details for ${id}`)
   }, [])
+
   const handleCreateSession = useCallback(
     async sessionData => {
       try {
@@ -103,18 +105,18 @@ const SessionsList = () => {
           startTime: sessionData.startTime,
           endTime: sessionData.endTime,
           participants: 0,
-          status: 'Not Started'
+          status: 'Pending'
         }
 
-        setSessions(prev => [newSession, ...prev])
-
-        setFilteredSessions(prev => [newSession, ...prev])
+        const updatedSessions = [newSession, ...sessions]
+        setSessions(updatedSessions)
+        setFilteredSessions(updatedSessions)
       } catch (err) {
         message.error('Failed to create session')
         console.error(err)
       }
     },
-    [sessions.length]
+    [sessions]
   )
 
   const columns = useMemo(
@@ -128,101 +130,83 @@ const SessionsList = () => {
           <a onClick={() => handleViewSession(record.id)} className="text-blue-600 hover:text-blue-800">
             {text}
           </a>
-  const columns = useMemo(() => [
-    {
-      title: 'Session Name',
-      dataIndex: 'name',
-      key: 'name',
-      align: 'center',
-      render: (text, record) => (
-        <a onClick={() => handleViewSession(record.id)} className="text-blue-600 hover:text-blue-800">
-          {text}
-        </a>
-      )
-    },
-    {
-      title: 'Session Key',
-      dataIndex: 'key',
-      key: 'key',
-      align: 'center'
-    },
-    {
-      title: 'Start Date',
-      dataIndex: 'startTime',
-      key: 'startTime',
-      align: 'center',
-      render: date => formatDate(date),
-      sorter: (a, b) => a.startTime.getTime() - b.startTime.getTime(),
-      defaultSortOrder: 'descend'
-    },
-    {
-      title: 'End Date',
-      dataIndex: 'endTime',
-      key: 'endTime',
-      align: 'center',
-      render: date => formatDate(date)
-    },
-    {
-      title: 'Number of Participants',
-      dataIndex: 'participants',
-      key: 'participants',
-      align: 'center'
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      align: 'center',
-      render: status => {
-        let color = ''
-        switch (status) {
-          case 'Not Started':
-            color = 'bg-blue-100 text-blue-800'
-            break
-          case 'Ongoing':
-            color = 'bg-purple-100 text-purple-800'
-            break
-          case 'Completed':
-            color = 'bg-green-100 text-green-800'
-            break
-        }
-        return (
-          <span className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${color}`}>
-            {status}
-          </span>
         )
       },
-      filters: [
-        { text: 'Not Started', value: 'Not Started' },
-        { text: 'Ongoing', value: 'Ongoing' },
-        { text: 'Completed', value: 'Completed' }
-      ],
-      onFilter: (value, record) => record.status === value
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      align: 'center',
-      render: (_, record) => (
-        <Space size="middle">
-          <Tooltip title="Edit">
-            <Button
-              type="text"
-              icon={<EditOutlined className="text-green-500" />}
-              onClick={() => message.info(`Edit session ${record.id}`)}
-            />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              type="text"
-              icon={<DeleteOutlined className="text-red-500" />}
-              onClick={() => setDeleteSessionId(record.id)}
-            />
-          </Tooltip>
-        </Space>
-      )
-    }
-  ])
+      {
+        title: 'Session Key',
+        dataIndex: 'key',
+        key: 'key',
+        align: 'center'
+      },
+      {
+        title: 'Start Date',
+        dataIndex: 'startTime',
+        key: 'startTime',
+        align: 'center',
+        render: date => formatDate(date),
+        sorter: (a, b) => a.startTime.getTime() - b.startTime.getTime(),
+        defaultSortOrder: 'descend'
+      },
+      {
+        title: 'End Date',
+        dataIndex: 'endTime',
+        key: 'endTime',
+        align: 'center',
+        render: date => formatDate(date)
+      },
+      {
+        title: 'Number of Participants',
+        dataIndex: 'participants',
+        key: 'participants',
+        align: 'center'
+      },
+      {
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+        align: 'center',
+        render: status => {
+          return (
+            <Tag
+              className={`rounded-md border-0 px-4 py-1 ${getStatusColor(status).bg} ${getStatusColor(status).text}`}
+            >
+              {status}
+            </Tag>
+          )
+        },
+        filters: [
+          { text: 'Pending', value: 'Pending' },
+          { text: 'In Progress', value: 'In Progress' },
+          { text: 'Completed', value: 'Completed' }
+        ],
+        onFilter: (value, record) => record.status === value
+      },
+      {
+        title: 'Action',
+        key: 'action',
+        align: 'center',
+        render: (_, record) => (
+          <Space size="middle">
+            <Tooltip title="Edit">
+              <Button
+                type="text"
+                icon={<EditOutlined className="text-green-500" />}
+                onClick={() => message.info(`Edit session ${record.id}`)}
+              />
+            </Tooltip>
+            <Tooltip title="Delete">
+              <Button
+                type="text"
+                icon={<DeleteOutlined className="text-red-500" />}
+                onClick={() => setDeleteSessionId(record.id)}
+              />
+            </Tooltip>
+          </Space>
+        )
+      }
+    ],
+    [handleDelete, handleViewSession]
+  )
 
   if (error) {
     return (
@@ -287,6 +271,7 @@ const SessionsList = () => {
           </Button>
         </Empty>
       )}
+
       <CreateSessionModal
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
