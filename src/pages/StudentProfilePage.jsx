@@ -1,4 +1,4 @@
-import StudentSessionInformation from '../features/session/ui/StudentSessionInformation'
+import StudentSessionInformation from '../features/session/StudentSessionInformation'
 
 export default function StudentProfilePage() {
   const studentData = {
