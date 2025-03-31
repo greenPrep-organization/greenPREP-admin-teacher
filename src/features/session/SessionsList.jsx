@@ -1,16 +1,7 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { formatDate } from '@shared/lib/utils/index'
 import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
-import { useEffect, useState } from 'react'
-
-const formatDate = date => {
-  const day = date.getDate().toString().padStart(2, '0')
-  const month = (date.getMonth() + 1).toString().padStart(2, '0')
-  const year = date.getFullYear()
-  const hours = date.getHours().toString().padStart(2, '0')
-  const minutes = date.getMinutes().toString().padStart(2, '0')
-
-  return `${day}/${month}/${year} ${hours}:${minutes}`
-}
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 const generateFakeData = () => {
   const statuses = ['Not Started', 'Ongoing', 'Completed']
@@ -53,8 +44,6 @@ const SessionsList = () => {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-
         const data = generateFakeData()
         const sortedData = [...data].sort((a, b) => b.startTime.getTime() - a.startTime.getTime())
 
@@ -87,111 +76,116 @@ const SessionsList = () => {
     setFilteredSessions(filtered)
   }, [searchText, sessions])
 
-  const handleDelete = id => {
-    message.success(`Session ${id} deleted successfully`)
-    const updatedSessions = sessions.filter(session => session.id !== id)
-    setSessions(updatedSessions)
-  }
-
-  const handleViewSession = id => {
+  const handleDelete = useCallback(
+    id => {
+      message.success(`Session ${id} deleted successfully`)
+      const updatedSessions = sessions.filter(session => session.id !== id)
+      setSessions(updatedSessions)
+    },
+    [sessions]
+  )
+  const handleViewSession = useCallback(id => {
     message.info(`Navigating to session details for ${id}`)
-  }
+  }, [])
 
-  const columns = [
-    {
-      title: 'Session Name',
-      dataIndex: 'name',
-      key: 'name',
-      align: 'center',
-      render: (text, record) => (
-        <a onClick={() => handleViewSession(record.id)} className="text-blue-600 hover:text-blue-800">
-          {text}
-        </a>
-      )
-    },
-    {
-      title: 'Session Key',
-      dataIndex: 'key',
-      key: 'key',
-      align: 'center'
-    },
-    {
-      title: 'Start Date',
-      dataIndex: 'startTime',
-      key: 'startTime',
-      align: 'center',
-      render: date => formatDate(date),
-      sorter: (a, b) => a.startTime.getTime() - b.startTime.getTime(),
-      defaultSortOrder: 'descend'
-    },
-    {
-      title: 'End Date',
-      dataIndex: 'endTime',
-      key: 'endTime',
-      align: 'center',
-      render: date => formatDate(date)
-    },
-    {
-      title: 'Number of Participants',
-      dataIndex: 'participants',
-      key: 'participants',
-      align: 'center'
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      align: 'center',
-      render: status => {
-        let color = ''
-        switch (status) {
-          case 'Not Started':
-            color = 'bg-blue-100 text-blue-800'
-            break
-          case 'Ongoing':
-            color = 'bg-purple-100 text-purple-800'
-            break
-          case 'Completed':
-            color = 'bg-green-100 text-green-800'
-            break
-        }
-        return (
-          <span className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${color}`}>
-            {status}
-          </span>
+  const columns = useMemo(
+    () => [
+      {
+        title: 'Session Name',
+        dataIndex: 'name',
+        key: 'name',
+        align: 'center',
+        render: (text, record) => (
+          <a onClick={() => handleViewSession(record.id)} className="text-blue-600 hover:text-blue-800">
+            {text}
+          </a>
         )
       },
-      filters: [
-        { text: 'Not Started', value: 'Not Started' },
-        { text: 'Ongoing', value: 'Ongoing' },
-        { text: 'Completed', value: 'Completed' }
-      ],
-      onFilter: (value, record) => record.status === value
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      align: 'center',
-      render: (_, record) => (
-        <Space size="middle">
-          <Tooltip title="Edit">
-            <Button
-              type="text"
-              icon={<EditOutlined className="text-green-500" />}
-              onClick={() => message.info(`Edit session ${record.id}`)}
-            />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              type="text"
-              icon={<DeleteOutlined className="text-red-500" />}
-              onClick={() => handleDelete(record.id)}
-            />
-          </Tooltip>
-        </Space>
-      )
-    }
-  ]
+      {
+        title: 'Session Key',
+        dataIndex: 'key',
+        key: 'key',
+        align: 'center'
+      },
+      {
+        title: 'Start Date',
+        dataIndex: 'startTime',
+        key: 'startTime',
+        align: 'center',
+        render: date => formatDate(date),
+        sorter: (a, b) => a.startTime.getTime() - b.startTime.getTime(),
+        defaultSortOrder: 'descend'
+      },
+      {
+        title: 'End Date',
+        dataIndex: 'endTime',
+        key: 'endTime',
+        align: 'center',
+        render: date => formatDate(date)
+      },
+      {
+        title: 'Number of Participants',
+        dataIndex: 'participants',
+        key: 'participants',
+        align: 'center'
+      },
+      {
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+        align: 'center',
+        render: status => {
+          let color = ''
+          switch (status) {
+            case 'Not Started':
+              color = 'bg-blue-100 text-blue-800'
+              break
+            case 'Ongoing':
+              color = 'bg-purple-100 text-purple-800'
+              break
+            case 'Completed':
+              color = 'bg-green-100 text-green-800'
+              break
+          }
+          return (
+            <span className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${color}`}>
+              {status}
+            </span>
+          )
+        },
+        filters: [
+          { text: 'Not Started', value: 'Not Started' },
+          { text: 'Ongoing', value: 'Ongoing' },
+          { text: 'Completed', value: 'Completed' }
+        ],
+        onFilter: (value, record) => record.status === value
+      },
+      {
+        title: 'Action',
+        key: 'action',
+        align: 'center',
+        render: (_, record) => (
+          <Space size="middle">
+            <Tooltip title="Edit">
+              <Button
+                type="text"
+                icon={<EditOutlined className="text-green-500" />}
+                onClick={() => message.info(`Edit session ${record.id}`)}
+              />
+            </Tooltip>
+            <Tooltip title="Delete">
+              <Button
+                type="text"
+                icon={<DeleteOutlined className="text-red-500" />}
+                onClick={() => handleDelete(record.id)}
+              />
+            </Tooltip>
+          </Space>
+        )
+      }
+    ],
+    [handleDelete]
+  )
 
   if (error) {
     return (
@@ -235,19 +229,17 @@ const SessionsList = () => {
           <Spin size="large" />
         </div>
       ) : filteredSessions.length > 0 ? (
-        <>
-          <Table
-            dataSource={filteredSessions}
-            columns={columns}
-            rowKey="id"
-            pagination={{
-              pageSize: 3,
-              showSizeChanger: true,
-              showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total}`
-            }}
-            className="overflow-x-auto"
-          />
-        </>
+        <Table
+          dataSource={filteredSessions}
+          columns={columns}
+          rowKey="id"
+          pagination={{
+            pageSize: 3,
+            showSizeChanger: true,
+            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total}`
+          }}
+          className="overflow-x-auto"
+        />
       ) : (
         <Empty
           description="No sessions found. Click here to create a new session."
