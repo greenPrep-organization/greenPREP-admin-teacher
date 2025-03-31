@@ -1,3 +1,4 @@
+
 import dayjs from 'dayjs'
 import { COLORS } from '@shared/lib/constants/colors'
 
@@ -33,3 +34,16 @@ export const getStatusColor = status => {
   }
   return statusColors[status] || { bg: COLORS.STATUS_DEFAULT_BG, text: COLORS.STATUS_DEFAULT_TEXT }
 }
+
+const formatDate = date => {
+  const day = date.getDate().toString().padStart(2, '0')
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const year = date.getFullYear()
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
+
+  return `${day}/${month}/${year} ${hours}:${minutes}`
+}
+
+export { formatDate }
+
