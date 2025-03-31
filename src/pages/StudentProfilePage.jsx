@@ -9,7 +9,7 @@ export default function StudentProfilePage() {
     email: 'QWER@gmail.com',
     phone: '0123456789',
     dob: '25/03/2025',
-    avatar: '' // Nếu không có ảnh, avatar sẽ dùng chữ cái đầu
+    avatar: ''
   }
 
   // Lấy chữ cái đầu của tên
