@@ -1,6 +1,6 @@
 // import { lazy } from 'react';
-import ClassDetailPage from '@/pages/ClassDetailPage'
-import TeacherProfile from '../../features/profile/ui/teacher-profile'
+import ClassDetailPage from '@pages/ClassDetailPage'
+import StudentProfilePage from '@pages/StudentProfilePage'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 
 const PrivateRoute = [
@@ -17,8 +17,8 @@ const PrivateRoute = [
         element: <ClassDetailPage />
       },
       {
-        path: 'teacher',
-        element: <TeacherProfile userId={123} />
+        path: 'student',
+        element: <StudentProfilePage />
       }
     ]
   }
