@@ -1,4 +1,3 @@
-
 import dayjs from 'dayjs'
 
 export const formatDateTime = dateString => {
@@ -26,12 +25,26 @@ export const createSlug = text => {
 }
 
 export const getStatusColor = status => {
-  const statusClasses = {
-    Completed: 'bg-status-completed-bg text-status-completed-text',
-    'In Progress': 'bg-status-in-progress-bg text-status-in-progress-text',
-    Pending: 'bg-status-pending-bg text-status-pending-text'
+  const statusMap = {
+    Completed: {
+      bg: 'bg-completed',
+      text: 'text-completed'
+    },
+    'In Progress': {
+      bg: 'bg-progress',
+      text: 'text-progress'
+    },
+    Pending: {
+      bg: 'bg-pending',
+      text: 'text-pending'
+    }
   }
-  return statusClasses[status] || 'bg-status-default-bg text-status-default-text'
+  return (
+    statusMap[status] || {
+      bg: 'bg-default',
+      text: 'text-default'
+    }
+  )
 }
 
 const formatDate = date => {
@@ -45,4 +58,3 @@ const formatDate = date => {
 }
 
 export { formatDate }
-
