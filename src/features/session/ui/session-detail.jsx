@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Tag, Spin, Alert } from 'antd'
-import { formatDateTime, getStatusColor } from '@/shared/utils'
+import { formatDateTime, getStatusColor } from '@shared/lib/utils/index'
 
 const SessionDetail = () => {
   const [loading, setLoading] = useState(true)
