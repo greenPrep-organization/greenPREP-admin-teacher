@@ -1,4 +1,4 @@
-import SessionsList from '../features/classdetailpage/SessionsList'
+import SessionsList from '../features/session/ui/SessionsList'
 
 const ClassDetailPage = () => {
   return (
