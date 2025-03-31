@@ -1,10 +1,17 @@
 import { Card, Typography, Image } from 'antd'
-import defaultAvatar from '@assets/Images/image.png'
+import { getDefaultAvatar } from '@shared/ui/index.js'
 
 const { Title, Text } = Typography
 
 const StudentCard = ({ student }) => {
-  const studentImage = student.image && student.image.trim() ? student.image : defaultAvatar
+  const studentImage =
+    student.image && student.image.trim() ? (
+      <Image src={student.image} preview={false} className="h-[140px] w-[140px] rounded-lg shadow-md" />
+    ) : (
+      <div className="flex h-[140px] w-[140px] items-center justify-center rounded-lg bg-blue-500 text-4xl font-bold text-white shadow-md">
+        {getDefaultAvatar(student.name)}
+      </div>
+    )
 
   return (
     <Card
@@ -38,13 +45,7 @@ const StudentCard = ({ student }) => {
           <Text strong>{student.phone}</Text>
         </div>
 
-        <div className="mt-4 flex justify-center">
-          <Image
-            src={studentImage}
-            preview={false}
-            style={{ width: 130, height: 130, borderRadius: 10, boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }}
-          />
-        </div>
+        <div className="mt-4 flex justify-center">{studentImage}</div>
       </div>
     </Card>
   )
