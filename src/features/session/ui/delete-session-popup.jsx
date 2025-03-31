@@ -1,9 +1,8 @@
 import { Warning } from '@assets/Images/index'
-import { formatDate } from '@shared/lib/utils/index'
-import { Button, Modal, Table, Tag } from 'antd'
+import { Button, Modal } from 'antd'
 import { useState } from 'react'
 
-export const DeleteModal = ({ isOpen, onClose, onConfirm, loading }) => {
+const DeleteModal = ({ isOpen, onClose, onConfirm, loading }) => {
   return (
     <Modal
       open={isOpen}
@@ -31,66 +30,20 @@ export const DeleteModal = ({ isOpen, onClose, onConfirm, loading }) => {
   )
 }
 
-const SessionTable = ({ sessions, onDelete, isAuthorized }) => {
-  const [selectedSession, setSelectedSession] = useState(null)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+const DeleteSessionPopup = ({ isOpen, onClose, onDelete }) => {
   const [loading, setLoading] = useState(false)
 
-  const handleDeleteClick = session => {
-    setSelectedSession(session)
-    setIsDeleteModalOpen(true)
-  }
-
   const confirmDelete = async () => {
-    if (!selectedSession) return
-
     setLoading(true)
     try {
-      await onDelete(selectedSession.id)
+      await onDelete()
     } finally {
       setLoading(false)
-      setIsDeleteModalOpen(false)
+      onClose()
     }
   }
 
-  if (!isAuthorized) return <p className="text-red-500">Unauthorized</p>
-
-  const columns = [
-    { title: 'Session Name', dataIndex: 'name', key: 'name', width: 150 },
-    { title: 'Session Key', dataIndex: 'key', key: 'key', width: 120 },
-    { title: 'Start Date', key: 'startDate', width: 180, render: (_, record) => formatDate(record.startDate) },
-    { title: 'End Date', key: 'endDate', width: 180, render: (_, record) => formatDate(record.endDate) },
-    { title: 'Participants', dataIndex: 'participantCount', key: 'participantCount', width: 120 },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      width: 120,
-      render: status => <Tag color={status === 'Completed' ? 'green' : 'blue'}>{status}</Tag>
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      width: 120,
-      render: (_, record) => (
-        <Button type="primary" danger onClick={() => handleDeleteClick(record)} size="small">
-          Delete
-        </Button>
-      )
-    }
-  ]
-
-  return (
-    <div>
-      <Table dataSource={sessions} columns={columns} rowKey="id" scroll={{ x: true }} bordered />
-      <DeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={confirmDelete}
-        loading={loading}
-      />
-    </div>
-  )
+  return <DeleteModal isOpen={isOpen} onClose={onClose} onConfirm={confirmDelete} loading={loading} />
 }
 
-export default SessionTable
+export default DeleteSessionPopup
