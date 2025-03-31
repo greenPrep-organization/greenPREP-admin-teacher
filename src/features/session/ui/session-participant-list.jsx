@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Table, Input, Button, Tabs, Select, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
-import { COLORS } from '@shared/lib/constants/colors'
 
 const SessionParticipantList = () => {
   const [loading, setLoading] = useState(false)
@@ -184,7 +183,7 @@ const SessionParticipantList = () => {
       label: (
         <div className="flex items-center gap-2 font-medium">
           <div className="px-4 py-1">Participants List</div>
-          <div className="h-[2px] w-full" style={{ backgroundColor: COLORS.PRIMARY }}></div>
+          <div className="h-[2px] w-full bg-primary"></div>
         </div>
       ),
       children: (
@@ -193,7 +192,7 @@ const SessionParticipantList = () => {
             <div className="relative">
               <Input
                 placeholder="Search by student name"
-                prefix={<SearchOutlined style={{ color: COLORS.TEXT_SECONDARY }} />}
+                prefix={<SearchOutlined className="text-text-secondary" />}
                 value={searchText}
                 onChange={e => handleSearch(e.target.value)}
                 className="w-64"
@@ -203,10 +202,7 @@ const SessionParticipantList = () => {
               type="primary"
               disabled={!readyToPublish}
               onClick={handleReadyToPublish}
-              style={{
-                backgroundColor: readyToPublish ? COLORS.PRIMARY : COLORS.BG_GRAY,
-                color: readyToPublish ? '#fff' : COLORS.TEXT_DISABLED
-              }}
+              className={`${readyToPublish ? 'bg-primary text-white' : 'bg-bg-gray text-text-disabled'}`}
             >
               Ready to Publish
             </Button>
