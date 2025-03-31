@@ -16,7 +16,7 @@ const FAKEUSERS = [
   { email: 'student@gmail.com', password: '123456', role: 'student' }
 ]
 
-const LoginForm = () => {
+const LoginPage = () => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [loginError, setLoginError] = useState('')
@@ -188,4 +188,4 @@ const LoginForm = () => {
   )
 }
 
-export default LoginForm
+export default LoginPage
