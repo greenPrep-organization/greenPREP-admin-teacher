@@ -11,20 +11,15 @@ const fetchUserProfile = async userId => {
 export const useUserProfile = userId => {
   return useQuery({
     queryKey: ['userProfile', userId],
-    queryFn: async () => {
-      if (userId === '1') {
-        return {
-          id: 1,
-          firstName: 'Phung',
-          lastName: 'Khanh',
-          personalEmail: 'Khanh@example.com',
-          phone: '0335055415',
-          roleIDs: ['teacher'],
-          classes: ['English', 'History']
-        }
-      } else {
-        return await fetchUserProfile(userId)
-      }
-    }
+    queryFn: () => fetchUserProfile(userId),
+    // You can add example/mock data here for development purposes
+    // placeholderData: {
+    //   email: "khanh@example.com",
+    //   firstName: "Khanh",
+    //   lastName: "Minh",
+    //   role: ['teacher'],
+    //   userId: "8f420964-edbf-44e6-ac0b-096c59bdf2db"
+    // },
+    enabled: !!userId // Only run the query if userId exists
   })
 }

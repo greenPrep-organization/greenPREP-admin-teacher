@@ -1,8 +1,8 @@
 import { UserOutlined } from '@ant-design/icons'
 import { useUserProfile } from '@features/profile/api/profileAPI'
-import { Avatar, Button, Card, Divider, Input, message, Modal, Spin } from 'antd'
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Avatar, Button, Card, Divider, Input, message, Modal, Spin, Tag } from 'antd'
+import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import * as Yup from 'yup'
 
 const profileValidationSchema = Yup.object().shape({
@@ -15,10 +15,28 @@ const profileValidationSchema = Yup.object().shape({
 })
 
 const Profile = () => {
-  const { userId } = useParams()
-  const { data: userData, isLoading, isError } = useUserProfile(userId || '1')
+  const auth = useSelector(state => state.auth)
+  console.log(auth.user)
+  const { data: userData, isLoading, isError } = useUserProfile(auth.user?.userId)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '' })
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: ''
+  })
+
+  // Initialize form data when userData is available
+  useEffect(() => {
+    if (userData) {
+      setFormData({
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        email: userData.email || '',
+        phone: userData.phone || ''
+      })
+    }
+  }, [userData])
 
   if (isLoading) {
     return (
@@ -28,28 +46,12 @@ const Profile = () => {
     )
   }
 
-  if (isError) {
+  if (isError || !userData) {
     message.error('Unable to load profile information. Please try again later.')
     return null
   }
 
-  // Khởi tạo formData nếu chưa có
-  if (userData && !formData.firstName) {
-    setFormData({
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      email: userData.personalEmail,
-      phone: userData.phone
-    })
-  }
-
   const handleEdit = () => {
-    setFormData({
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      email: userData.personalEmail,
-      phone: userData.phone
-    })
     setIsEditModalOpen(true)
   }
 
@@ -77,9 +79,9 @@ const Profile = () => {
           <Avatar size={100} icon={<UserOutlined />} className="bg-gray-800" />
           <div className="flex-grow">
             <h2 className="text-2xl font-semibold text-gray-800">
-              {formData.firstName} {formData.lastName}
+              {userData.firstName} {userData.lastName}
             </h2>
-            <p className="text-gray-600">{formData.email}</p>
+            <p className="text-gray-600">{userData.email}</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
@@ -101,54 +103,61 @@ const Profile = () => {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
             <p className="mb-1 text-gray-600">Role</p>
-            <p className="capitalize text-gray-500">{userData.roleIDs}</p>
+            <div className="flex flex-wrap gap-2">
+              {Array.isArray(userData.role) ? (
+                userData.role.map((role, index) => (
+                  <Tag key={index} className="capitalize">
+                    {role}
+                  </Tag>
+                ))
+              ) : (
+                <Tag className="capitalize">{userData.role || 'No role assigned'}</Tag>
+              )}
+            </div>
           </div>
           <div>
             <p className="mb-1 text-gray-600">Classes</p>
-            {userData.classes.map((cls, index) => (
-              <p key={index} className="text-gray-500">
-                {cls}
-              </p>
-            ))}
+            {userData.classes?.length > 0 ? (
+              userData.classes.map((cls, index) => (
+                <p key={index} className="text-gray-500">
+                  {cls}
+                </p>
+              ))
+            ) : (
+              <p className="text-gray-500">No classes assigned</p>
+            )}
           </div>
         </div>
         <Divider className="my-6" />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
             <p className="mb-1 text-gray-600">Phone number</p>
-            <p className="text-gray-500">{formData.phone}</p>
+            <p className="text-gray-500">{userData.phone || 'Not provided'}</p>
           </div>
         </div>
       </Card>
 
       <Modal title="Edit Profile" open={isEditModalOpen} onOk={handleSave} onCancel={() => setIsEditModalOpen(false)}>
-        <div>
-          <label>First Name:</label>
-          <Input value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
-        </div>
-        <div>
-          <label>Last Name:</label>
-          <Input value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
-        </div>
-        <div>
-          <label>Email:</label>
-          <Input value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold">Phone:</label>
-          <Input
-            value={formData.phone}
-            onChange={e => setFormData({ ...formData, phone: e.target.value })}
-            className="mt-2 w-full rounded-md border border-gray-300 p-2"
-          />
-          {/* Phone number validation message */}
-          <div className="mt-2 text-sm text-gray-600">
-            {/* Validate phone number format */}
-            {!/^\+?\d{10,15}$/.test(formData.phone) && formData.phone.length > 0 ? (
-              <p className="text-red-500">Please enter a valid phone number (10 digits).</p>
-            ) : (
-              formData.phone.length > 0 && <p className="text-green-500">Phone number looks good!</p>
-            )}
+        <div className="space-y-4">
+          <div>
+            <label className="block">First Name:</label>
+            <Input value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
+          </div>
+          <div>
+            <label className="block">Last Name:</label>
+            <Input value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
+          </div>
+          <div>
+            <label className="block">Email:</label>
+            <Input value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+          </div>
+          <div>
+            <label className="block">Phone:</label>
+            <Input
+              value={formData.phone}
+              onChange={e => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="Enter 10-11 digit phone number"
+            />
           </div>
         </div>
       </Modal>
