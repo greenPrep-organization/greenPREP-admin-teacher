@@ -7,7 +7,7 @@ const { Header } = Layout
 
 const SharedHeader = ({ collapsed, setCollapsed }) => {
   const { user } = useSelector(state => state.auth)
-  const userInitial = user?.firstName?.[0] || 'U'
+  const userInitial = user?.firstName
 
   const menu = (
     <Menu>
@@ -39,7 +39,7 @@ const SharedHeader = ({ collapsed, setCollapsed }) => {
         >
           <span className="flex items-center space-x-1">
             <span>Hi,</span>
-            <span className="">{user?.firstName || 'User'}</span>
+            <span className="">{user?.firstName}</span>
           </span>
           <span className="flex h-8 w-8 items-center justify-center rounded-full border border-black bg-white font-bold text-black md:h-10 md:w-10 md:rounded-[50%]">
             {userInitial}

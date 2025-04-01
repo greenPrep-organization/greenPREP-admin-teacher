@@ -1,13 +1,14 @@
+// @ts-nocheck
 import { useState } from 'react'
-import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined'
-import EyeOutlined from '@ant-design/icons/EyeOutlined'
-import ExclamationCircleOutlined from '@ant-design/icons/ExclamationCircleOutlined'
-import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
+import { EyeInvisibleOutlined, EyeOutlined, ExclamationCircleOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import { Link, useNavigate } from 'react-router-dom'
 import { Form, Input, Button, Typography, Space, Row, Col } from 'antd'
 import { LoginImg } from '../assets/Images/index'
 import axios from 'axios'
 import { ACCESS_TOKEN } from '@shared/lib/constants/auth'
+import { useDispatch } from 'react-redux'
+import { login } from '@app/providers/reducer/auth/authSlice'
+import { jwtDecode } from 'jwt-decode'
 
 const { Title, Text } = Typography
 
@@ -18,6 +19,16 @@ const LoginPage = () => {
   const [loginSuccess, setLoginSuccess] = useState('')
   const [passwordTouched, setPasswordTouched] = useState(false)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const getUserData = token => {
+    try {
+      return token ? jwtDecode(token) : null
+    } catch (error) {
+      console.error('Error decoding token:', error)
+      return null
+    }
+  }
 
   const onFinish = async values => {
     setLoading(true)
@@ -25,23 +36,27 @@ const LoginPage = () => {
     setLoginSuccess('')
 
     try {
-      // Login request
       const response = await axios.post('https://dev-api-greenprep.onrender.com/api/users/login', {
         email: values.email,
         password: values.password
       })
 
-      console.log('Login response:', response.data)
-
-      // Store access token
       if (response.data?.data?.access_token) {
-        localStorage.setItem(ACCESS_TOKEN, response.data.data.access_token)
-      }
+        const token = response.data.data.access_token
 
-      setLoginSuccess('Login successful! Redirecting...')
-      setTimeout(() => {
-        navigate('/dashboard')
-      }, 1000)
+        localStorage.setItem(ACCESS_TOKEN, token)
+        const userData = getUserData(token)
+
+        if (userData) {
+          dispatch(login(userData))
+          setLoginSuccess('Login successful!')
+          navigate('/dashboard')
+        } else {
+          setLoginError('Invalid token received')
+        }
+      } else {
+        setLoginError('Login failed. Please try again.')
+      }
     } catch (error) {
       console.error('Login error:', error)
       setLoginError('Invalid email or password')
@@ -57,7 +72,6 @@ const LoginPage = () => {
 
   const password = Form.useWatch('password', form)
   const showPasswordError = passwordTouched && !password
-
   return (
     <Row className="min-h-screen bg-white">
       <Col xs={24} md={12} className="flex flex-col justify-center px-4 sm:px-6 lg:px-8 xl:px-12">
