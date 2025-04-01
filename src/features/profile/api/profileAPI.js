@@ -12,23 +12,19 @@ export const useUserProfile = userId => {
   return useQuery({
     queryKey: ['userProfile', userId],
     queryFn: async () => {
-      if (userId === 1) {
+      if (userId === '1') {
         return {
           id: 1,
           firstName: 'Alice',
           lastName: 'Smith',
           personalEmail: 'alice.smith@example.com',
           phone: '987654321',
-          roleIDs: ['student'],
+          roleIDs: ['teacher'],
           classes: ['English', 'History']
         }
       } else {
         return await fetchUserProfile(userId)
       }
-    },
-    select: data => {
-      const role = data.roleIDs.includes('teacher') ? 'teacher' : 'student'
-      return { ...data, role }
     }
   })
 }

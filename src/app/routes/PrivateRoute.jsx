@@ -22,8 +22,8 @@ const PrivateRoute = [
         element: <StudentProfilePage />
       },
       {
-        path: 'teacher',
-        element: <TeacherProfile userId={1} />
+        path: 'profile/:userId',
+        element: <TeacherProfile />
       }
     ]
   }
