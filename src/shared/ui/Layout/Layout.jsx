@@ -31,7 +31,7 @@ const Layout = ({ children }) => {
             {
               key: '2',
               icon: <ReadOutlined />,
-              label: <Link to="/classes">CLasses</Link>
+              label: <Link to="/classes-management">Classes</Link>
             },
             {
               type: 'divider',
