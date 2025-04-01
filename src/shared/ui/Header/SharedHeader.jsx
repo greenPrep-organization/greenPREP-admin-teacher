@@ -7,7 +7,7 @@ const { Header } = Layout
 
 const SharedHeader = ({ collapsed, setCollapsed }) => {
   const { user } = useSelector(state => state.auth)
-  const userInitial = user?.firstName?.[0] || 'U'
+  const userInitial = user?.firstName?.[0]
 
   const menu = (
     <Menu>

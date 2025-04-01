@@ -8,6 +8,8 @@ import { Form, Input, Button, Typography, Space, Row, Col } from 'antd'
 import { LoginImg } from '../assets/Images/index'
 import axios from 'axios'
 import { ACCESS_TOKEN } from '@shared/lib/constants/auth'
+import { useDispatch } from 'react-redux'
+import { login } from '@app/providers/reducer/auth/authSlice'
 
 const { Title, Text } = Typography
 
@@ -18,6 +20,21 @@ const LoginPage = () => {
   const [loginSuccess, setLoginSuccess] = useState('')
   const [passwordTouched, setPasswordTouched] = useState(false)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const fetchUserData = async (token, userId) => {
+    try {
+      const response = await axios.get(`https://dev-api-greenprep.onrender.com/api/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error fetching user data:', error)
+      throw error
+    }
+  }
 
   const onFinish = async values => {
     setLoading(true)
@@ -31,20 +48,30 @@ const LoginPage = () => {
         password: values.password
       })
 
-      console.log('Login response:', response.data)
-
-      // Store access token
+      // Store access token and user data
       if (response.data?.data?.access_token) {
-        localStorage.setItem(ACCESS_TOKEN, response.data.data.access_token)
+        const token = response.data.data.access_token
+        // const userId = response.data.data.decodedToken.id
+
+        // Store token
+        localStorage.setItem(ACCESS_TOKEN, token)
+
+        // Fetch and store user data
+        const userData = await fetchUserData(token)
+
+        // Update Redux store with user data
+        dispatch(login(userData))
       }
 
-      setLoginSuccess('Login successful! Redirecting...')
-      setTimeout(() => {
-        navigate('/dashboard')
-      }, 1000)
+      setLoginSuccess('Login successful!')
+      navigate('/dashboard')
     } catch (error) {
       console.error('Login error:', error)
-      setLoginError('Invalid email or password')
+      if (error.code === 'ERR_NETWORK') {
+        setLoginError('Network error. Please check your connection.')
+      } else {
+        setLoginError('Invalid email or password')
+      }
     } finally {
       setLoading(false)
     }

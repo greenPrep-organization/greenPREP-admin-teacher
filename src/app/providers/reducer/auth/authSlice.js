@@ -2,11 +2,12 @@ import { ACCESS_TOKEN } from '@shared/lib/constants/auth'
 import { createSlice } from '@reduxjs/toolkit'
 import { jwtDecode } from 'jwt-decode'
 import { getStorageData } from '@shared/lib/storage'
-const checkAuth = () => Boolean(getStorageData(ACCESS_TOKEN))
+
+const checkAuth = () => Boolean(getStorageData(ACCESS_TOKEN, false))
 
 const getUserRole = () => {
   try {
-    const token = getStorageData(ACCESS_TOKEN)
+    const token = getStorageData(ACCESS_TOKEN, false)
     if (!token) return null
     const decodedToken = jwtDecode(token)
 
@@ -19,7 +20,7 @@ const getUserRole = () => {
 
 const getUserData = () => {
   try {
-    const token = getStorageData(ACCESS_TOKEN)
+    const token = getStorageData(ACCESS_TOKEN, false)
     if (!token) return null
     const decodedToken = jwtDecode(token)
 
@@ -29,11 +30,13 @@ const getUserData = () => {
     return null
   }
 }
+
 const initialState = {
   isAuth: checkAuth(),
   role: getUserRole(),
   user: getUserData()
 }
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -52,6 +55,7 @@ const authSlice = createSlice({
     }
   }
 })
+
 const { reducer, actions } = authSlice
 export const { logout, login } = actions
 export default reducer
