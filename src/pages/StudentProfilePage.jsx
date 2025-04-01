@@ -1,5 +1,5 @@
 import { getDefaultAvatar } from '@/shared/lib/utils/avatarUtils'
-import StudentSessionInformation from '@features/student/StudentSessionInformation'
+
 import { Avatar, Breadcrumb } from 'antd'
 
 export default function StudentProfilePage() {
@@ -31,9 +31,7 @@ export default function StudentProfilePage() {
           <h1 className="mb-6 text-2xl font-bold">Student Details</h1>
 
           <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <StudentSessionInformation student={studentData} />
-            </div>
+            <div className="lg:col-span-2"></div>
 
             <div className="lg:col-span-1">
               <div className="flex items-center justify-center overflow-hidden rounded-lg bg-white p-4 shadow-md">
