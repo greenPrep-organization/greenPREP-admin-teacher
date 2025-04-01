@@ -19,7 +19,7 @@ const mockData = {
       'I went to a café. I wanted to relax. I enjoyed a cup of coffee. It was a peaceful night.',
       "A white shirt and jeans. It's comfortable and stylish. I feel confident wearing it. I like simple outfits.",
       'Football is the most popular. Many people watch and play it. We have big football tournaments. It brings people together.',
-      "Watching movies together. We love exciting stories. We discuss the movies after watching. It's a fun way to bond."
+      ''
     ]
   },
   part2: {
@@ -103,8 +103,16 @@ function WritingGrade() {
   const answers = currentPart.answers
   const instructions = currentPart.instructions
 
+  // Render answers with basic formatting support via CSS
+  const renderAnswer = answer => {
+    if (!answer || answer.trim() === '') {
+      return <p className="italic text-gray-500">No answer submitted</p>
+    }
+    return <p className="whitespace-pre-wrap">{answer}</p>
+  }
+
   return (
-    <div className="mx-auto max-w-max">
+    <div className="mx-auto max-w-7xl px-4">
       <div className="mb-4 max-w-min rounded-xl border border-solid border-[#C0C0C0] px-4 py-2">
         <div className="flex flex-nowrap gap-1">
           {['part1', 'part2', 'part3', 'part4'].map(part => (
@@ -121,11 +129,11 @@ function WritingGrade() {
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-6 md:flex-row">
         <div className="flex-1">
           <Card className="mb-4 border-[#C0C0C0]">
             <div className="text-sm">
-              <p className="mb-2">{instructions}</p>
+              <p className="mb-2 whitespace-pre-wrap">{instructions}</p>
               <ol className="list-decimal space-y-1 pl-6">
                 {questions.map((question, index) => (
                   <li key={index}>{question}</li>
@@ -134,17 +142,21 @@ function WritingGrade() {
             </div>
           </Card>
 
-          <Card className="border-[#C0C0C0]">
-            <ol className="list-decimal space-y-3 pl-6">
-              {answers.map((answer, index) => (
-                <li key={index}>{answer}</li>
-              ))}
-            </ol>
+          <Card className="max-h-[400px] overflow-y-auto border-[#C0C0C0]">
+            {answers.length === 0 ? (
+              <p className="italic text-gray-500">No answer submitted</p>
+            ) : (
+              <ol className="list-decimal space-y-4 pl-6">
+                {answers.map((answer, index) => (
+                  <li key={index}>{renderAnswer(answer)}</li>
+                ))}
+              </ol>
+            )}
           </Card>
         </div>
 
-        <div className="w-min">
-          <div className="mx-auto max-w-md rounded-lg bg-white p-6">
+        <div className="w-full md:w-80">
+          <div className="mx-auto rounded-lg bg-white p-6 shadow-md">
             <Form form={form} layout="horizontal" onFinish={handleSubmit} initialValues={{}}>
               {questions.map((_, index) => (
                 <div key={index} className="mb-4 flex items-center">
