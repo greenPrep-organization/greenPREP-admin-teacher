@@ -42,7 +42,7 @@ const mockData = {
     questions: [
       'How have museums evolved in the digital age?',
       'What is the social impact of museums in communities?',
-      'How might museums change in the future?'
+      ''
     ],
     answers: [
       'Museums have embraced digital technology by creating virtual tours, interactive displays, and online collections. Many now offer mobile apps that enhance the visitor experience with additional information and augmented reality features. Social media has also become a vital tool for museums to engage with audiences beyond their physical locations.',
