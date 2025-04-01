@@ -1,6 +1,7 @@
 // import { lazy } from 'react';
 import ClassDetailPage from '@/pages/ClassDetailPage'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
+import SessionPage from '@features/session/ui/session-page.jsx'
 
 const PrivateRoute = [
   {
@@ -14,6 +15,10 @@ const PrivateRoute = [
       {
         path: 'classes',
         element: <ClassDetailPage />
+      },
+      {
+        path: 'sessions/:sessionId',
+        element: <SessionPage />
       }
     ]
   }
