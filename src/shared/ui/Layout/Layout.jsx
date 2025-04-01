@@ -1,7 +1,7 @@
 import LogoutOutlined from '@ant-design/icons/lib/icons/LogoutOutlined'
 import ReadOutlined from '@ant-design/icons/lib/icons/ReadOutlined'
 import UserOutlined from '@ant-design/icons/lib/icons/UserOutlined'
-import { Logo } from '@assets/images'
+import { Logo } from '@assets/Images'
 import { Layout as AntdLayout, Menu } from 'antd'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
