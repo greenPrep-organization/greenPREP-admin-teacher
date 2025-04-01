@@ -2,9 +2,8 @@
 
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from 'react'
-import { Button, InputNumber, Form, Tabs, Card, Input, message } from 'antd'
+import { Button, InputNumber, Form, Tabs, Card, message } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import * as Yup from 'yup'
 
 const mockData = {
   part1: {
@@ -55,36 +54,16 @@ const mockData = {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
-const createValidationSchema = (part, questions) => {
-  const schema = {}
-  questions.forEach((question, index) => {
-    schema[`question_${index}`] = Yup.number()
-      .typeError('Must be a number')
-      .min(0, 'Minimum score is 0')
-      .max(100, 'Maximum score is 100')
-      .required('Score is required')
-  })
-  return Yup.object().shape(schema)
-}
-
 function WritingGrade() {
-  const [activeTab, setActiveTab] = useState('writing')
   const [activePart, setActivePart] = useState('part1')
   const [form] = Form.useForm()
   const [totalScore, setTotalScore] = useState(0)
-  const [feedback, setFeedback] = useState('Easy grammar, using more complex sentences and vocab to upgrade band level')
 
-  // Simulate fetching data with React Query
   const { data: studentData } = useQuery({
     queryKey: ['studentData'],
     queryFn: () => Promise.resolve(mockData),
     initialData: mockData
   })
-
-  const handleTabChange = key => {
-    setActiveTab(key)
-  }
 
   const handlePartChange = key => {
     setActivePart(key)
@@ -93,6 +72,13 @@ function WritingGrade() {
   }
 
   const handleScoreChange = (value, field) => {
+    let newValue = value
+    // Cap individual score at 100
+    if (newValue > 100) {
+      newValue = 100
+      form.setFieldsValue({ [field]: 100 })
+    }
+
     const values = form.getFieldsValue()
     const currentPart = studentData[activePart]
     const questions = currentPart.questions
@@ -103,34 +89,19 @@ function WritingGrade() {
       const fieldValue = values[`question_${index}`] || 0
       total += fieldValue
     })
-
     setTotalScore(total)
+  }
 
-    // Check if total exceeds 100
-    if (total > 100) {
-      message.error('Total score cannot exceed 100')
-
-      // Reset the field that caused the overflow
-      const previousValue = form.getFieldValue(field) || 0
-      const newValue = previousValue - (total - 100)
-      form.setFieldsValue({ [field]: newValue >= 0 ? newValue : 0 })
-
-      // Recalculate total
-      setTimeout(() => {
-        const updatedValues = form.getFieldsValue()
-        let updatedTotal = 0
-        questions.forEach((_, index) => {
-          updatedTotal += updatedValues[`question_${index}`] || 0
-        })
-        setTotalScore(updatedTotal)
-      }, 0)
+  const handleKeyPress = event => {
+    // Allow only numbers (0-9)
+    if (!/[0-9]/.test(event.key)) {
+      event.preventDefault()
     }
   }
 
   const handleSubmit = values => {
     console.log('Submitted values:', values)
     console.log('Total score:', totalScore)
-    console.log('Feedback:', feedback)
     message.success('Grading submitted successfully')
   }
 
@@ -138,7 +109,6 @@ function WritingGrade() {
     const values = form.getFieldsValue()
     console.log('Saved as draft:', values)
     console.log('Total score:', totalScore)
-    console.log('Feedback:', feedback)
     message.info('Grading saved as draft')
   }
 
@@ -149,36 +119,6 @@ function WritingGrade() {
 
   return (
     <div className="mx-auto max-w-[1200px] p-4">
-      <h1 className="mb-4 text-2xl font-bold">Grading</h1>
-
-      <div className="mb-4 flex justify-between">
-        <div className="flex gap-2">
-          <Button icon={<span>←</span>} className="flex items-center">
-            Previous Student
-          </Button>
-
-          <Button className="flex items-center">Change Student</Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">of 40 students</span>
-          <Button type="primary" className="flex items-center bg-[#003366]">
-            Next Student
-            <span className="ml-1">→</span>
-          </Button>
-        </div>
-      </div>
-
-      <Tabs
-        activeKey={activeTab}
-        onChange={handleTabChange}
-        className="mb-4"
-        items={[
-          { key: 'speaking', label: 'Speaking' },
-          { key: 'writing', label: 'Writing' }
-        ]}
-      />
-
       <div className="mb-4">
         <Tabs
           activeKey={activePart}
@@ -196,7 +136,6 @@ function WritingGrade() {
 
       <div className="flex gap-4">
         <div className="flex-1">
-          {/* Instructions and Questions */}
           <Card className="mb-4">
             <div className="text-sm">
               <p className="mb-2">{instructions}</p>
@@ -208,7 +147,6 @@ function WritingGrade() {
             </div>
           </Card>
 
-          {/* Student Answers */}
           <Card>
             <ol className="list-decimal space-y-3 pl-6">
               {answers.map((answer, index) => (
@@ -218,7 +156,6 @@ function WritingGrade() {
           </Card>
         </div>
 
-        {/* Scoring Form */}
         <div className="w-[200px]">
           <Form form={form} layout="vertical" onFinish={handleSubmit} initialValues={{}}>
             {questions.map((_, index) => (
@@ -228,14 +165,24 @@ function WritingGrade() {
                 label={`Question ${index + 1}`}
                 rules={[
                   { required: true, message: 'Please input a score' },
+                  { type: 'integer', message: 'Score must be an integer' },
                   { type: 'number', min: 0, max: 100, message: 'Score must be between 0 and 100' }
                 ]}
               >
                 <InputNumber
                   className="w-full"
                   min={0}
-                  max={100}
+                  max={999} // Max 3 digits
+                  maxLength={3} // Restrict to 3 digits
+                  step={1} // Ensure only integers
+                  precision={0} // No decimal places
                   onChange={value => handleScoreChange(value, `question_${index}`)}
+                  parser={value => {
+                    // Remove any non-digit characters and limit to 3 digits
+                    const parsed = value.replace(/\D/g, '').slice(0, 3)
+                    return parsed ? parseInt(parsed) : 0
+                  }}
+                  onKeyPress={handleKeyPress} // Prevent non-numeric input
                 />
               </Form.Item>
             ))}
@@ -248,19 +195,12 @@ function WritingGrade() {
               <Button type="primary" htmlType="submit" className="w-full bg-[#003366]">
                 Submit
               </Button>
-
               <Button className="w-full" onClick={handleSaveAsDraft}>
                 Save As Draft
               </Button>
             </div>
           </Form>
         </div>
-      </div>
-
-      {/* Feedback Section */}
-      <div className="mt-6">
-        <h2 className="mb-2 text-lg font-medium">Feedback</h2>
-        <Input.TextArea value={feedback} onChange={e => setFeedback(e.target.value)} rows={4} className="w-full" />
       </div>
     </div>
   )
