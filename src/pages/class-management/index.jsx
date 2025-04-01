@@ -1,12 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Table, Input, Space, Button, Card, message, Typography, Breadcrumb } from 'antd'
 import { EditOutlined, EyeOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import CreateClassModal from '@features/class-management/ui/create-new-class'
-import EditClassModal from '@features/class-management/ui/edit-class'
+import { fetchClasses, deleteClass, fetchClassById } from '@features/class-management/api/classes'
+import { CreateClassModal, EditClassModal } from '@features/class-management/ui/class-modal'
 import DeleteConfirmModal from '@features/class-management/ui/delete-class'
-import { fetchClasses, updateClass, deleteClass, fetchClassById } from '@features/class-management/api/classes'
 
 const { Title } = Typography
 
@@ -53,20 +52,6 @@ const ClassList = () => {
     return enrichedClasses.filter(cls => cls.className?.toLowerCase().includes(searchTerm.toLowerCase()))
   }, [searchTerm, enrichedClasses])
 
-  const updateClassMutation = useMutation({
-    // @ts-ignore
-    mutationFn: ({ id, newName }) => updateClass(id, { className: newName }),
-    onSuccess: () => {
-      // @ts-ignore
-      queryClient.invalidateQueries(['classes'])
-      message.success('Class updated successfully!')
-      setIsEditModalVisible(false)
-    },
-    onError: () => {
-      message.error('Failed to update class')
-    }
-  })
-
   const deleteClassMutation = useMutation({
     mutationFn: deleteClass,
     onSuccess: () => {
@@ -79,6 +64,10 @@ const ClassList = () => {
       message.error('Failed to delete class')
     }
   })
+
+  const handleCreateClass = () => {
+    setIsModalVisible(true)
+  }
 
   const handleEdit = cls => {
     setEditingClass(cls)
@@ -102,35 +91,9 @@ const ClassList = () => {
     }
   }
 
-  const handleCreateClass = () => {
-    setIsModalVisible(true)
-  }
-
-  const handleUpdateClass = newName => {
-    if (!editingClass?.ID) {
-      message.error('Invalid class ID!')
-      return
-    }
-    const isDuplicate = classes.some(
-      cls => cls.className.toLowerCase() === newName.toLowerCase() && cls.ID !== editingClass.ID
-    )
-
-    if (isDuplicate) {
-      message.error('Class name already exists!')
-      return
-    }
-    // @ts-ignore
-    updateClassMutation.mutate({ id: editingClass.ID, newName })
-  }
-
   const columns = [
-    { title: 'CLASS NAME', dataIndex: 'className', key: 'className' },
-    {
-      title: 'NUMBER OF SESSIONS',
-      dataIndex: 'sessions',
-      key: 'sessions',
-      align: 'center'
-    },
+    { title: 'CLASS NAME', dataIndex: 'className', key: 'className', align: 'center' },
+    { title: 'NUMBER OF SESSIONS', dataIndex: 'sessions', key: 'sessions', align: 'center' },
     {
       title: 'ACTIONS',
       key: 'actions',
@@ -147,23 +110,24 @@ const ClassList = () => {
 
   return (
     <div>
-      <Breadcrumb className="mb-4">
-        <Breadcrumb.Item>
+      <Breadcrumb className="mb-4" style={{ cursor: 'pointer' }}>
+        <Breadcrumb.Item onClick={() => navigate('/dashboard')}>
           <HomeOutlined /> <span>Dashboard</span>
         </Breadcrumb.Item>
         <Breadcrumb.Item>Classes</Breadcrumb.Item>
       </Breadcrumb>
-      <Title level={1} style={{ textAlign: 'left', marginBottom: '16px' }}>
+      <Title level={3} style={{ textAlign: 'left', marginBottom: '16px' }}>
         Classes
       </Title>
 
       <div className="mb-4 flex justify-between">
         <Input.Search
-          placeholder="Search by class name"
+          placeholder="Search class name"
           allowClear
           onChange={e => setSearchTerm(e.target.value)}
           style={{ width: '50%' }}
         />
+
         <Button type="primary" onClick={handleCreateClass} style={{ backgroundColor: '#013088', border: 'none' }}>
           Create Class
         </Button>
@@ -187,14 +151,16 @@ const ClassList = () => {
       <CreateClassModal
         visible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
-        existingClasses={filteredClasses}
+        // @ts-ignore
+        onSuccess={() => queryClient.invalidateQueries(['classes'])}
       />
       {editingClass && (
         <EditClassModal
           visible={isEditModalVisible}
           onClose={() => setIsEditModalVisible(false)}
-          onSave={handleUpdateClass}
-          className={editingClass?.className}
+          // @ts-ignore
+          onSuccess={() => queryClient.invalidateQueries(['classes'])}
+          initialData={editingClass}
         />
       )}
     </div>
