@@ -1,41 +1,13 @@
+import EditSession from '@/features/session/ui/edit-session'
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { getSessionsByClassId } from '@features/session/api'
 import CreateSessionModal from '@features/session/ui/create-new-session'
 import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
+import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { formatDate, getStatusColor } from '@shared/lib/utils/index'
-import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tag, Tooltip } from 'antd'
+import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import EditSession from '@/features/session/ui/edit-session'
-
-const generateFakeData = () => {
-  const statuses = ['Pending', 'In Progress', 'Completed']
-  const now = new Date()
-
-  return Array.from({ length: 50 }, (_, i) => {
-    let startTime, endTime
-    const status = statuses[i % 3]
-
-    if (status === 'Pending') {
-      startTime = new Date(now.getTime() + 86400000 * ((i % 10) + 1))
-      endTime = new Date(startTime.getTime() + 10800000)
-    } else if (status === 'In Progress') {
-      startTime = new Date(now.getTime() - 3600000)
-      endTime = new Date(now.getTime() + 3600000)
-    } else {
-      startTime = new Date(now.getTime() - 86400000 * ((i % 5) + 1))
-      endTime = new Date(startTime.getTime() + 10800000)
-    }
-
-    return {
-      id: `session-${i + 1}`,
-      name: `Session ${i + 1}`,
-      key: `GREFEB${i + 1}`,
-      startTime,
-      endTime,
-      participants: Math.floor(Math.random() * 20) + 1,
-      status
-    }
-  })
-}
+import { useNavigate } from 'react-router-dom'
 
 const SessionsList = () => {
   const [sessions, setSessions] = useState([])
@@ -46,20 +18,30 @@ const SessionsList = () => {
   const [editModalVisible, setEditModalVisible] = useState(false)
   const [selectedSession, setSelectedSession] = useState(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
-  const [testSets] = useState([
-    { id: '1', name: 'Test Set 1' },
-    { id: '2', name: 'Test Set 2' },
-    { id: '3', name: 'Test Set 3' }
-  ])
   const [deleteSessionId, setDeleteSessionId] = useState(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const data = generateFakeData()
-        const sortedData = [...data].sort((a, b) => b.startTime.getTime() - a.startTime.getTime())
-        setSessions(sortedData)
-        setFilteredSessions(sortedData)
+        const response = await getSessionsByClassId('968650f0-4ee0-498c-a49c-69d6e65d091d')
+        if (response.status === 200) {
+          const data = response.data.data
+          const mappedSessions = data
+            .map(item => ({
+              id: item.ID,
+              name: item.sessionName,
+              key: item.sessionKey,
+              startTime: new Date(item.startTime),
+              endTime: new Date(item.endTime),
+              participants: 0,
+              status: item.status
+            }))
+            .sort((a, b) => b.startTime.getTime() - a.startTime.getTime())
+
+          setSessions(mappedSessions)
+          setFilteredSessions(mappedSessions)
+        }
         setLoading(false)
       } catch (err) {
         setError('Unable to load sessions. Please try again later.')
@@ -97,6 +79,7 @@ const SessionsList = () => {
 
   const handleViewSession = useCallback(id => {
     message.info(`Navigating to session details for ${id}`)
+    navigate(`/sessions/${id}`, { replace: true })
   }, [])
 
   const handleEdit = useCallback(session => {
@@ -187,18 +170,17 @@ const SessionsList = () => {
         key: 'status',
         align: 'center',
         render: status => {
+          const { bg, text } = getStatusColor(status)
           return (
-            <Tag
-              className={`rounded-md border-0 px-4 py-1 ${getStatusColor(status).bg} ${getStatusColor(status).text}`}
-            >
+            <span className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${bg} ${text}`}>
               {status}
-            </Tag>
+            </span>
           )
         },
         filters: [
-          { text: 'Pending', value: 'Pending' },
-          { text: 'In Progress', value: 'In Progress' },
-          { text: 'Completed', value: 'Completed' }
+          { text: 'NOT_STARTED', value: 'NOT_STARTED' },
+          { text: 'IN_PROGRESS', value: 'IN_PROGRESS' },
+          { text: 'COMPLETED', value: 'COMPLETED' }
         ],
         onFilter: (value, record) => record.status === value
       },
@@ -288,7 +270,8 @@ const SessionsList = () => {
           pagination={{
             pageSize: 3,
             showSizeChanger: true,
-            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total}`
+            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total}`,
+            ...DEFAULT_PAGINATION
           }}
           className="overflow-x-auto"
         />
@@ -307,7 +290,6 @@ const SessionsList = () => {
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onSubmit={handleCreateSession}
-        testSets={testSets}
       />
       {deleteSessionId && (
         <DeleteSessionPopup
