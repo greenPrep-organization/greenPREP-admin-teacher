@@ -1,7 +1,7 @@
+import Profile from '@features/profile/ui/profile'
 import ClassListPage from '@pages/class-management'
 import ClassDetailPage from '@pages/ClassDetailPage'
 import StudentProfilePage from '@pages/StudentProfilePage'
-import TeacherProfile from '../../features/profile/ui/teacher-profile'
 import SessionDetailPage from '../../pages/SessionDetailPage'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 
@@ -31,8 +31,8 @@ const PrivateRoute = [
         element: <SessionDetailPage />
       },
       {
-        path: 'teacher',
-        element: <TeacherProfile />
+        path: 'profile',
+        element: <Profile />
       }
     ]
   }

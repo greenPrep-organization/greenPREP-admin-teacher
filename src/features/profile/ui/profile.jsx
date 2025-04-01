@@ -14,9 +14,9 @@ const profileValidationSchema = Yup.object().shape({
     .required('Phone number is required')
 })
 
-const TeacherProfile = () => {
+const Profile = () => {
   const { userId } = useParams()
-  const { data: userData, isLoading, isError } = useUserProfile(userId)
+  const { data: userData, isLoading, isError } = useUserProfile(userId || '1')
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '' })
 
@@ -156,4 +156,4 @@ const TeacherProfile = () => {
   )
 }
 
-export default TeacherProfile
+export default Profile
