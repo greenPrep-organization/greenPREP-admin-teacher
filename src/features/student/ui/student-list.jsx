@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Table, Input, Button, Tabs, Select, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
-import { getSessionParticipants, updateParticipantLevel, publishSessionResults } from '../api'
-import { useParams } from 'react-router-dom'
 
 const SessionParticipantList = () => {
   const [loading, setLoading] = useState(false)
@@ -10,11 +8,10 @@ const SessionParticipantList = () => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
-    total: 0
+    total: 50
   })
   const [searchText, setSearchText] = useState('')
   const [readyToPublish, setReadyToPublish] = useState(false)
-  const { sessionId } = useParams()
 
   const levelOptions = [
     { value: 'A1', label: 'A1' },
@@ -25,17 +22,17 @@ const SessionParticipantList = () => {
   ]
 
   const canSelectLevel = record => {
-    return record.Total > 0
+    return !Object.values(record.scores).includes('Ungraded')
   }
 
   const handleLevelChange = async (value, record) => {
     try {
       setLoading(true)
-      await updateParticipantLevel(sessionId, record.ID, value)
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       const newData = data.map(item => {
-        if (item.ID === record.ID) {
-          return { ...item, Level: value }
+        if (item.key === record.key) {
+          return { ...item, level: value }
         }
         return item
       })
@@ -43,10 +40,10 @@ const SessionParticipantList = () => {
 
       message.success('Level updated successfully')
 
-      const allHaveLevel = newData.every(item => item.Level)
+      const allHaveLevel = newData.every(item => item.level)
       setReadyToPublish(allHaveLevel)
-    } catch (error) {
-      message.error(error.message || 'Failed to update level')
+    } catch {
+      message.error('Failed to update level')
     } finally {
       setLoading(false)
     }
@@ -55,56 +52,56 @@ const SessionParticipantList = () => {
   const columns = [
     {
       title: 'Student Name',
-      dataIndex: ['User', 'fullName'],
+      dataIndex: 'studentName',
       key: 'studentName',
       width: '20%',
-      render: text => text || 'N/A'
+      sorter: (a, b) => a.studentName.localeCompare(b.studentName)
     },
     {
       title: 'Grammar & Vocab',
-      dataIndex: 'GrammarVocab',
+      dataIndex: ['scores', 'grammar'],
       key: 'grammar',
-      width: '12%',
-      render: text => text || 'N/A'
+      width: '12%'
     },
     {
       title: 'Listening',
-      dataIndex: 'Listening',
+      dataIndex: ['scores', 'listening'],
       key: 'listening',
-      width: '12%',
-      render: text => text || 'N/A'
+      width: '12%'
     },
     {
       title: 'Reading',
-      dataIndex: 'Reading',
+      dataIndex: ['scores', 'reading'],
       key: 'reading',
-      width: '12%',
-      render: text => text || 'N/A'
+      width: '12%'
     },
     {
       title: 'Speaking',
-      dataIndex: 'Speaking',
+      dataIndex: ['scores', 'speaking'],
       key: 'speaking',
-      width: '12%',
-      render: text => text || 'N/A'
+      width: '12%'
     },
     {
       title: 'Writing',
-      dataIndex: 'Writing',
+      dataIndex: ['scores', 'writing'],
       key: 'writing',
-      width: '12%',
-      render: text => text || 'N/A'
+      width: '12%'
     },
     {
       title: 'Total',
-      dataIndex: 'Total',
+      dataIndex: 'total',
       key: 'total',
       width: '10%',
-      render: text => text || 'N/A'
+      render: (_, record) => {
+        const scores = Object.values(record.scores)
+        if (scores.includes('Ungraded')) return 'Pending'
+        const total = scores.reduce((sum, score) => sum + parseFloat(score), 0)
+        return (total / scores.length).toFixed(1)
+      }
     },
     {
       title: 'Level',
-      dataIndex: 'Level',
+      dataIndex: 'level',
       key: 'level',
       width: '10%',
       render: (level, record) => (
@@ -123,36 +120,42 @@ const SessionParticipantList = () => {
   const fetchData = async (params = {}) => {
     try {
       setLoading(true)
-      console.log('Fetching participants for session:', sessionId)
-      const response = await getSessionParticipants(sessionId, {
-        page: params.current,
-        limit: params.pageSize,
-        search: searchText
-      })
-      console.log('Participants data received:', response.data)
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
-      setData(response.data || [])
+      const mockData = Array.from({ length: 50 }, (_, index) => ({
+        key: index.toString(),
+        studentName: `Student ${index + 1}`,
+        scores: {
+          grammar: Math.random() > 0.2 ? (Math.random() * 10).toFixed(1) : 'Ungraded',
+          listening: Math.random() > 0.2 ? (Math.random() * 10).toFixed(1) : 'Ungraded',
+          reading: Math.random() > 0.2 ? (Math.random() * 10).toFixed(1) : 'Ungraded',
+          speaking: Math.random() > 0.2 ? (Math.random() * 10).toFixed(1) : 'Ungraded',
+          writing: Math.random() > 0.2 ? (Math.random() * 10).toFixed(1) : 'Ungraded'
+        },
+        level: Math.random() > 0.3 ? levelOptions[Math.floor(Math.random() * levelOptions.length)].value : undefined
+      }))
+
+      const filtered = mockData.filter(item => item.studentName.toLowerCase().includes(searchText.toLowerCase()))
+
+      setData(filtered.slice((params.current - 1) * params.pageSize, params.current * params.pageSize))
       setPagination({
         current: params.current || 1,
         pageSize: params.pageSize || 10,
-        total: response.data?.length || 0
+        total: filtered.length
       })
 
-      const allHaveLevel = (response.data || []).every(item => item.Level)
+      const allHaveLevel = filtered.every(item => item.level)
       setReadyToPublish(allHaveLevel)
-    } catch (error) {
-      console.error('Error fetching participants:', error)
-      message.error(error.message || 'Failed to fetch data')
+    } catch {
+      message.error('Failed to fetch data')
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    if (sessionId) {
-      fetchData(pagination)
-    }
-  }, [searchText, sessionId])
+    fetchData(pagination)
+  }, [searchText])
 
   const handleTableChange = newPagination => {
     fetchData({
@@ -165,28 +168,21 @@ const SessionParticipantList = () => {
     setSearchText(value)
   }
 
-  const handleReadyToPublish = async () => {
+  const handleReadyToPublish = () => {
     if (!readyToPublish) {
       message.warning('Please ensure all students have been assigned a level')
       return
     }
-    try {
-      await publishSessionResults(sessionId)
-      message.success('Session results published successfully')
-    } catch (error) {
-      message.error(error.message || 'Failed to publish session results')
-    }
+    message.success('Session ready to be published')
   }
 
   const items = [
     {
       key: '1',
       label: (
-        <div key="participants-tab" className="flex items-center gap-2 font-medium">
-          <div key="participants-label" className="px-4 py-1">
-            Participants List
-          </div>
-          <div key="participants-line" className="h-[2px] w-full bg-primary"></div>
+        <div className="flex items-center gap-2 font-medium">
+          <div className="px-4 py-1">Participants List</div>
+          <div className="h-[2px] w-full bg-primary"></div>
         </div>
       ),
       children: (
@@ -194,16 +190,14 @@ const SessionParticipantList = () => {
           <div className="mb-4 flex justify-between">
             <div className="relative">
               <Input
-                key="search-input"
                 placeholder="Search by student name"
-                prefix={<SearchOutlined key="search-icon" className="text-text-secondary" />}
+                prefix={<SearchOutlined className="text-text-secondary" />}
                 value={searchText}
                 onChange={e => handleSearch(e.target.value)}
                 className="w-64"
               />
             </div>
             <Button
-              key="publish-button"
               type="primary"
               disabled={!readyToPublish}
               onClick={handleReadyToPublish}
@@ -214,33 +208,26 @@ const SessionParticipantList = () => {
           </div>
 
           <Table
-            key="participants-table"
             columns={columns}
             dataSource={data}
             pagination={pagination}
             onChange={handleTableChange}
             loading={loading}
             scroll={{ x: 1200 }}
-            rowKey="ID"
           />
         </div>
       )
     },
     {
       key: '2',
-      label: (
-        <div key="pending-label" className="px-4 py-1 font-medium">
-          Pending Request
-        </div>
-      ),
-      children: <div key="pending-content">Pending Request Content</div>
+      label: <div className="px-4 py-1 font-medium">Pending Request</div>,
+      children: 'Pending Request Content'
     }
   ]
 
   return (
-    <div key="session-participant-list" className="rounded-lg bg-white">
+    <div className="rounded-lg bg-white">
       <Tabs
-        key="session-tabs"
         defaultActiveKey="1"
         items={items}
         className="px-6 pt-4"
