@@ -1,5 +1,5 @@
 import { getDefaultAvatar } from '@/shared/lib/utils/avatarUtils'
-import StudentSessionInformation from '@features/session/StudentSessionInformation'
+import StudentSessionInformation from '@features/student/StudentSessionInformation'
 import { Avatar, Breadcrumb } from 'antd'
 
 export default function StudentProfilePage() {

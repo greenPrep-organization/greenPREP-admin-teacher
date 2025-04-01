@@ -37,6 +37,18 @@ export const getStatusColor = status => {
     Pending: {
       bg: 'bg-pending',
       text: 'text-white'
+    },
+    NOT_STARTED: {
+      bg: 'bg-blue-100',
+      text: 'text-blue-800'
+    },
+    IN_PROGRESS: {
+      bg: 'bg-purple-100',
+      text: 'text-purple-800'
+    },
+    COMPLETED: {
+      bg: 'bg-green-100',
+      text: 'text-green-800'
     }
   }
   return (
