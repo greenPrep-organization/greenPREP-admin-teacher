@@ -99,7 +99,6 @@ const SessionsList = () => {
     message.info(`Navigating to session details for ${id}`)
   }, [])
 
-
   const handleEdit = useCallback(session => {
     setSelectedSession(session)
     setEditModalVisible(true)
@@ -116,7 +115,7 @@ const SessionsList = () => {
     },
     [selectedSession]
   )
-  
+
   const handleCreateSession = useCallback(
     async sessionData => {
       try {
