@@ -1,6 +1,7 @@
 import ClassListPage from '@pages/class-management'
 import ClassDetailPage from '@pages/ClassDetailPage'
 import StudentProfilePage from '@pages/StudentProfilePage'
+import ClassDetailsPage from '@features/class-management/ui/view-class'
 import TeacherProfile from '../../features/profile/ui/teacher-profile'
 import SessionDetailPage from '../../pages/SessionDetailPage'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
@@ -21,6 +22,10 @@ const PrivateRoute = [
       {
         path: 'classes-management',
         element: <ClassListPage />
+      },
+      {
+        path: 'classes-management/:id',
+        element: <ClassDetailsPage />
       },
       {
         path: 'student',

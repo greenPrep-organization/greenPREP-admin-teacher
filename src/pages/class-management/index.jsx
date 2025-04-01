@@ -1,15 +1,17 @@
 import { useMemo, useState } from 'react'
 import { Table, Input, Space, Button, Card, message, Typography, Breadcrumb } from 'antd'
-import { EditOutlined, HomeOutlined } from '@ant-design/icons'
+import { EditOutlined, EyeOutlined, HomeOutlined } from '@ant-design/icons'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchClasses, updateClass, fetchClassById } from '@features/class-management/api/classes'
 import CreateClassModal from '@features/class-management/ui/create-new-class'
 import EditClassModal from '@features/class-management/ui/edit-class'
+import { useNavigate } from 'react-router-dom'
 
 const { Title } = Typography
 
 const ClassList = () => {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
@@ -88,6 +90,12 @@ const ClassList = () => {
     updateClassMutation.mutate({ id: editingClass.ID, newName })
   }
 
+  const handleView = cls => {
+    navigate(`/classes-management/${cls.ID}`, {
+      state: { classInfo: cls }
+    })
+  }
+
   const columns = [
     { title: 'CLASS NAME', dataIndex: 'className', key: 'className' },
     {
@@ -102,6 +110,7 @@ const ClassList = () => {
       align: 'center',
       render: (_, record) => (
         <Space size={20}>
+          <EyeOutlined className="cursor-pointer text-lg text-blue-500" onClick={() => handleView(record)} />
           <EditOutlined className="cursor-pointer text-lg text-green-500" onClick={() => handleEdit(record)} />
         </Space>
       )
