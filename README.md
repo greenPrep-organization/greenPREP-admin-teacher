@@ -146,17 +146,20 @@ This file provides an overview of the project and explains the folder structure.
 To get started with the project, follow these steps:
 
 1. **Clone the repository**:
+
    ```bash
    git clone <repository-url>
    ```
 
 2. **Install dependencies**:
+
    ```bash
    cd FSD
    yarn install
    ```
 
 3. **Start the development server**:
+
    ```bash
    yarn dev
    ```
