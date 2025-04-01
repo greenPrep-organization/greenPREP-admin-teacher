@@ -1,4 +1,5 @@
 import { SearchOutlined } from '@ant-design/icons'
+import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { Button, Input, Select, Table, Tabs, message } from 'antd'
 import { useEffect, useState } from 'react'
 
@@ -6,16 +7,8 @@ const Studentlist = () => {
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState([])
   const [pendingData, setPendingData] = useState([])
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 50
-  })
-  const [pendingPagination, setPendingPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 20
-  })
+  const [pagination, setPagination] = useState(DEFAULT_PAGINATION)
+  const [pendingPagination, setPendingPagination] = useState(DEFAULT_PAGINATION)
   const [searchText, setSearchText] = useState('')
   const [pendingSearchText, setPendingSearchText] = useState('')
   const [readyToPublish, setReadyToPublish] = useState(false)
