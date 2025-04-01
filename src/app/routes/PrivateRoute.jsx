@@ -23,7 +23,7 @@ const PrivateRoute = [
       },
       {
         path: 'teacher',
-        element: <TeacherProfile userId={1} />
+        element: <TeacherProfile />
       }
     ]
   }
