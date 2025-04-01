@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Table, Input, Space, Card, message, Typography, Breadcrumb } from 'antd'
+import { Table, Input, Space, Button, Card, message, Typography, Breadcrumb } from 'antd'
 import { EditOutlined, HomeOutlined } from '@ant-design/icons'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchClasses, updateClass, fetchClassById } from '@features/class-management/api/classes'
+import CreateClassModal from '@features/class-management/ui/create-new-class'
 import EditClassModal from '@features/class-management/ui/edit-class'
 
 const { Title } = Typography
@@ -10,6 +11,7 @@ const { Title } = Typography
 const ClassList = () => {
   const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState('')
+  const [isModalVisible, setIsModalVisible] = useState(false)
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
   const [editingClass, setEditingClass] = useState(null)
 
@@ -45,6 +47,10 @@ const ClassList = () => {
   const filteredClasses = useMemo(() => {
     return enrichedClasses.filter(cls => cls.className?.toLowerCase().includes(searchTerm.toLowerCase()))
   }, [searchTerm, enrichedClasses])
+
+  const handleCreateClass = () => {
+    setIsModalVisible(true)
+  }
 
   const updateClassMutation = useMutation({
     // @ts-ignore
@@ -121,6 +127,9 @@ const ClassList = () => {
           onChange={e => setSearchTerm(e.target.value)}
           style={{ width: '50%' }}
         />
+        <Button type="primary" onClick={handleCreateClass} style={{ backgroundColor: '#013088', border: 'none' }}>
+          Create Class
+        </Button>
       </div>
 
       <Card className="rounded-lg shadow-md">
@@ -132,6 +141,12 @@ const ClassList = () => {
           loading={isLoading}
         />
       </Card>
+
+      <CreateClassModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        existingClasses={filteredClasses}
+      />
 
       {editingClass && (
         <EditClassModal
