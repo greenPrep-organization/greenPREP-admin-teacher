@@ -94,17 +94,8 @@ function WritingGrade() {
     }
   }
 
-  const handleSubmit = values => {
-    console.log('Submitted values:', values)
-    console.log('Total score:', totalScore)
+  const handleSubmit = () => {
     message.success('Grading submitted successfully')
-  }
-
-  const handleSaveAsDraft = () => {
-    const values = form.getFieldsValue()
-    console.log('Saved as draft:', values)
-    console.log('Total score:', totalScore)
-    message.info('Grading saved as draft')
   }
 
   const currentPart = studentData[activePart]
@@ -198,9 +189,7 @@ function WritingGrade() {
                 >
                   Submit
                 </Button>
-                <Button className="w-full shadow-md transition-shadow hover:shadow-lg" onClick={handleSaveAsDraft}>
-                  Save As Draft
-                </Button>
+                <Button className="w-full shadow-md transition-shadow hover:shadow-lg">Save As Draft</Button>
               </div>
             </Form>
           </div>
@@ -209,5 +198,4 @@ function WritingGrade() {
     </div>
   )
 }
-
 export default WritingGrade
