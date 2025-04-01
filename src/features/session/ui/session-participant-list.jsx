@@ -191,9 +191,9 @@ const SessionParticipantList = () => {
         </div>
       ),
       children: (
-        <div key="participants-content" className="participant-list">
-          <div key="participants-header" className="mb-4 flex justify-between">
-            <div key="search-container" className="relative">
+        <div className="participant-list">
+          <div className="mb-4 flex justify-between">
+            <div className="relative">
               <Input
                 key="search-input"
                 placeholder="Search by student name"
