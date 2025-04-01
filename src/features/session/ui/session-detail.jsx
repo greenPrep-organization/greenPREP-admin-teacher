@@ -1,36 +1,31 @@
 import { useEffect, useState } from 'react'
 import { Tag, Spin, Alert } from 'antd'
 import { formatDateTime, getStatusColor } from '@shared/lib/utils/index'
+import { getSessionDetail } from '../api'
+import { useParams } from 'react-router-dom'
 
 const SessionDetail = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [sessionData, setSessionData] = useState(null)
+  const { sessionId } = useParams()
 
   useEffect(() => {
     const fetchSessionData = async () => {
       try {
         setLoading(true)
         setError(null)
-        await new Promise(resolve => setTimeout(resolve, 500))
-        const mockData = {
-          sessionName: 'FALL_P1_2024',
-          sessionKey: 'ABCDEF',
-          startTime: '2024-11-25T09:00:00',
-          endTime: '2024-11-26T12:00:00',
-          participants: 50,
-          status: 'Pending'
-        }
-        setSessionData(mockData)
-      } catch {
-        setError('Unable to load session details. Please try again later')
+        const data = await getSessionDetail(sessionId)
+        setSessionData(data.data)
+      } catch (error) {
+        setError(error.message || 'Unable to load session details. Please try again later')
       } finally {
         setLoading(false)
       }
     }
 
     fetchSessionData()
-  }, [])
+  }, [sessionId])
 
   if (loading) {
     return (
@@ -67,6 +62,10 @@ const SessionDetail = () => {
             <p className="font-medium">{sessionData?.sessionKey || 'N/A'}</p>
           </div>
           <div>
+            <p className="mb-2 text-sm text-gray-500">Exam Set</p>
+            <p className="font-medium">{sessionData?.examSet || 'N/A'}</p>
+          </div>
+          <div>
             <p className="mb-2 text-sm text-gray-500">Status</p>
             <Tag className={`rounded-full border-0 px-4 py-1 ${statusColors.bg} ${statusColors.text}`}>
               {sessionData?.status || 'Pending'}
@@ -82,10 +81,6 @@ const SessionDetail = () => {
           <div>
             <p className="mb-2 text-sm text-gray-500">End Time</p>
             <p className="font-medium">{sessionData?.endTime ? formatDateTime(sessionData.endTime) : 'N/A'}</p>
-          </div>
-          <div>
-            <p className="mb-2 text-sm text-gray-500">Number of Participants</p>
-            <p className="font-medium">{sessionData?.participants || 0}</p>
           </div>
         </div>
       </div>
