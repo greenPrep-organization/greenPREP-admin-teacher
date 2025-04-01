@@ -1,20 +1,23 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import { formatDate } from '@shared/lib/utils/index'
-import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
+import CreateSessionModal from '@features/session/ui/create-new-session'
+import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
+import { formatDate, getStatusColor } from '@shared/lib/utils/index'
+import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tag, Tooltip } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import EditSession from '@/features/session/ui/edit-session'
 
 const generateFakeData = () => {
-  const statuses = ['Not Started', 'Ongoing', 'Completed']
+  const statuses = ['Pending', 'In Progress', 'Completed']
   const now = new Date()
 
   return Array.from({ length: 50 }, (_, i) => {
     let startTime, endTime
     const status = statuses[i % 3]
 
-    if (status === 'Not Started') {
+    if (status === 'Pending') {
       startTime = new Date(now.getTime() + 86400000 * ((i % 10) + 1))
       endTime = new Date(startTime.getTime() + 10800000)
-    } else if (status === 'Ongoing') {
+    } else if (status === 'In Progress') {
       startTime = new Date(now.getTime() - 3600000)
       endTime = new Date(now.getTime() + 3600000)
     } else {
@@ -40,13 +43,21 @@ const SessionsList = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchText, setSearchText] = useState('')
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [selectedSession, setSelectedSession] = useState(null)
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [testSets] = useState([
+    { id: '1', name: 'Test Set 1' },
+    { id: '2', name: 'Test Set 2' },
+    { id: '3', name: 'Test Set 3' }
+  ])
+  const [deleteSessionId, setDeleteSessionId] = useState(null)
 
   useEffect(() => {
     const fetchSessions = async () => {
       try {
         const data = generateFakeData()
         const sortedData = [...data].sort((a, b) => b.startTime.getTime() - a.startTime.getTime())
-
         setSessions(sortedData)
         setFilteredSessions(sortedData)
         setLoading(false)
@@ -72,21 +83,62 @@ const SessionsList = () => {
 
       return matchesSearch
     })
-
     setFilteredSessions(filtered)
   }, [searchText, sessions])
 
-  const handleDelete = useCallback(
-    id => {
-      message.success(`Session ${id} deleted successfully`)
-      const updatedSessions = sessions.filter(session => session.id !== id)
-      setSessions(updatedSessions)
-    },
-    [sessions]
-  )
+  const handleDelete = async () => {
+    if (!deleteSessionId) return
+    const updatedSessions = sessions.filter(session => session.id !== deleteSessionId)
+    setSessions(updatedSessions)
+    setFilteredSessions(updatedSessions)
+    setDeleteSessionId(null)
+    message.success('Session deleted successfully')
+  }
+
   const handleViewSession = useCallback(id => {
     message.info(`Navigating to session details for ${id}`)
   }, [])
+
+  const handleEdit = useCallback(session => {
+    setSelectedSession(session)
+    setEditModalVisible(true)
+  }, [])
+
+  const handleUpdate = useCallback(
+    updatedSession => {
+      setSessions(prevSessions =>
+        prevSessions.map(session => (session.id === selectedSession.id ? { ...session, ...updatedSession } : session))
+      )
+      setEditModalVisible(false)
+      setSelectedSession(null)
+      message.success('Session updated successfully')
+    },
+    [selectedSession]
+  )
+
+  const handleCreateSession = useCallback(
+    async sessionData => {
+      try {
+        const newSession = {
+          id: `session-${sessions.length + 1}`,
+          name: sessionData.name,
+          key: sessionData.key,
+          startTime: sessionData.startTime,
+          endTime: sessionData.endTime,
+          participants: 0,
+          status: 'Pending'
+        }
+
+        const updatedSessions = [newSession, ...sessions]
+        setSessions(updatedSessions)
+        setFilteredSessions(updatedSessions)
+      } catch (err) {
+        message.error('Failed to create session')
+        console.error(err)
+      }
+    },
+    [sessions]
+  )
 
   const columns = useMemo(
     () => [
@@ -135,27 +187,17 @@ const SessionsList = () => {
         key: 'status',
         align: 'center',
         render: status => {
-          let color = ''
-          switch (status) {
-            case 'Not Started':
-              color = 'bg-blue-100 text-blue-800'
-              break
-            case 'Ongoing':
-              color = 'bg-purple-100 text-purple-800'
-              break
-            case 'Completed':
-              color = 'bg-green-100 text-green-800'
-              break
-          }
           return (
-            <span className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${color}`}>
+            <Tag
+              className={`rounded-md border-0 px-4 py-1 ${getStatusColor(status).bg} ${getStatusColor(status).text}`}
+            >
               {status}
-            </span>
+            </Tag>
           )
         },
         filters: [
-          { text: 'Not Started', value: 'Not Started' },
-          { text: 'Ongoing', value: 'Ongoing' },
+          { text: 'Pending', value: 'Pending' },
+          { text: 'In Progress', value: 'In Progress' },
           { text: 'Completed', value: 'Completed' }
         ],
         onFilter: (value, record) => record.status === value
@@ -170,21 +212,21 @@ const SessionsList = () => {
               <Button
                 type="text"
                 icon={<EditOutlined className="text-green-500" />}
-                onClick={() => message.info(`Edit session ${record.id}`)}
+                onClick={() => handleEdit(record)}
               />
             </Tooltip>
             <Tooltip title="Delete">
               <Button
                 type="text"
                 icon={<DeleteOutlined className="text-red-500" />}
-                onClick={() => handleDelete(record.id)}
+                onClick={() => setDeleteSessionId(record.id)}
               />
             </Tooltip>
           </Space>
         )
       }
     ],
-    [handleDelete]
+    [handleDelete, handleEdit, handleViewSession]
   )
 
   if (error) {
@@ -209,7 +251,7 @@ const SessionsList = () => {
 
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Sessions List</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => message.info('Create new session')}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
           Create Session
         </Button>
       </div>
@@ -223,6 +265,16 @@ const SessionsList = () => {
           className="w-full md:w-80"
         />
       </div>
+
+      <EditSession
+        open={editModalVisible}
+        onCancel={() => {
+          setEditModalVisible(false)
+          setSelectedSession(null)
+        }}
+        onUpdate={handleUpdate}
+        initialValues={selectedSession}
+      />
 
       {loading ? (
         <div className="flex h-64 items-center justify-center">
@@ -245,10 +297,24 @@ const SessionsList = () => {
           description="No sessions found. Click here to create a new session."
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         >
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => message.info('Create new session')}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
             Create Session
           </Button>
         </Empty>
+      )}
+
+      <CreateSessionModal
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onSubmit={handleCreateSession}
+        testSets={testSets}
+      />
+      {deleteSessionId && (
+        <DeleteSessionPopup
+          isOpen={!!deleteSessionId}
+          onClose={() => setDeleteSessionId(null)}
+          onDelete={handleDelete}
+        />
       )}
     </div>
   )
