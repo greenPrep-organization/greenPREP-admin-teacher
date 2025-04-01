@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react'
-import { Table, Input, Card, Typography, Breadcrumb } from 'antd'
+import { Table, Input, Button, Card, Typography, Breadcrumb } from 'antd'
 import { HomeOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
+import CreateClassModal from '@features/class-management/ui/create-new-class'
 import { fetchClasses, fetchClassById } from '@features/class-management/api/classes'
 
 const { Title } = Typography
 
 const ClassList = () => {
   const [searchTerm, setSearchTerm] = useState('')
+  const [isModalVisible, setIsModalVisible] = useState(false)
 
   const { data: response = {}, isLoading } = useQuery({
     queryKey: ['classes'],
@@ -41,6 +43,10 @@ const ClassList = () => {
   const filteredClasses = useMemo(() => {
     return enrichedClasses.filter(cls => cls.className?.toLowerCase().includes(searchTerm.toLowerCase()))
   }, [searchTerm, enrichedClasses])
+
+  const handleCreateClass = () => {
+    setIsModalVisible(true)
+  }
 
   const columns = [
     { title: 'CLASS NAME', dataIndex: 'className', key: 'className' },
@@ -76,6 +82,9 @@ const ClassList = () => {
           onChange={e => setSearchTerm(e.target.value)}
           style={{ width: '50%' }}
         />
+        <Button type="primary" onClick={handleCreateClass} style={{ backgroundColor: '#013088', border: 'none' }}>
+          Create Class
+        </Button>
       </div>
 
       <Card className="rounded-lg shadow-md">
@@ -87,6 +96,12 @@ const ClassList = () => {
           loading={isLoading}
         />
       </Card>
+
+      <CreateClassModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        existingClasses={filteredClasses}
+      />
     </div>
   )
 }
