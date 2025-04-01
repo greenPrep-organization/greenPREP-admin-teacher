@@ -1,12 +1,13 @@
+import EditSession from '@/features/session/ui/edit-session'
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import { getSessionsByClassId } from '@features/session/api' // Adjust the path to where your fetch function is declared
+import { getSessionsByClassId } from '@features/session/api'
 import CreateSessionModal from '@features/session/ui/create-new-session'
 import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
+import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { formatDate, getStatusColor } from '@shared/lib/utils/index'
 import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-
-import EditSession from '@/features/session/ui/edit-session'
+import { useNavigate } from 'react-router-dom'
 
 const SessionsList = () => {
   const [sessions, setSessions] = useState([])
@@ -18,15 +19,14 @@ const SessionsList = () => {
   const [selectedSession, setSelectedSession] = useState(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [deleteSessionId, setDeleteSessionId] = useState(null)
+  const navigate = useNavigate()
 
-  // Fetch sessions from the API using the external function
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const response = await getSessionsByClassId('1db40057-623d-4597-b267-520dedd4dc76')
+        const response = await getSessionsByClassId('968650f0-4ee0-498c-a49c-69d6e65d091d')
         if (response.status === 200) {
           const data = response.data.data
-          // Map API response fields to table fields
           const mappedSessions = data
             .map(item => ({
               id: item.ID,
@@ -34,7 +34,6 @@ const SessionsList = () => {
               key: item.sessionKey,
               startTime: new Date(item.startTime),
               endTime: new Date(item.endTime),
-              // Defaulting Number of Participants to 0 (update if needed)
               participants: 0,
               status: item.status
             }))
@@ -54,7 +53,6 @@ const SessionsList = () => {
     fetchSessions()
   }, [])
 
-  // Filter sessions by search text
   useEffect(() => {
     if (!sessions.length) return
 
@@ -81,6 +79,7 @@ const SessionsList = () => {
 
   const handleViewSession = useCallback(id => {
     message.info(`Navigating to session details for ${id}`)
+    navigate(`/sessions/${id}`, { replace: true })
   }, [])
 
   const handleEdit = useCallback(session => {
@@ -271,7 +270,8 @@ const SessionsList = () => {
           pagination={{
             pageSize: 3,
             showSizeChanger: true,
-            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total}`
+            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total}`,
+            ...DEFAULT_PAGINATION
           }}
           className="overflow-x-auto"
         />
