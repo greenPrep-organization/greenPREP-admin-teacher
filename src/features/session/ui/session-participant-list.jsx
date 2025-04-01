@@ -31,7 +31,6 @@ const SessionParticipantList = () => {
   const handleLevelChange = async (value, record) => {
     try {
       setLoading(true)
-      console.log(sessionId)
       await updateParticipantLevel(sessionId, record.ID, value)
 
       const newData = data.map(item => {
