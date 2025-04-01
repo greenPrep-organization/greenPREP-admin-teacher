@@ -30,7 +30,7 @@ export const getPendingSessionRequests = async sessionId => {
       },
       transformRequest: [
         (data, headers) => {
-          delete headers.Authorization // Remove the Authorization header
+          delete headers.Authorization
           return data
         }
       ]
