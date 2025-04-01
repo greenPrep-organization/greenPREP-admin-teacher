@@ -18,7 +18,6 @@ const SessionDetail = () => {
         const data = await getSessionDetail(sessionId)
         setSessionData(data.data)
       } catch (error) {
-        console.error('Error fetching session data:', error)
         setError(error.message || 'Unable to load session details. Please try again later')
       } finally {
         setLoading(false)

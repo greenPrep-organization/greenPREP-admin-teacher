@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE_URL = 'https://dev-api-greenprep.onrender.com'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export const getSessionDetail = async sessionId => {
   try {
