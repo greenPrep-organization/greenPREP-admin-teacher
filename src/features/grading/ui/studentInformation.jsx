@@ -1,49 +1,49 @@
-import { Typography } from 'antd'
+import { Card, Typography, Image } from 'antd'
+import { getDefaultAvatar } from '@shared/lib/utils/avatarUtils'
 
-const { Text } = Typography
+const { Title, Text } = Typography
 
 const StudentCard = ({ student }) => {
+  const studentImage =
+    student.image && student.image.trim() ? (
+      <Image src={student.image} preview={false} className="h-[140px] w-[140px] rounded-lg shadow-md" />
+    ) : (
+      <div className="flex h-[140px] w-[140px] items-center justify-center rounded-lg bg-blue-500 text-4xl font-bold text-white shadow-md">
+        {getDefaultAvatar(student.name)}
+      </div>
+    )
+
   return (
-    <div className="overflow-hidden rounded-xl border-gray-200 shadow-2xl">
-      <div className="flex h-[60px] items-center border-b border-gray-100 bg-[#f3f4f6] pl-[20px]">
-        <h3 className="text-base font-medium">Student Information</h3>
-      </div>
-
-      <div className="px-5 py-4">
-        <div className="space-y-3">
-          <div className="flex items-center">
-            <Text className="w-[120px] text-gray-500">Student Name:</Text>
-            <Text className="font-medium">{student.name}</Text>
-          </div>
-
-          <div className="flex items-center">
-            <Text className="w-[120px] text-gray-500">ID:</Text>
-            <Text className="font-medium">{student.id}</Text>
-          </div>
-
-          <div className="flex items-center">
-            <Text className="w-[120px] text-gray-500">Class:</Text>
-            <Text className="font-medium">{student.class}</Text>
-          </div>
-
-          <div className="flex items-center">
-            <Text className="w-[120px] text-gray-500">Email:</Text>
-            <Text className="font-medium">{student.email}</Text>
-          </div>
-
-          <div className="flex items-center">
-            <Text className="w-[120px] text-gray-500">Phone number:</Text>
-            <Text className="font-medium">{student.phone}</Text>
-          </div>
-
-          <div className="mt-4 flex justify-center">
-            <div className="flex h-[140px] w-[140px] items-center justify-center rounded-lg bg-[#1677FF] text-4xl font-bold text-white">
-              {student.name.charAt(0).toUpperCase()}
-            </div>
-          </div>
+    <Card className="w-[340px] rounded-3xl shadow-lg" bordered title={<Title level={5}>Student Information</Title>}>
+      <div className="space-y-4">
+        <div className="flex items-start">
+          <Text className="w-36 text-gray-500">Student Name:</Text>
+          <Text strong>{student.name}</Text>
         </div>
+
+        <div className="flex items-start">
+          <Text className="w-36 text-gray-500">ID:</Text>
+          <Text strong>{student.id}</Text>
+        </div>
+
+        <div className="flex items-start">
+          <Text className="w-36 text-gray-500">Class:</Text>
+          <Text strong>{student.class}</Text>
+        </div>
+
+        <div className="flex items-start">
+          <Text className="w-36 text-gray-500">Email:</Text>
+          <Text strong>{student.email}</Text>
+        </div>
+
+        <div className="flex items-start">
+          <Text className="w-36 text-gray-500">Phone number:</Text>
+          <Text strong>{student.phone}</Text>
+        </div>
+
+        <div className="mt-4 flex justify-center">{studentImage}</div>
       </div>
-    </div>
+    </Card>
   )
 }
 
