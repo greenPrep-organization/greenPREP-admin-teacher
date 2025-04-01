@@ -1,8 +1,6 @@
-'use client'
-
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from 'react'
-import { Button, InputNumber, Form, Tabs, Card, message } from 'antd'
+import { Button, InputNumber, Form, Card, message, Divider } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 
 const mockData = {
@@ -73,7 +71,6 @@ function WritingGrade() {
 
   const handleScoreChange = (value, field) => {
     let newValue = value
-    // Cap individual score at 100
     if (newValue > 100) {
       newValue = 100
       form.setFieldsValue({ [field]: 100 })
@@ -83,7 +80,6 @@ function WritingGrade() {
     const currentPart = studentData[activePart]
     const questions = currentPart.questions
 
-    // Calculate total from all fields
     let total = 0
     questions.forEach((_, index) => {
       const fieldValue = values[`question_${index}`] || 0
@@ -93,7 +89,6 @@ function WritingGrade() {
   }
 
   const handleKeyPress = event => {
-    // Allow only numbers (0-9)
     if (!/[0-9]/.test(event.key)) {
       event.preventDefault()
     }
@@ -118,25 +113,26 @@ function WritingGrade() {
   const instructions = currentPart.instructions
 
   return (
-    <div className="mx-auto max-w-[1200px] p-4">
-      <div className="mb-4">
-        <Tabs
-          activeKey={activePart}
-          onChange={handlePartChange}
-          type="card"
-          className="part-tabs"
-          items={[
-            { key: 'part1', label: 'Part 1' },
-            { key: 'part2', label: 'Part 2' },
-            { key: 'part3', label: 'Part 3' },
-            { key: 'part4', label: 'Part 4' }
-          ]}
-        />
+    <div className="mx-auto max-w-max">
+      <div className="mb-4 max-w-min rounded-xl border border-solid border-[#C0C0C0] px-4 py-2">
+        <div className="flex flex-nowrap gap-1">
+          {['part1', 'part2', 'part3', 'part4'].map(part => (
+            <button
+              key={part}
+              onClick={() => handlePartChange(part)}
+              className={`whitespace-nowrap rounded-md border border-[#C0C0C0] px-2 py-1 transition-colors ${
+                activePart === part ? 'bg-[#003366] text-white' : 'bg-white text-black hover:bg-gray-50'
+              }`}
+            >
+              {`Part ${part.slice(-1)}`}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex gap-4">
         <div className="flex-1">
-          <Card className="mb-4">
+          <Card className="mb-4 border-[#C0C0C0]">
             <div className="text-sm">
               <p className="mb-2">{instructions}</p>
               <ol className="list-decimal space-y-1 pl-6">
@@ -147,7 +143,7 @@ function WritingGrade() {
             </div>
           </Card>
 
-          <Card>
+          <Card className="border-[#C0C0C0]">
             <ol className="list-decimal space-y-3 pl-6">
               {answers.map((answer, index) => (
                 <li key={index}>{answer}</li>
@@ -156,50 +152,58 @@ function WritingGrade() {
           </Card>
         </div>
 
-        <div className="w-[200px]">
-          <Form form={form} layout="vertical" onFinish={handleSubmit} initialValues={{}}>
-            {questions.map((_, index) => (
-              <Form.Item
-                key={index}
-                name={`question_${index}`}
-                label={`Question ${index + 1}`}
-                rules={[
-                  { required: true, message: 'Please input a score' },
-                  { type: 'integer', message: 'Score must be an integer' },
-                  { type: 'number', min: 0, max: 100, message: 'Score must be between 0 and 100' }
-                ]}
-              >
-                <InputNumber
-                  className="w-full"
-                  min={0}
-                  max={999} // Max 3 digits
-                  maxLength={3} // Restrict to 3 digits
-                  step={1} // Ensure only integers
-                  precision={0} // No decimal places
-                  onChange={value => handleScoreChange(value, `question_${index}`)}
-                  parser={value => {
-                    // Remove any non-digit characters and limit to 3 digits
-                    const parsed = value.replace(/\D/g, '').slice(0, 3)
-                    return parsed ? parseInt(parsed) : 0
-                  }}
-                  onKeyPress={handleKeyPress} // Prevent non-numeric input
-                />
-              </Form.Item>
-            ))}
+        <div className="w-min">
+          <div className="mx-auto max-w-md rounded-lg bg-white p-6">
+            <Form form={form} layout="horizontal" onFinish={handleSubmit} initialValues={{}}>
+              {questions.map((_, index) => (
+                <div key={index} className="mb-4 flex items-center">
+                  <label className="w-28 text-center font-medium text-gray-700">Question {index + 1}</label>
+                  <Form.Item
+                    name={`question_${index}`}
+                    className="mb-0 flex-1"
+                    rules={[
+                      { required: true, message: 'Please input a score' },
+                      { type: 'integer', message: 'Score must be an integer' },
+                      { type: 'number', min: 0, max: 100, message: 'Score must be between 0 and 100' }
+                    ]}
+                  >
+                    <InputNumber
+                      className="w-[100px] text-right"
+                      min={0}
+                      max={999}
+                      maxLength={3}
+                      step={1}
+                      precision={0}
+                      onChange={value => handleScoreChange(value, `question_${index}`)}
+                      onKeyPress={handleKeyPress}
+                    />
+                  </Form.Item>
+                </div>
+              ))}
 
-            <Form.Item label={<span className="font-bold">Total</span>}>
-              <InputNumber className="w-full !bg-white" value={totalScore} disabled />
-            </Form.Item>
+              <Divider className="my-4 border-black" />
 
-            <div className="space-y-2 pt-4">
-              <Button type="primary" htmlType="submit" className="w-full bg-[#003366]">
-                Submit
-              </Button>
-              <Button className="w-full" onClick={handleSaveAsDraft}>
-                Save As Draft
-              </Button>
-            </div>
-          </Form>
+              <div className="flex items-center">
+                <label className="w-28 text-center font-medium text-gray-700">Total</label>
+                <Form.Item className="mb-0 flex-1">
+                  <InputNumber className="w-[100px] bg-gray-50 text-right" value={totalScore} disabled />
+                </Form.Item>
+              </div>
+
+              <div className="space-y-2 pt-4">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  className="w-full bg-[#003366] shadow-md transition-shadow hover:shadow-lg"
+                >
+                  Submit
+                </Button>
+                <Button className="w-full shadow-md transition-shadow hover:shadow-lg" onClick={handleSaveAsDraft}>
+                  Save As Draft
+                </Button>
+              </div>
+            </Form>
+          </div>
         </div>
       </div>
     </div>
