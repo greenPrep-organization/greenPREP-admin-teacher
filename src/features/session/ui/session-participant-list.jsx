@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Table, Input, Button, Tabs, Select, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
-import { getSessionParticipants, updateParticipantLevel, publishSessionResults } from '../../session/api'
+import { getSessionParticipants, updateParticipantLevel, publishSessionResults } from '@features/session/api'
 import { useParams } from 'react-router-dom'
 
 const SessionParticipantList = () => {
