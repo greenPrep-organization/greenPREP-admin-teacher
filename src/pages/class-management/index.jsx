@@ -1,15 +1,19 @@
 import { useMemo, useState } from 'react'
-import { Table, Input, Button, Card, Typography, Breadcrumb } from 'antd'
-import { HomeOutlined } from '@ant-design/icons'
-import { useQuery } from '@tanstack/react-query'
+import { Table, Input, Space, Button, Card, message, Typography, Breadcrumb } from 'antd'
+import { EditOutlined, HomeOutlined } from '@ant-design/icons'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { fetchClasses, updateClass, fetchClassById } from '@features/class-management/api/classes'
 import CreateClassModal from '@features/class-management/ui/create-new-class'
-import { fetchClasses, fetchClassById } from '@features/class-management/api/classes'
+import EditClassModal from '@features/class-management/ui/edit-class'
 
 const { Title } = Typography
 
 const ClassList = () => {
+  const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState('')
   const [isModalVisible, setIsModalVisible] = useState(false)
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false)
+  const [editingClass, setEditingClass] = useState(null)
 
   const { data: response = {}, isLoading } = useQuery({
     queryKey: ['classes'],
@@ -48,6 +52,42 @@ const ClassList = () => {
     setIsModalVisible(true)
   }
 
+  const updateClassMutation = useMutation({
+    // @ts-ignore
+    mutationFn: ({ id, newName }) => updateClass(id, { className: newName }),
+    onSuccess: () => {
+      // @ts-ignore
+      queryClient.invalidateQueries(['classes'])
+      message.success('Class updated successfully!')
+      setIsEditModalVisible(false)
+    },
+    onError: () => {
+      message.error('Failed to update class')
+    }
+  })
+
+  const handleEdit = cls => {
+    setEditingClass(cls)
+    setIsEditModalVisible(true)
+  }
+
+  const handleUpdateClass = newName => {
+    if (!editingClass?.ID) {
+      message.error('Invalid class ID!')
+      return
+    }
+    const isDuplicate = classes.some(
+      cls => cls.className.toLowerCase() === newName.toLowerCase() && cls.ID !== editingClass.ID
+    )
+
+    if (isDuplicate) {
+      message.error('Class name already exists!')
+      return
+    }
+    // @ts-ignore
+    updateClassMutation.mutate({ id: editingClass.ID, newName })
+  }
+
   const columns = [
     { title: 'CLASS NAME', dataIndex: 'className', key: 'className' },
     {
@@ -59,7 +99,12 @@ const ClassList = () => {
     {
       title: 'ACTIONS',
       key: 'actions',
-      align: 'center'
+      align: 'center',
+      render: (_, record) => (
+        <Space size={20}>
+          <EditOutlined className="cursor-pointer text-lg text-green-500" onClick={() => handleEdit(record)} />
+        </Space>
+      )
     }
   ]
 
@@ -102,6 +147,15 @@ const ClassList = () => {
         onClose={() => setIsModalVisible(false)}
         existingClasses={filteredClasses}
       />
+
+      {editingClass && (
+        <EditClassModal
+          visible={isEditModalVisible}
+          onClose={() => setIsEditModalVisible(false)}
+          onSave={handleUpdateClass}
+          className={editingClass?.className}
+        />
+      )}
     </div>
   )
 }
