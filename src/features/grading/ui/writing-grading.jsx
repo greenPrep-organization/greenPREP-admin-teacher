@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import { Button, InputNumber, Form, Card, message, Divider } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import mockData from '../writingmockdata'
+import mockData from '@features/grading/constants/writingmockdata'
 
 function WritingGrade() {
   const [activePart, setActivePart] = useState('part1')
