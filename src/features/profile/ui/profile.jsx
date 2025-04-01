@@ -5,7 +5,6 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import * as Yup from 'yup'
 
-// Validation schema for profile update
 const profileValidationSchema = Yup.object().shape({
   firstName: Yup.string().required('First name is required'),
   lastName: Yup.string().required('Last name is required'),
@@ -15,7 +14,6 @@ const profileValidationSchema = Yup.object().shape({
     .required('Phone number is required')
 })
 
-// Validation schema for change password
 const passwordValidationSchema = Yup.object().shape({
   oldPassword: Yup.string().required('Old password is required'),
   newPassword: Yup.string().min(6, 'Password must be at least 6 characters').required('New password is required'),
@@ -70,8 +68,6 @@ const TeacherProfile = () => {
       await profileValidationSchema.validate(formData, { abortEarly: false })
       setIsEditModalOpen(false)
       message.success('Profile updated successfully!')
-      // Cập nhật dữ liệu hiển thị (dữ liệu fake chỉ dùng cho test)
-      // Trong thực tế, bạn sẽ gọi API cập nhật và sau đó refetch hoặc cập nhật state
     } catch (error) {
       error.inner.forEach(err => {
         message.error(err.message)
@@ -89,7 +85,6 @@ const TeacherProfile = () => {
       await passwordValidationSchema.validate(passwordData, { abortEarly: false })
       setIsPasswordModalOpen(false)
       message.success('Password changed successfully!')
-      // Ở đây bạn có thể gọi API để thay đổi mật khẩu
     } catch (error) {
       error.inner.forEach(err => {
         message.error(err.message)
@@ -144,7 +139,6 @@ const TeacherProfile = () => {
         </div>
       </Card>
 
-      {/* Modal for Edit Profile */}
       <Modal title="Edit Profile" open={isEditModalOpen} onOk={handleSave} onCancel={() => setIsEditModalOpen(false)}>
         <div>
           <label>First Name:</label>
@@ -159,12 +153,24 @@ const TeacherProfile = () => {
           <Input value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
         </div>
         <div>
-          <label>Phone:</label>
-          <Input value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+          <label className="block text-sm font-semibold">Phone:</label>
+          <Input
+            value={formData.phone}
+            onChange={e => setFormData({ ...formData, phone: e.target.value })}
+            className="mt-2 w-full rounded-md border border-gray-300 p-2"
+          />
+          {/* Phone number validation message */}
+          <div className="mt-2 text-sm text-gray-600">
+            {/* Validate phone number format */}
+            {!/^\+?\d{10,15}$/.test(formData.phone) && formData.phone.length > 0 ? (
+              <p className="text-red-500">Please enter a valid phone number (10 digits).</p>
+            ) : (
+              formData.phone.length > 0 && <p className="text-green-500">Phone number looks good!</p>
+            )}
+          </div>
         </div>
       </Modal>
 
-      {/* Modal for Change Password */}
       <Modal
         title="Change Password"
         open={isPasswordModalOpen}
@@ -172,25 +178,56 @@ const TeacherProfile = () => {
         onCancel={() => setIsPasswordModalOpen(false)}
       >
         <div>
-          <label>Old Password:</label>
+          <label className="block text-sm font-semibold">Current Password:</label>
           <Input.Password
             value={passwordData.oldPassword}
             onChange={e => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
+            className="mt-2 w-full rounded-md border border-gray-300 p-2"
           />
         </div>
-        <div style={{ marginTop: '1rem' }}>
-          <label>New Password:</label>
+
+        <div className="mt-4">
+          <label className="block text-sm font-semibold">New Password:</label>
           <Input.Password
             value={passwordData.newPassword}
             onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+            className="mt-2 w-full rounded-md border border-gray-300 p-2"
           />
+          {/* Password validation list */}
+          <div className="mt-2 pl-6 text-sm text-gray-600">
+            <ul>
+              <li className={passwordData.newPassword.length >= 8 ? 'text-green-500' : 'text-red-500'}>
+                Minimum 8 characters
+              </li>
+              <li className={/[A-Z]/.test(passwordData.newPassword) ? 'text-green-500' : 'text-red-500'}>
+                At least one uppercase letter
+              </li>
+              <li className={/[0-9]/.test(passwordData.newPassword) ? 'text-green-500' : 'text-red-500'}>
+                At least one number
+              </li>
+              <li
+                className={/[!@#$%^&*(),.?":{}|<>]/.test(passwordData.newPassword) ? 'text-green-500' : 'text-red-500'}
+              >
+                At least one special character
+              </li>
+            </ul>
+          </div>
         </div>
-        <div style={{ marginTop: '1rem' }}>
-          <label>Confirm Password:</label>
+
+        <div className="mt-4">
+          <label className="block text-sm font-semibold">Confirm Password:</label>
           <Input.Password
             value={passwordData.confirmPassword}
             onChange={e => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+            className="mt-2 w-full rounded-md border border-gray-300 p-2"
           />
+          <div className="mt-2 text-sm text-gray-600">
+            {passwordData.newPassword === passwordData.confirmPassword ? (
+              <p className="text-green-500">Passwords match</p>
+            ) : (
+              <p className="text-red-500">Passwords do not match</p>
+            )}
+          </div>
         </div>
       </Modal>
     </div>

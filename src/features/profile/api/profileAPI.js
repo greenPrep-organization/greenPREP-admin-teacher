@@ -15,10 +15,10 @@ export const useUserProfile = userId => {
       if (userId === '1') {
         return {
           id: 1,
-          firstName: 'Alice',
-          lastName: 'Smith',
-          personalEmail: 'alice.smith@example.com',
-          phone: '987654321',
+          firstName: 'Phung',
+          lastName: 'Khanh',
+          personalEmail: 'Khanh@example.com',
+          phone: '0335055415',
           roleIDs: ['teacher'],
           classes: ['English', 'History']
         }
