@@ -6,7 +6,7 @@ import SessionsList from '@features/session/SessionsList'
 
 const { Title } = Typography
 
-const ClassDetails = () => {
+const ClassDetailsPage = () => {
   const { id } = useParams()
   const location = useLocation()
   const { classInfo: classInfoFromState } = location.state || {}
@@ -57,4 +57,4 @@ const ClassDetails = () => {
   )
 }
 
-export default ClassDetails
+export default ClassDetailsPage
