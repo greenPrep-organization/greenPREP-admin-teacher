@@ -1,5 +1,5 @@
 import SessionDetail from '@/features/session/ui/session-detail'
-import PendingList from '../features/student/ui/student-pending-list'
+import SessionParticipantList from '@features/session/ui/session-participant-list'
 
 const SessionDetailPage = () => {
   return (
@@ -8,7 +8,7 @@ const SessionDetailPage = () => {
         <SessionDetail />
       </div>
       <div className="rounded-lg bg-white">
-        <PendingList />
+        <SessionParticipantList />
       </div>
     </div>
   )
