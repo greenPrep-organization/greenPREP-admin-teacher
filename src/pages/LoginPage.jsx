@@ -6,15 +6,10 @@ import CheckCircleOutlined from '@ant-design/icons/CheckCircleOutlined'
 import { Link, useNavigate } from 'react-router-dom'
 import { Form, Input, Button, Typography, Space, Row, Col } from 'antd'
 import { LoginImg } from '../assets/Images/index'
+import axios from 'axios'
+import { ACCESS_TOKEN } from '@shared/lib/constants/auth'
 
 const { Title, Text } = Typography
-
-// Fake users database
-const FAKEUSERS = [
-  { email: 'teacher@gmail.com', password: '123456', role: 'teacher' },
-  { email: 'admin@gmail.com', password: '123456', role: 'admin' },
-  { email: 'student@gmail.com', password: '123456', role: 'student' }
-]
 
 const LoginPage = () => {
   const [form] = Form.useForm()
@@ -24,27 +19,35 @@ const LoginPage = () => {
   const [passwordTouched, setPasswordTouched] = useState(false)
   const navigate = useNavigate()
 
-  const onFinish = values => {
+  const onFinish = async values => {
     setLoading(true)
     setLoginError('')
     setLoginSuccess('')
 
-    // Simulate API call
-    setTimeout(() => {
-      const user = FAKEUSERS.find(u => u.email === values.email && u.password === values.password)
+    try {
+      // Login request
+      const response = await axios.post('https://dev-api-greenprep.onrender.com/api/users/login', {
+        email: values.email,
+        password: values.password
+      })
 
-      if (user) {
-        // Store user info in localStorage
-        localStorage.setItem('user', JSON.stringify(user))
-        setLoginSuccess('Login successful! Redirecting...')
-        setTimeout(() => {
-          navigate('/dashboard')
-        }, 1000)
-      } else {
-        setLoginError('Invalid email or password')
+      console.log('Login response:', response.data)
+
+      // Store access token
+      if (response.data?.data?.access_token) {
+        localStorage.setItem(ACCESS_TOKEN, response.data.data.access_token)
       }
+
+      setLoginSuccess('Login successful! Redirecting...')
+      setTimeout(() => {
+        navigate('/dashboard')
+      }, 1000)
+    } catch (error) {
+      console.error('Login error:', error)
+      setLoginError('Invalid email or password')
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   const handlePasswordChange = () => {
@@ -58,9 +61,9 @@ const LoginPage = () => {
   return (
     <Row className="min-h-screen bg-white">
       <Col xs={24} md={12} className="flex flex-col justify-center px-4 sm:px-6 lg:px-8 xl:px-12">
-        <div className="mx-auto w-full max-w-[440px] py-8 sm:py-12">
+        <div className="mx-auto w-full max-w-[400px] py-8 sm:py-12">
           <Space direction="vertical" size={24} className="w-full">
-            <Title level={4} className="!m-0 !text-xl !text-[#003087] sm:!text-2xl">
+            <Title level={1} className="!m-0 !text-xl !text-[#003087] sm:!text-2xl">
               GreenPREP
             </Title>
 
@@ -179,9 +182,11 @@ const LoginPage = () => {
         </div>
       </Col>
 
-      <Col xs={0} md={12} className="bg-white-50 flex items-center justify-center">
-        <div className="relative h-full w-full max-w-[640px] p-8 sm:p-12">
-          <img src={LoginImg} alt="Login Security Illustration" className="h-auto w-full object-contain" />
+      <Col xs={0} md={12} className="bg-white-50 relative">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="mx-auto w-full max-w-[640px] px-8 sm:px-12">
+            <img src={LoginImg} alt="Login Security Illustration" className="h-auto w-full object-contain" />
+          </div>
         </div>
       </Col>
     </Row>
