@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react'
-import { Table, Input, Card, Typography, Breadcrumb } from 'antd'
-import { HomeOutlined } from '@ant-design/icons'
+import { Table, Input, Space, Card, Typography, Breadcrumb } from 'antd'
+import { EyeOutlined, HomeOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { fetchClasses, fetchClassById } from '@features/class-management/api/classes'
 
 const { Title } = Typography
 
 const ClassList = () => {
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
 
   const { data: response = {}, isLoading } = useQuery({
@@ -42,6 +44,12 @@ const ClassList = () => {
     return enrichedClasses.filter(cls => cls.className?.toLowerCase().includes(searchTerm.toLowerCase()))
   }, [searchTerm, enrichedClasses])
 
+  const handleView = cls => {
+    navigate(`/classes-management/${cls.ID}`, {
+      state: { classInfo: cls }
+    })
+  }
+
   const columns = [
     { title: 'CLASS NAME', dataIndex: 'className', key: 'className' },
     {
@@ -53,7 +61,12 @@ const ClassList = () => {
     {
       title: 'ACTIONS',
       key: 'actions',
-      align: 'center'
+      align: 'center',
+      render: (_, record) => (
+        <Space size={20}>
+          <EyeOutlined className="cursor-pointer text-lg text-blue-500" onClick={() => handleView(record)} />
+        </Space>
+      )
     }
   ]
 
