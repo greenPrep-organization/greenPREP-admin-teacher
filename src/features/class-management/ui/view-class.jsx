@@ -2,7 +2,7 @@ import { useLocation, useParams } from 'react-router-dom'
 import { Card, Col, Row, Typography, Spin, Alert } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import { fetchClassById } from '@features/class-management/api/classes'
-import SessionsList from '@features/session/SessionsList'
+import SessionsList from '@features/session/ui/session-list'
 
 const { Title } = Typography
 
