@@ -1,23 +1,9 @@
 import { UserOutlined } from '@ant-design/icons'
 import { useUserProfile } from '@features/profile/api/profileApi'
-import { Avatar, Button, Card, Divider, Input, message, Modal, Spin } from 'antd'
-import { useState } from 'react'
-import * as Yup from 'yup'
-
-const validationSchema = Yup.object().shape({
-  firstName: Yup.string().required('First name is required'),
-  lastName: Yup.string().required('Last name is required'),
-  email: Yup.string().email('Invalid email format').required('Email is required'),
-  phone: Yup.string()
-    .matches(/^[0-9]{10,11}$/, 'Phone number must be 10-11 digits')
-    .required('Phone number is required')
-})
+import { Avatar, Button, Card, Divider, message, Spin } from 'antd'
 
 const TeacherProfile = ({ userId }) => {
-  const { data: userData, isLoading, isError, refetch } = useUserProfile(userId)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '' })
-
+  const { data: userData, isLoading, isError } = useUserProfile(userId)
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -33,26 +19,7 @@ const TeacherProfile = ({ userId }) => {
   console.log(userData)
 
   const handleEdit = () => {
-    setFormData({
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      email: userData.personalEmail,
-      phone: userData.phone
-    })
-    setIsModalOpen(true)
-  }
-
-  const handleSave = async () => {
-    try {
-      await validationSchema.validate(formData, { abortEarly: false })
-      setIsModalOpen(false)
-      message.success('Profile updated successfully!')
-      refetch()
-    } catch (error) {
-      error.inner.forEach(err => {
-        message.error(err.message)
-      })
-    }
+    alert('Edit')
   }
 
   return (
@@ -100,25 +67,6 @@ const TeacherProfile = ({ userId }) => {
           </div>
         </div>
       </Card>
-
-      <Modal title="Edit Profile" open={isModalOpen} onOk={handleSave} onCancel={() => setIsModalOpen(false)}>
-        <div>
-          <label>First Name:</label>
-          <Input value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
-        </div>
-        <div>
-          <label>Last Name:</label>
-          <Input value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
-        </div>
-        <div>
-          <label>Email:</label>
-          <Input value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
-        </div>
-        <div>
-          <label>Phone:</label>
-          <Input value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
-        </div>
-      </Modal>
     </div>
   )
 }
