@@ -14,21 +14,11 @@ const profileValidationSchema = Yup.object().shape({
     .required('Phone number is required')
 })
 
-const passwordValidationSchema = Yup.object().shape({
-  oldPassword: Yup.string().required('Old password is required'),
-  newPassword: Yup.string().min(6, 'Password must be at least 6 characters').required('New password is required'),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref('newPassword'), null], 'Passwords must match')
-    .required('Confirm password is required')
-})
-
 const TeacherProfile = () => {
   const { userId } = useParams()
   const { data: userData, isLoading, isError } = useUserProfile(userId)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
   const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '' })
-  const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' })
 
   if (isLoading) {
     return (
@@ -75,21 +65,8 @@ const TeacherProfile = () => {
     }
   }
 
-  const openChangePassword = () => {
-    setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' })
-    setIsPasswordModalOpen(true)
-  }
-
   const handleChangePassword = async () => {
-    try {
-      await passwordValidationSchema.validate(passwordData, { abortEarly: false })
-      setIsPasswordModalOpen(false)
-      message.success('Password changed successfully!')
-    } catch (error) {
-      error.inner.forEach(err => {
-        message.error(err.message)
-      })
-    }
+    message.info('Change Password')
   }
 
   return (
@@ -105,7 +82,12 @@ const TeacherProfile = () => {
             <p className="text-gray-600">{formData.email}</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button type="primary" className="bg-blue-800 hover:bg-blue-700" size="large" onClick={openChangePassword}>
+            <Button
+              type="primary"
+              className="bg-blue-800 hover:bg-blue-700"
+              size="large"
+              onClick={handleChangePassword}
+            >
               Change Password
             </Button>
             <Button type="default" size="large" onClick={handleEdit}>
@@ -166,66 +148,6 @@ const TeacherProfile = () => {
               <p className="text-red-500">Please enter a valid phone number (10 digits).</p>
             ) : (
               formData.phone.length > 0 && <p className="text-green-500">Phone number looks good!</p>
-            )}
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        title="Change Password"
-        open={isPasswordModalOpen}
-        onOk={handleChangePassword}
-        onCancel={() => setIsPasswordModalOpen(false)}
-      >
-        <div>
-          <label className="block text-sm font-semibold">Current Password:</label>
-          <Input.Password
-            value={passwordData.oldPassword}
-            onChange={e => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
-            className="mt-2 w-full rounded-md border border-gray-300 p-2"
-          />
-        </div>
-
-        <div className="mt-4">
-          <label className="block text-sm font-semibold">New Password:</label>
-          <Input.Password
-            value={passwordData.newPassword}
-            onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-            className="mt-2 w-full rounded-md border border-gray-300 p-2"
-          />
-          {/* Password validation list */}
-          <div className="mt-2 pl-6 text-sm text-gray-600">
-            <ul>
-              <li className={passwordData.newPassword.length >= 8 ? 'text-green-500' : 'text-red-500'}>
-                Minimum 8 characters
-              </li>
-              <li className={/[A-Z]/.test(passwordData.newPassword) ? 'text-green-500' : 'text-red-500'}>
-                At least one uppercase letter
-              </li>
-              <li className={/[0-9]/.test(passwordData.newPassword) ? 'text-green-500' : 'text-red-500'}>
-                At least one number
-              </li>
-              <li
-                className={/[!@#$%^&*(),.?":{}|<>]/.test(passwordData.newPassword) ? 'text-green-500' : 'text-red-500'}
-              >
-                At least one special character
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <label className="block text-sm font-semibold">Confirm Password:</label>
-          <Input.Password
-            value={passwordData.confirmPassword}
-            onChange={e => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-            className="mt-2 w-full rounded-md border border-gray-300 p-2"
-          />
-          <div className="mt-2 text-sm text-gray-600">
-            {passwordData.newPassword === passwordData.confirmPassword ? (
-              <p className="text-green-500">Passwords match</p>
-            ) : (
-              <p className="text-red-500">Passwords do not match</p>
             )}
           </div>
         </div>
