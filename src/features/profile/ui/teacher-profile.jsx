@@ -1,9 +1,11 @@
 import { UserOutlined } from '@ant-design/icons'
-import { useUserProfile } from '@features/profile/api/profileApi'
+import { useUserProfile } from '@features/profile/api/profileAPI'
 import { Avatar, Button, Card, Divider, message, Spin } from 'antd'
+import { useParams } from 'react-router-dom'
 
-const TeacherProfile = ({ userId }) => {
-  const { data: userData, isLoading, isError } = useUserProfile(userId)
+const TeacherProfile = () => {
+  const userId = useParams()
+  const { data: userData, isLoading, isError } = useUserProfile(userId || '1')
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">

@@ -1,9 +1,8 @@
-// import { lazy } from 'react';
+import ClassListPage from '@pages/class-management/index'
 import ClassDetailPage from '@pages/ClassDetailPage'
 import StudentProfilePage from '@pages/StudentProfilePage'
-import SessionDetailPage from '../../pages/SessionDetailPage'
-
 import TeacherProfile from '../../features/profile/ui/teacher-profile'
+import SessionDetailPage from '../../pages/SessionDetailPage'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 
 const PrivateRoute = [
@@ -20,6 +19,10 @@ const PrivateRoute = [
         element: <ClassDetailPage />
       },
       {
+        path: 'classes-management',
+        element: <ClassListPage />
+      },
+      {
         path: 'student',
         element: <StudentProfilePage />
       },
@@ -29,7 +32,7 @@ const PrivateRoute = [
       },
       {
         path: 'teacher',
-        element: <TeacherProfile userId={1} />
+        element: <TeacherProfile />
       }
     ]
   }
