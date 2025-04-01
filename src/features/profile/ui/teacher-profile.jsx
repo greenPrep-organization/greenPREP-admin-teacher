@@ -1,53 +1,36 @@
 import { UserOutlined } from '@ant-design/icons'
-import { useQuery } from '@tanstack/react-query'
+import { useUserProfile } from '@features/profile/api/profileApi'
 import { Avatar, Button, Card, Divider, Input, message, Modal, Spin } from 'antd'
 import { useState } from 'react'
+import * as Yup from 'yup'
 
-const mockUserData = {
-  firstName: 'Phung',
-  lastName: 'H',
-  fullName: 'Phung H',
-  email: '1234@gmail.com',
-  personalEmail: 'QWER@gmail.com',
-  phone: 'M Hehe',
-  role: 'Teacher',
-  classes: ['CLASS01', 'CLASS02'],
-  avatar: null
-}
-
-const fetchUserProfile = async () => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(mockUserData)
-    }, 1000)
-  })
-}
+const validationSchema = Yup.object().shape({
+  firstName: Yup.string().required('First name is required'),
+  lastName: Yup.string().required('Last name is required'),
+  email: Yup.string().email('Invalid email format').required('Email is required'),
+  phone: Yup.string()
+    .matches(/^[0-9]{10,11}$/, 'Phone number must be 10-11 digits')
+    .required('Phone number is required')
+})
 
 const TeacherProfile = ({ userId }) => {
-  const {
-    data: userData,
-    isLoading,
-    isError,
-    refetch
-  } = useQuery({
-    queryKey: ['userProfile', userId],
-    queryFn: () => fetchUserProfile(userId)
-  })
+  const { data: userData, isLoading, isError, refetch } = useUserProfile(userId)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phone: '' })
-  const [isUpdated, setIsUpdated] = useState(false)
 
-  if (isLoading)
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Spin size="large" />
       </div>
     )
+  }
 
   if (isError) {
     message.error('Unable to load profile information. Please try again later.')
     return null
   }
+  console.log(userData)
 
   const handleEdit = () => {
     setFormData({
@@ -59,11 +42,17 @@ const TeacherProfile = ({ userId }) => {
     setIsModalOpen(true)
   }
 
-  const handleSave = () => {
-    setIsModalOpen(false)
-    setIsUpdated(true)
-    message.success('Profile updated successfully!')
-    refetch()
+  const handleSave = async () => {
+    try {
+      await validationSchema.validate(formData, { abortEarly: false })
+      setIsModalOpen(false)
+      message.success('Profile updated successfully!')
+      refetch()
+    } catch (error) {
+      error.inner.forEach(err => {
+        message.error(err.message)
+      })
+    }
   }
 
   return (
@@ -82,12 +71,7 @@ const TeacherProfile = ({ userId }) => {
             <Button type="primary" className="bg-blue-800 hover:bg-blue-700" size="large">
               Change Password
             </Button>
-            <Button
-              type="default"
-              size="large"
-              style={{ backgroundColor: isUpdated ? '#003087' : '', color: isUpdated ? 'white' : '' }}
-              onClick={handleEdit}
-            >
+            <Button type="default" size="large" onClick={handleEdit}>
               Edit
             </Button>
           </div>
@@ -116,7 +100,8 @@ const TeacherProfile = ({ userId }) => {
           </div>
         </div>
       </Card>
-      <Modal title="Edit Profile" visible={isModalOpen} onOk={handleSave} onCancel={() => setIsModalOpen(false)}>
+
+      <Modal title="Edit Profile" open={isModalOpen} onOk={handleSave} onCancel={() => setIsModalOpen(false)}>
         <div>
           <label>First Name:</label>
           <Input value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
