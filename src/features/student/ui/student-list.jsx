@@ -1,16 +1,16 @@
+import { useState, useEffect } from 'react'
+import { Table, Input, Button, Tabs, Select, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
-import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
-import { Button, Input, Select, Table, Tabs, message } from 'antd'
-import { useEffect, useState } from 'react'
 
-const Studentlist = () => {
+const SessionParticipantList = () => {
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState([])
-  const [pendingData, setPendingData] = useState([])
-  const [pagination, setPagination] = useState(DEFAULT_PAGINATION)
-  const [pendingPagination, setPendingPagination] = useState(DEFAULT_PAGINATION)
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 50
+  })
   const [searchText, setSearchText] = useState('')
-  const [pendingSearchText, setPendingSearchText] = useState('')
   const [readyToPublish, setReadyToPublish] = useState(false)
 
   const levelOptions = [
@@ -29,6 +29,7 @@ const Studentlist = () => {
   const handleLevelChange = async (value, record) => {
     try {
       setLoading(true)
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       const newData = data.map(item => {
         if (item.key === record.key) {
@@ -44,46 +45,6 @@ const Studentlist = () => {
       setReadyToPublish(allHaveLevel)
     } catch {
       message.error('Failed to update level')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleEnrollStudent = async record => {
-    try {
-      setLoading(true)
-      const newPendingData = pendingData.filter(item => item.key !== record.key)
-      setPendingData(newPendingData)
-
-      const newStudent = {
-        ...record,
-        scores: {
-          grammar: 'Ungraded',
-          listening: 'Ungraded',
-          reading: 'Ungraded',
-          speaking: 'Ungraded',
-          writing: 'Ungraded'
-        }
-      }
-      setData([...data, newStudent])
-
-      message.success(`${record.studentName} has been enrolled successfully`)
-    } catch {
-      message.error('Failed to enroll student')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleRejectStudent = async record => {
-    try {
-      setLoading(true)
-      await new Promise(resolve => setTimeout(resolve, 500))
-      const newPendingData = pendingData.filter(item => item.key !== record.key)
-      setPendingData(newPendingData)
-      message.success(`${record.studentName}'s request has been rejected`)
-    } catch {
-      message.error('Failed to reject student')
     } finally {
       setLoading(false)
     }
@@ -135,7 +96,7 @@ const Studentlist = () => {
       render: (_, record) => {
         const scores = Object.values(record.scores)
         if (scores.includes('Ungraded')) return 'Pending'
-        const total = scores.reduce((sum, score) => sum + Number.parseFloat(score), 0)
+        const total = scores.reduce((sum, score) => sum + parseFloat(score), 0)
         return (total / scores.length).toFixed(1)
       }
     },
@@ -157,58 +118,10 @@ const Studentlist = () => {
     }
   ]
 
-  const pendingColumns = [
-    {
-      title: 'Student Name',
-      dataIndex: 'studentName',
-      key: 'studentName',
-      align: 'center',
-      width: '30%',
-      sorter: (a, b) => a.studentName.localeCompare(b.studentName)
-    },
-    {
-      title: 'Student ID',
-      dataIndex: 'studentId',
-      key: 'studentId',
-      width: '25%',
-      align: 'center'
-    },
-    {
-      title: 'Class Name',
-      dataIndex: 'className',
-      key: 'className',
-      width: '25%',
-      align: 'center'
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      width: '20%',
-      align: 'center',
-      render: (_, record) => (
-        <div className="flex flex-row justify-center">
-          <Button
-            type="text"
-            className="flex items-center justify-center text-green-500 hover:text-green-700"
-            onClick={() => handleEnrollStudent(record)}
-          >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-green-500">✓</span>
-          </Button>
-          <Button
-            type="text"
-            className="flex items-center justify-center text-red-500 hover:text-red-700"
-            onClick={() => handleRejectStudent(record)}
-          >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-red-500">✕</span>
-          </Button>
-        </div>
-      )
-    }
-  ]
-
   const fetchData = async (params = {}) => {
     try {
       setLoading(true)
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
       const mockData = Array.from({ length: 50 }, (_, index) => ({
         key: index.toString(),
@@ -241,45 +154,9 @@ const Studentlist = () => {
     }
   }
 
-  const fetchPendingData = async (params = {}) => {
-    try {
-      setLoading(true)
-
-      const mockPendingData = Array.from({ length: 20 }, (_, index) => ({
-        key: `pending-${index}`,
-        studentName: `A Nguyen`,
-        studentId: `GCD21${index.toString().padStart(4, '0')}`,
-        className: 'GCD1102'
-      }))
-
-      const filtered = mockPendingData.filter(
-        item =>
-          item.studentName.toLowerCase().includes(pendingSearchText.toLowerCase()) ||
-          item.studentId.toLowerCase().includes(pendingSearchText.toLowerCase()) ||
-          item.className.toLowerCase().includes(pendingSearchText.toLowerCase())
-      )
-
-      setPendingData(filtered.slice((params.current - 1) * params.pageSize, params.current * params.pageSize))
-
-      setPendingPagination({
-        current: params.current || 1,
-        pageSize: params.pageSize || 10,
-        total: filtered.length
-      })
-    } catch {
-      message.error('Failed to fetch pending data')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
     fetchData(pagination)
   }, [searchText])
-
-  useEffect(() => {
-    fetchPendingData(pendingPagination)
-  }, [pendingSearchText])
 
   const handleTableChange = newPagination => {
     fetchData({
@@ -288,19 +165,8 @@ const Studentlist = () => {
     })
   }
 
-  const handlePendingTableChange = newPagination => {
-    fetchPendingData({
-      ...newPagination,
-      pageSize: 10
-    })
-  }
-
   const handleSearch = value => {
     setSearchText(value)
-  }
-
-  const handlePendingSearch = value => {
-    setPendingSearchText(value)
   }
 
   const handleReadyToPublish = () => {
@@ -317,11 +183,11 @@ const Studentlist = () => {
       label: (
         <div className="flex items-center gap-2 font-medium">
           <div className="px-4 py-1">Participants List</div>
-          <div className="h-[20px] w-full bg-primary"></div>
+          <div className="h-[2px] w-full bg-primary"></div>
         </div>
       ),
       children: (
-        <div className="participant-list mt-8">
+        <div className="participant-list">
           <div className="mb-4 flex justify-between">
             <div className="relative">
               <Input
@@ -356,30 +222,7 @@ const Studentlist = () => {
     {
       key: '2',
       label: <div className="px-4 py-1 font-medium">Pending Request</div>,
-      children: (
-        <div className="mt-8">
-          <div className="mb-4 flex justify-between">
-            <div className="relative">
-              <Input
-                placeholder="Search by student name, ID or class"
-                prefix={<SearchOutlined className="text-text-secondary" />}
-                value={pendingSearchText}
-                onChange={e => handlePendingSearch(e.target.value)}
-                className="w-64"
-              />
-            </div>
-          </div>
-
-          <Table
-            columns={pendingColumns}
-            dataSource={pendingData}
-            pagination={pendingPagination}
-            onChange={handlePendingTableChange}
-            loading={loading}
-            scroll={{ x: 800 }}
-          />
-        </div>
-      )
+      children: 'Pending Request Content'
     }
   ]
 
@@ -388,7 +231,7 @@ const Studentlist = () => {
       <Tabs
         defaultActiveKey="1"
         items={items}
-        className="px-6"
+        className="px-6 pt-4"
         tabBarStyle={{
           margin: 0,
           borderBottom: 'none'
@@ -398,4 +241,4 @@ const Studentlist = () => {
   )
 }
 
-export default Studentlist
+export default SessionParticipantList
