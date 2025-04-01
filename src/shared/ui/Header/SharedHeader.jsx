@@ -1,20 +1,20 @@
 import { DownOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
 import { Button, Dropdown, Layout, Menu } from 'antd'
-import { Link } from 'react-router-dom'
 
 const { Header } = Layout
 
-const SharedHeader = ({ collapsed, setCollapsed, userId }) => {
-  const menu = (
-    <Menu>
-      <Menu.Item key="0">
-        <Link to={`/profile/${userId || '1'}`}>Profile</Link> {/* Truyền userId qua URL */}
-      </Menu.Item>
-      <Menu.Item key="1">
-        <a href="/signout">Sign Out</a>
-      </Menu.Item>
-    </Menu>
-  )
+const menu = (
+  <Menu>
+    <Menu.Item key="0">
+      <a href="/profile">Profile</a>
+    </Menu.Item>
+    <Menu.Item key="1">
+      <a href="/signout">Sign Out</a>
+    </Menu.Item>
+  </Menu>
+)
+
+const SharedHeader = ({ collapsed, setCollapsed }) => {
   return (
     <Header className="bg-primary-color flex h-[80px] items-center justify-between border-0 border-l border-solid border-neutral-400 p-4">
       <div className="flex items-center">
