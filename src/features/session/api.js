@@ -61,8 +61,3 @@ export function getSessionsByClassId(classId) {
     ]
   })
 }
-
-// Example usage:
-getSessionsByClassId('1db40057-623d-4597-b267-520dedd4dc76')
-  .then(response => console.log(response.data))
-  .catch(error => console.error(error))

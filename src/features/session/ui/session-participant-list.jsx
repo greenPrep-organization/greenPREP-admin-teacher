@@ -3,6 +3,7 @@ import { getSessionParticipants, publishSessionResults, updateParticipantLevel }
 import { Button, Input, Select, Table, Tabs, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import PendingList from '../../student/ui/student-pending-list'
 
 const SessionParticipantList = () => {
   const [loading, setLoading] = useState(false)
@@ -232,7 +233,11 @@ const SessionParticipantList = () => {
           Pending Request
         </div>
       ),
-      children: <div key="pending-content">Pending Request Content</div>
+      children: (
+        <div key="pending-content">
+          <PendingList sessionId={sessionId} />
+        </div>
+      )
     }
   ]
 

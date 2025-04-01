@@ -1,9 +1,10 @@
 import { SearchOutlined } from '@ant-design/icons'
+import { getPendingSessionRequests } from '@features/student/api'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { Button, Input, Table, message } from 'antd'
 import { useEffect, useState } from 'react'
 
-const PendingList = () => {
+const PendingList = ({ sessionId }) => {
   const [loading, setLoading] = useState(false)
   const [pendingData, setPendingData] = useState([])
   const [pendingPagination, setPendingPagination] = useState(DEFAULT_PAGINATION)
@@ -41,14 +42,22 @@ const PendingList = () => {
     try {
       setLoading(true)
 
-      const mockPendingData = Array.from({ length: 20 }, (_, index) => ({
-        key: `pending-${index}`,
-        studentName: `A Nguyen`,
-        studentId: `GCD21${index.toString().padStart(4, '0')}`,
-        className: 'GCD1102'
+      // Call the API function instead of using mock data
+      const response = await getPendingSessionRequests(sessionId)
+      // Assuming the API returns an object with a "data" array:
+      const apiData = response.data
+
+      // Map the API fields to your component's expected fields.
+      // Adjust this mapping as needed based on available information.
+      const mappedData = apiData.map(item => ({
+        key: item.ID,
+        studentName: item.UserID, // Replace with actual student name if available
+        studentId: item.UserID, // Or use another field that represents student id
+        className: item.SessionID // Or another field if applicable
       }))
 
-      const filtered = mockPendingData.filter(
+      // Implement filtering and pagination on mappedData
+      const filtered = mappedData.filter(
         item =>
           item.studentName.toLowerCase().includes(pendingSearchText.toLowerCase()) ||
           item.studentId.toLowerCase().includes(pendingSearchText.toLowerCase()) ||
@@ -68,6 +77,7 @@ const PendingList = () => {
       setLoading(false)
     }
   }
+
   const pendingColumns = [
     {
       title: 'Student Name',
