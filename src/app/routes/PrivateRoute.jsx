@@ -22,7 +22,7 @@ const PrivateRoute = [
         element: <StudentProfilePage />
       },
       {
-        path: 'Session',
+        path: 'session',
         element: <SessionDetailPage />
       }
     ]

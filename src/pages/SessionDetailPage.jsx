@@ -1,5 +1,5 @@
 import SessionDetail from '@/features/session/ui/session-detail'
-import SessionParticipantList from '@features/session/ui/studentlist'
+import SessionParticipantList from '@features/student/ui/student-list'
 
 const SessionDetailPage = () => {
   return (

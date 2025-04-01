@@ -36,7 +36,6 @@ const Studentlist = () => {
   const handleLevelChange = async (value, record) => {
     try {
       setLoading(true)
-      await new Promise(resolve => setTimeout(resolve, 500))
 
       const newData = data.map(item => {
         if (item.key === record.key) {
