@@ -21,8 +21,7 @@ const SessionParticipantList = () => {
     { value: 'A2', label: 'A2' },
     { value: 'B1', label: 'B1' },
     { value: 'B2', label: 'B2' },
-    { value: 'C1', label: 'C1' },
-    { value: 'C2', label: 'C2' }
+    { value: 'C', label: 'C' }
   ]
 
   const canSelectLevel = record => {
@@ -191,9 +190,9 @@ const SessionParticipantList = () => {
         </div>
       ),
       children: (
-        <div key="participants-content" className="participant-list">
-          <div key="participants-header" className="mb-4 flex justify-between">
-            <div key="search-container" className="relative">
+        <div className="participant-list">
+          <div className="mb-4 flex justify-between">
+            <div className="relative">
               <Input
                 key="search-input"
                 placeholder="Search by student name"

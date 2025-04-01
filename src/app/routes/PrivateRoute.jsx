@@ -3,7 +3,6 @@ import ClassDetailPage from '@pages/ClassDetailPage'
 import StudentProfilePage from '@pages/StudentProfilePage'
 import TeacherProfile from '../../features/profile/ui/teacher-profile'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
-import SessionPage from '@features/session/ui/session-page.jsx'
 
 const PrivateRoute = [
   {
@@ -25,7 +24,6 @@ const PrivateRoute = [
       {
         path: 'teacher',
         element: <TeacherProfile userId={1} />
-
       }
     ]
   }
