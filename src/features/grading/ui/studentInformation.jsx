@@ -14,11 +14,7 @@ const StudentCard = ({ student }) => {
     )
 
   return (
-    <Card
-      className="absolute left-[274px] top-[190px] w-[340px] rounded-3xl shadow-lg"
-      bordered
-      title={<Title level={5}>Student Information</Title>}
-    >
+    <Card className="w-[340px] rounded-3xl shadow-lg" bordered title={<Title level={5}>Student Information</Title>}>
       <div className="space-y-4">
         <div className="flex items-start">
           <Text className="w-36 text-gray-500">Student Name:</Text>

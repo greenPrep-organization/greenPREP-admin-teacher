@@ -1,34 +1,70 @@
-import { Button, Space } from 'antd'
+import { Button } from 'antd'
 import { UnorderedListOutlined } from '@ant-design/icons'
+import PropTypes from 'prop-types'
 
-const Navbar = () => {
+const NavigationBar = ({
+  onBack,
+  onPrevious,
+  onNext,
+  onChangeStudent,
+  currentStudent = 1,
+  totalStudents = 1,
+  disabled = false
+}) => {
   return (
-    <div className="relative min-h-screen bg-gray-100">
-      <Space size="middle">
+    <div className="flex items-center justify-between">
+      <div>
         <Button
           type="primary"
-          className="absolute left-[40px] top-[70px] flex h-[27px] w-[60px] items-center justify-center border-[#C0C0C0] bg-[#003087] hover:bg-[#002366] active:bg-[#001a4d]"
+          onClick={onBack}
+          className="flex h-[40px] w-[80px] items-center justify-center rounded-md bg-[#003087] hover:bg-[#002366] active:bg-[#001a4d]"
         >
-          {'<'} Back
+          Back
         </Button>
-        <Button className="absolute left-[620px] top-[60px] flex h-[42px] w-[165px] items-center justify-center border-[#C0C0C0] bg-white text-[#003087] hover:bg-[#E5E7EB] active:bg-[#D1D5DB]">
-          {'<'} Previous Student
-        </Button>
+      </div>
+
+      <div className="flex items-center gap-2">
         <Button
-          className="absolute left-[800px] top-[60px] flex h-[42px] w-[175px] items-center justify-center rounded-[5px] border border-[#C0C0C0] bg-white text-[#003087] hover:bg-[#E5E7EB] active:bg-[#D1D5DB]"
+          onClick={onPrevious}
+          disabled={currentStudent <= 1 || disabled}
+          className="flex h-[40px] items-center justify-center rounded-md border border-[#003087] bg-white text-[#003087] hover:bg-[#f0f2ff]"
+          icon={<span className="mr-1">←</span>}
+        >
+          Previous Student
+        </Button>
+
+        <Button
+          onClick={onChangeStudent}
+          disabled={disabled}
+          className="flex h-[40px] items-center justify-center rounded-md border border-[#003087] bg-white text-[#003087] hover:bg-[#f0f2ff]"
           icon={<UnorderedListOutlined />}
         >
           Change Student
         </Button>
+
+        <div className="text-gray-500">of {totalStudents} students</div>
+
         <Button
           type="primary"
-          className="absolute left-[990px] top-[60px] flex h-[42px] w-[165px] items-center justify-center rounded-[5px] border border-[#C0C0C0] bg-[#003087] hover:bg-[#002366] active:bg-[#001a4d]"
+          onClick={onNext}
+          disabled={currentStudent >= totalStudents || disabled}
+          className="flex h-[40px] items-center justify-center rounded-md bg-[#003087] hover:bg-[#002366] active:bg-[#001a4d]"
         >
-          Next Student {'>'}
+          Next Student <span className="ml-1">→</span>
         </Button>
-      </Space>
+      </div>
     </div>
   )
 }
 
-export default Navbar
+NavigationBar.propTypes = {
+  onBack: PropTypes.func.isRequired,
+  onPrevious: PropTypes.func.isRequired,
+  onNext: PropTypes.func.isRequired,
+  onChangeStudent: PropTypes.func.isRequired,
+  currentStudent: PropTypes.number,
+  totalStudents: PropTypes.number,
+  disabled: PropTypes.bool
+}
+
+export default NavigationBar

@@ -42,7 +42,7 @@ export const getStatusColor = status => {
       bg: 'bg-blue-100',
       text: 'text-blue-800'
     },
-    IN_PROGRESS: {
+    ON_GOING: {
       bg: 'bg-purple-100',
       text: 'text-purple-800'
     },
