@@ -12,15 +12,12 @@ function GradingPage() {
   const [activeSection, setActiveSection] = useState('speaking')
   const [currentStudent, setCurrentStudent] = useState(1)
   const navigate = useNavigate()
-  // const { topicId } = useParams()
 
-  // Fetch speaking test data - only when the speaking section is active
   const { data: speakingTest, isLoading: speakingLoading } = useGetSpeakingTest(
     'ef6b69aa-2ec2-4c65-bf48-294fd12e13fc',
     'SPEAKING'
   )
 
-  // Mock student data - in real app this would come from props or API
   const studentData = {
     name: 'A Nguyen',
     id: 'GDD210011',
@@ -57,7 +54,6 @@ function GradingPage() {
 
   const renderMainContent = () => (
     <div>
-      {/* Navigation Bar at Top Level */}
       <div className="mb-6">
         <NavigationBar
           onBack={handleBack}
@@ -70,16 +66,12 @@ function GradingPage() {
         />
       </div>
 
-      {/* Top Row: Student Information and Speaking/Writing */}
       <div className="flex gap-6">
-        {/* Left Column - Student Information */}
         <div className="h-fit w-[340px]">
           <StudentCard student={studentData} />
         </div>
 
-        {/* Right Column - Speaking/Writing Section */}
         <div className="flex-1">
-          {/* Section Tabs */}
           <div className="align-center flex rounded-t-[10px] bg-[#f3f4f6] pb-[12px] pl-[12px] pt-[12px]">
             <Button
               type={activeSection === 'speaking' ? 'primary' : 'default'}
@@ -105,7 +97,6 @@ function GradingPage() {
             </Button>
           </div>
 
-          {/* Content Container */}
           <div className="rounded-b-[10px] border border-gray-200 bg-white p-6 shadow-md">
             {activeSection === 'speaking' ? (
               <Speaking testData={speakingTest} isLoading={speakingLoading} />
@@ -114,7 +105,6 @@ function GradingPage() {
             )}
           </div>
 
-          {/* Feedback Section */}
           <div className="mt-6">
             <Feedback />
           </div>
@@ -123,7 +113,6 @@ function GradingPage() {
     </div>
   )
 
-  // Determine if any loading state is active
   const isLoading = activeSection === 'speaking' ? speakingLoading : false
 
   return (

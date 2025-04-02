@@ -48,7 +48,6 @@ const Speaking = ({ testData, isLoading }) => {
 
   return (
     <div>
-      {/* Part Selection */}
       <div className="mb-6 flex w-fit gap-2 rounded-xl border border-gray-200 bg-white p-2 shadow-sm">
         {parts.map(part => (
           <Button
@@ -64,11 +63,8 @@ const Speaking = ({ testData, isLoading }) => {
         ))}
       </div>
 
-      {/* Main Content */}
       <div className="flex gap-8">
-        {/* Left Column - Questions and Audio */}
         <div className="flex-1 space-y-5">
-          {/* Part Title */}
           <div className="mb-4">
             <h3 className="text-lg font-medium text-[#003087]">{currentPart.Content}:</h3>
             {currentPart.Questions?.map(question => (
@@ -99,7 +95,6 @@ const Speaking = ({ testData, isLoading }) => {
           ))}
         </div>
 
-        {/* Right Column - Scoring */}
         <div className="w-72">
           <div className="sticky top-6 space-y-4 rounded-md border border-gray-800 p-6 shadow-2xl">
             {/* Score Inputs */}
@@ -123,7 +118,6 @@ const Speaking = ({ testData, isLoading }) => {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="mt-4 space-y-3">
               <Button type="primary" className="h-10 w-full rounded-lg bg-[#003087] text-white hover:bg-[#002366]">
                 Submit

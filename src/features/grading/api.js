@@ -11,7 +11,6 @@ export const useGetSpeakingTest = (topicId, skillName = 'SPEAKING') => {
         params: { skillName }
       })
 
-      // Sort parts by number
       const sortedData = {
         ...response.data,
         Parts: [...response.data.Parts].sort((a, b) => {

@@ -32,10 +32,10 @@ const AudioPlayer = ({ audioUrl }) => {
       if (!containerRef.current?.contains(document.activeElement)) return
       switch (e.key) {
         case 'ArrowLeft':
-          seekAudio(-5) // Seek back 5 seconds
+          seekAudio(-5)
           break
         case 'ArrowRight':
-          seekAudio(5) // Seek forward 5 seconds
+          seekAudio(5)
           break
       }
     },
@@ -60,7 +60,6 @@ const AudioPlayer = ({ audioUrl }) => {
   }, [handleTimeUpdate, handleEnded, handleLoadedMetadata, handleKeyPress])
 
   useEffect(() => {
-    // Reset progress when audio URL changes
     setProgress(0)
     setCurrentTime(0)
     setIsPlaying(false)
@@ -68,7 +67,6 @@ const AudioPlayer = ({ audioUrl }) => {
       audioRef.current.currentTime = 0
       audioRef.current.pause()
 
-      // Force load the new audio
       audioRef.current.load()
     }
   }, [audioUrl])
@@ -120,14 +118,11 @@ const AudioPlayer = ({ audioUrl }) => {
       const offsetX = e.clientX - rect.left
       const newProgress = (offsetX / rect.width) * 100
 
-      // Clamp the progress between 0 and 100
       const clampedProgress = Math.max(0, Math.min(newProgress, 100))
 
-      // Update the audio time
       const newTime = (clampedProgress / 100) * audioRef.current.duration
       audioRef.current.currentTime = newTime
 
-      // Update the UI
       setProgress(clampedProgress)
       setCurrentTime(newTime)
     }
