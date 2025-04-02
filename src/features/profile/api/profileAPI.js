@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 
-const API_BASE_URL = 'https://dev-api-greenprep.onrender.com/api'
+const API_BASE_URL = import.meta.env.VITE_BASE_URL
 const accessToken = localStorage.getItem('access_token')
 
 const fetchUserProfile = async userId => {
