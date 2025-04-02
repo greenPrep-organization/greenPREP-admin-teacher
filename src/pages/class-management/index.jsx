@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Table, Input, Space, Button, Card, message, Typography, Breadcrumb } from 'antd'
+import { Table, Input, Space, Button, Card, message, Typography, Breadcrumb, Spin } from 'antd'
 import { EditOutlined, EyeOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -7,7 +7,7 @@ import { fetchClasses, deleteClass, fetchClassById } from '@features/class-manag
 import { CreateClassModal, EditClassModal } from '@features/class-management/ui/class-modal'
 import DeleteConfirmModal from '@features/class-management/ui/delete-class'
 
-const { Title } = Typography
+const { Title, Text } = Typography
 
 const ClassList = () => {
   const navigate = useNavigate()
@@ -19,7 +19,11 @@ const ClassList = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [classToDelete, setClassToDelete] = useState(null)
 
-  const { data: response = {}, isLoading } = useQuery({
+  const {
+    data: response = {},
+    isLoading,
+    isError
+  } = useQuery({
     queryKey: ['classes'],
     queryFn: fetchClasses,
     staleTime: 60 * 1000,
@@ -91,8 +95,28 @@ const ClassList = () => {
     }
   }
 
+  if (isLoading) {
+    return <Spin className="flex h-screen items-center justify-center" />
+  }
+
+  if (isError) {
+    return (
+      <Text className="text-center text-red-500">Cannot fetch data from server. Please wait and refresh page!</Text>
+    )
+  }
+
   const columns = [
-    { title: 'CLASS NAME', dataIndex: 'className', key: 'className', align: 'center' },
+    {
+      title: 'CLASS NAME',
+      dataIndex: 'className',
+      key: 'className',
+      align: 'center',
+      render: (text, record) => (
+        <a onClick={() => handleView(record)} style={{ cursor: 'pointer', color: 'black' }}>
+          {text}
+        </a>
+      )
+    },
     { title: 'NUMBER OF SESSIONS', dataIndex: 'sessions', key: 'sessions', align: 'center' },
     {
       title: 'ACTIONS',
