@@ -227,10 +227,8 @@ const SessionsList = ({ classId }) => {
           columns={columns}
           rowKey="id"
           pagination={{
-            pageSize: 3,
-            showSizeChanger: true,
-            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total}`,
-            ...DEFAULT_PAGINATION
+            ...DEFAULT_PAGINATION, 
+            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total}`
           }}
           className="overflow-x-auto"
         />
