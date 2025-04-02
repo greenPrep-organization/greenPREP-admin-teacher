@@ -8,7 +8,6 @@ const { TextArea } = Input
 
 const FEEDBACK_STORAGE_KEY = 'grading_feedbacks'
 
-// Load saved feedbacks from localStorage on initial load
 try {
   const savedFeedbacks = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY))
   if (savedFeedbacks) {
@@ -39,26 +38,20 @@ function Feedback({
     [type]
   )
 
-  // Initialize feedbacks from shared state when component mounts or type/part changes
   useEffect(() => {
-    // Update the shared feedbacks with any new feedback passed in
     if (savedFeedback) {
       sharedFeedbacks[type][activePart] = savedFeedback
     }
 
-    // Use shared feedbacks if no feedback is provided
     if (!savedFeedback && !initialFeedback) {
       setFeedbackByPart(prev => ({
         ...prev,
         [getPartKey(activePart)]: sharedFeedbacks[type][activePart] || ''
       }))
     } else if (initialFeedback) {
-      // Check if we need to update the feedback
       const partKey = getPartKey(activePart)
       setFeedbackByPart(prev => {
-        // Only update if the feedback doesn't exist yet
         if (!prev[partKey]) {
-          // Also update shared state
           sharedFeedbacks[type][activePart] = initialFeedback
           return {
             ...prev,
@@ -79,7 +72,6 @@ function Feedback({
       [partKey]: newFeedback
     }))
 
-    // Update shared state
     sharedFeedbacks[type][activePart] = newFeedback
 
     if (onFeedbackChange) {
@@ -122,7 +114,6 @@ function Feedback({
     )
   }
 
-  // Get the current feedback for the active part
   const currentFeedback = feedbackByPart[getPartKey(activePart)] || sharedFeedbacks[type][activePart] || ''
 
   return (

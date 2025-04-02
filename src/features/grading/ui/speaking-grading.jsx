@@ -7,7 +7,6 @@ import GradingScoringPanel from './grading-scoring-panel'
 
 const SPEAKING_STORAGE_KEY = 'speaking_grading_draft'
 
-// Flag to track if we've already loaded the draft
 let hasLoadedSpeakingDraft = false
 
 const Speaking = ({ testData, isLoading }) => {
@@ -15,7 +14,6 @@ const Speaking = ({ testData, isLoading }) => {
   const [scores, setScores] = useState({})
   const parts = useMemo(() => testData?.Parts || [], [testData])
 
-  // Load draft data from localStorage only once when the website loads
   useEffect(() => {
     if (!hasLoadedSpeakingDraft && testData) {
       try {
@@ -23,15 +21,11 @@ const Speaking = ({ testData, isLoading }) => {
         if (draftData && Array.isArray(draftData)) {
           const loadedScores = {}
 
-          // Process each part in the draft data
           draftData.forEach(({ part, scores: partScores }) => {
-            // Convert part name to match the format in the scores object
             const partName = `PART ${part.slice(-1)}`
 
-            // Process each score in the part
             partScores.forEach(({ questionIndex, score }) => {
               if (score !== null && score !== undefined) {
-                // Find the question ID for this index in the current part
                 const currentPart = parts.find(p => p.Content === partName)
                 if (currentPart && currentPart.Questions && currentPart.Questions[questionIndex]) {
                   const questionId = currentPart.Questions[questionIndex].ID

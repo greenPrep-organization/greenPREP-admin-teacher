@@ -7,7 +7,6 @@ import { sharedScores } from '@features/grading/constants/shared-state'
 const GradingScoringPanel = ({ activePart, questions, scores, setScores, type = 'writing', onSubmit }) => {
   const [totalScore, setTotalScore] = useState(0)
 
-  // Helper function to get the question ID based on type and index
   const getQuestionId = useCallback(
     (question, index) => {
       if (type === 'writing') {
@@ -19,20 +18,16 @@ const GradingScoringPanel = ({ activePart, questions, scores, setScores, type = 
     [activePart, type]
   )
 
-  // Initialize scores from shared state when component mounts or type changes
   useEffect(() => {
-    // Update the shared scores with any new scores passed in
     if (scores && Object.keys(scores).length > 0) {
       sharedScores[type] = { ...sharedScores[type], ...scores }
     }
 
-    // Use shared scores if no scores are provided
     if (!scores || Object.keys(scores).length === 0) {
       setScores(sharedScores[type])
     }
   }, [type, scores, setScores])
 
-  // Calculate total score for the current part
   useEffect(() => {
     if (questions && questions.length > 0) {
       let total = 0
@@ -46,10 +41,8 @@ const GradingScoringPanel = ({ activePart, questions, scores, setScores, type = 
   }, [activePart, scores, questions, getQuestionId])
 
   const handleScoreChange = (questionId, value) => {
-    // Allow empty values, otherwise convert to number and limit to 0-100
     let numericValue = value === '' || value === null || value === undefined ? '' : Number(value)
 
-    // Ensure the value is between 0 and 100 only if it's a number
     if (numericValue !== '' && typeof numericValue === 'number') {
       if (numericValue < 0) {
         numericValue = 0
@@ -58,7 +51,6 @@ const GradingScoringPanel = ({ activePart, questions, scores, setScores, type = 
       }
     }
 
-    // Update both the local state and shared state
     const newScores = {
       ...scores,
       [questionId]: numericValue
@@ -73,7 +65,7 @@ const GradingScoringPanel = ({ activePart, questions, scores, setScores, type = 
       <div className="sticky top-6 space-y-4 rounded-md border border-gray-800 p-6 shadow-2xl">
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <h4 className="mb-4 font-bold text-[#003087]">
-            {type === 'writing' ? `Part ${activePart.slice(-1)} Scoring` : `${activePart} Scoring`}
+            {type === 'writing' ? `PART ${activePart.slice(-1)} Scoring` : `${activePart} Scoring`}
           </h4>
           <div className="space-y-4">
             {questions.map((question, index) => {
@@ -88,15 +80,20 @@ const GradingScoringPanel = ({ activePart, questions, scores, setScores, type = 
                     placeholder="Score"
                     min={0}
                     max={100}
-                    value={scores[questionId] || ''}
+                    value={scores[questionId] === 0 ? 0 : scores[questionId] || ''}
                     onChange={e => {
-                      // Allow numeric input including 0
                       const value = e.target.value === '' ? '' : e.target.value.replace(/[^0-9]/g, '')
                       handleScoreChange(questionId, value)
                     }}
-                    onKeyPress={e => {
-                      // Allow numeric key presses including 0
-                      if (!/[0-9]/.test(e.key)) {
+                    onKeyDown={e => {
+                      if (
+                        !/[0-9]/.test(e.key) &&
+                        e.key !== 'Backspace' &&
+                        e.key !== 'Delete' &&
+                        e.key !== 'ArrowLeft' &&
+                        e.key !== 'ArrowRight' &&
+                        e.key !== 'Tab'
+                      ) {
                         e.preventDefault()
                       }
                     }}

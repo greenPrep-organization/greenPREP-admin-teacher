@@ -7,7 +7,6 @@ import Feedback from '@features/grading/ui/feedback-grading'
 
 const STORAGE_KEY = 'writing_grading_draft'
 
-// Flag to track if we've already loaded the draft
 let hasLoadedWritingDraft = false
 
 function WritingGrade() {
@@ -20,7 +19,6 @@ function WritingGrade() {
     initialData: mockData
   })
 
-  // Load draft data from localStorage only once when the website loads
   useEffect(() => {
     if (!hasLoadedWritingDraft && studentData) {
       try {
@@ -75,7 +73,7 @@ function WritingGrade() {
               activePart === part ? 'bg-[#003087] text-white' : 'bg-white text-black'
             }`}
           >
-            {`Part ${part.slice(-1)}`}
+            {`PART ${part.slice(-1)}`}
           </Button>
         ))}
       </div>
@@ -83,7 +81,7 @@ function WritingGrade() {
       <div className="flex gap-8">
         <div className="flex-1 space-y-5">
           <div className="mb-4">
-            <h3 className="text-lg font-medium text-[#003087]">{`Part ${activePart.slice(-1)}:`}</h3>
+            <h3 className="text-lg font-medium text-[#003087]">{`PART ${activePart.slice(-1)}:`}</h3>
             <div className="mt-1 text-base">{instructions}</div>
             <ol className="list-decimal space-y-1 pl-6">
               {questions.map((question, index) => (
