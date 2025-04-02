@@ -23,7 +23,6 @@ export const fetchClasses = async () => {
 export const fetchClassDetails = async classId => {
   try {
     const response = await axios.get(`${API_BASE_URL}/sessions?classId=${classId}`)
-
     return {
       classInfo: response.data?.data || [],
       totalSessions: response.data?.total || 0
