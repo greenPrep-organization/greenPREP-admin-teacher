@@ -1,4 +1,3 @@
-import { UserOutlined } from '@ant-design/icons'
 import { useChangeUserPassword, useUpdateUserProfile, useUserProfile } from '@features/profile/api/profileAPI'
 import { Avatar, Button, Card, Divider, Input, message, Modal, Spin, Tag } from 'antd'
 import { useEffect, useState } from 'react'
@@ -153,7 +152,9 @@ const Profile = () => {
       <h1 className="mb-6 text-3xl font-bold text-gray-800">Profile</h1>
       <Card className="mb-6 overflow-hidden rounded-lg border border-gray-200 shadow-sm">
         <div className="flex flex-col gap-6 md:flex-row md:items-center">
-          <Avatar size={100} icon={<UserOutlined />} className="bg-gray-800" />
+          <Avatar className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-100 bg-gray-400 text-4xl font-bold text-black md:h-24 md:w-24 md:rounded-[50%]">
+            {userData?.lastName?.charAt(0)}
+          </Avatar>
           <div className="flex-grow">
             <h2 className="text-2xl font-semibold text-gray-800">
               {userData?.firstName} {userData?.lastName}
