@@ -1,41 +1,31 @@
 import { SearchOutlined } from '@ant-design/icons'
 import { Input, Table, Select, Empty } from 'antd'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import PropTypes from 'prop-types'
+import { useQuery } from '@tanstack/react-query'
 import { getUserSessionHistory } from '../api'
 
 const { Option } = Select
 
 const SessionHistory = ({ userId }) => {
-  const [loading, setLoading] = useState(false)
   const [searchText, setSearchText] = useState('')
-  const [data, setData] = useState([])
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedSession, setSelectedSession] = useState(null)
   const [selectedLevel, setSelectedLevel] = useState(null)
-  const [error, setError] = useState(null)
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      if (!userId) return
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['sessionHistory', userId],
+    queryFn: async () => {
+      if (!userId) return { data: [] }
+      const response = await getUserSessionHistory(userId)
+      return response
+    },
+    enabled: !!userId
+  })
 
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await getUserSessionHistory(userId)
-        setData(response.data || [])
-      } catch (err) {
-        setError(err.message || 'Failed to fetch session history')
-        console.error('Error fetching history:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
+  const sessionData = data?.data || []
 
-    fetchHistory()
-  }, [userId])
-
-  const filteredData = data.filter(item => {
+  const filteredData = sessionData.filter(item => {
     const matchesSearch = item.sessionName.toLowerCase().includes(searchText.toLowerCase())
     const matchesDate = !selectedDate || selectedDate === 'all' || item.date === selectedDate
     const matchesSession = !selectedSession || selectedSession === 'all' || item.sessionName === selectedSession
@@ -43,9 +33,9 @@ const SessionHistory = ({ userId }) => {
     return matchesSearch && matchesDate && matchesSession && matchesLevel
   })
 
-  const dates = [...new Set(data.map(item => item.date))]
-  const sessions = [...new Set(data.map(item => item.sessionName))]
-  const levels = [...new Set(data.map(item => item.finalLevel))]
+  const dates = [...new Set(sessionData.map(item => item.date))]
+  const sessions = [...new Set(sessionData.map(item => item.sessionName))]
+  const levels = [...new Set(sessionData.map(item => item.finalLevel))]
 
   const columns = [
     {
@@ -261,7 +251,11 @@ const SessionHistory = ({ userId }) => {
   ]
 
   if (error) {
-    return <div style={{ padding: '24px', textAlign: 'center', color: '#ff4d4f' }}>{error}</div>
+    return (
+      <div style={{ padding: '24px', textAlign: 'center', color: '#ff4d4f' }}>
+        {error.message || 'Failed to fetch session history'}
+      </div>
+    )
   }
 
   return (
@@ -310,7 +304,7 @@ const SessionHistory = ({ userId }) => {
       <Table
         columns={columns}
         dataSource={filteredData}
-        loading={loading}
+        loading={isLoading}
         rowKey="id"
         pagination={{
           pageSize: 5,
