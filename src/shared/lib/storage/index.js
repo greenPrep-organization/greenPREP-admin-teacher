@@ -8,3 +8,5 @@ export const getStorageData = key => {
 export const setStorageData = (key, data) => localStorage.setItem(key, toStoredData(data))
 
 export const removeStorageData = key => localStorage.removeItem(key)
+
+export const ACCESS_TOKEN_KEY = 'access_token'

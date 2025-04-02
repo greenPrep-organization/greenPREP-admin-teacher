@@ -1,11 +1,11 @@
+import ClassDetailsPage from '@features/class-management/ui/view-class'
+import Profile from '@features/profile/ui/profile'
 import ClassListPage from '@pages/class-management'
 import ClassDetailPage from '@pages/ClassDetailPage'
+import GradingPage from '@pages/GradingPage'
 import StudentProfilePage from '@pages/StudentProfilePage'
-import ClassDetailsPage from '@features/class-management/ui/view-class'
-import TeacherProfile from '../../features/profile/ui/teacher-profile'
 import SessionDetailPage from '../../pages/SessionDetailPage'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
-import GradingPage from '@pages/GradingPage'
 
 const PrivateRoute = [
   {
@@ -29,7 +29,7 @@ const PrivateRoute = [
         element: <ClassDetailsPage />
       },
       {
-        path: 'student',
+        path: 'student/:userId',
         element: <StudentProfilePage />
       },
       {
@@ -37,8 +37,8 @@ const PrivateRoute = [
         element: <SessionDetailPage />
       },
       {
-        path: 'teacher',
-        element: <TeacherProfile />
+        path: 'profile/:userId',
+        element: <Profile />
       },
       {
         path: 'grading',

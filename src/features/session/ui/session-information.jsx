@@ -1,40 +1,33 @@
 import { useState, useEffect } from 'react'
 import { Spin } from 'antd'
 import PropTypes from 'prop-types'
+import { getUserInfo } from '@features/session/api'
 
-const SessionInformation = ({ studentId }) => {
+const SessionInformation = ({ userId }) => {
   const [loading, setLoading] = useState(false)
-  const [studentInfo, setStudentInfo] = useState(null)
+  const [userInfo, setUserInfo] = useState(null)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const fetchStudentInfo = async () => {
+    const fetchInfo = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        const mockData = {
-          name: 'A Nguyen',
-          id: 'GDD210011',
-          class: 'GCD1111',
-          email: 'QWER@gmail.com',
-          phone: '0123456789',
-          dob: '25/03/2025'
-        }
-
-        setStudentInfo(mockData)
+        const response = await getUserInfo(userId)
+        setUserInfo(response.data)
       } catch (err) {
         setError('Failed to fetch student information')
-        console.error('Error fetching student info:', err)
+        console.error('Error fetching info:', err)
       } finally {
         setLoading(false)
       }
     }
 
-    if (studentId) {
-      fetchStudentInfo()
+    if (userId) {
+      fetchInfo()
     }
-  }, [studentId])
+  }, [userId])
 
   if (loading) {
     return (
@@ -52,7 +45,7 @@ const SessionInformation = ({ studentId }) => {
     )
   }
 
-  if (!studentInfo) {
+  if (!userInfo) {
     return (
       <div className="rounded-lg bg-white p-6 shadow-md">
         <div className="text-center text-gray-500">No student information available</div>
@@ -61,44 +54,37 @@ const SessionInformation = ({ studentId }) => {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg bg-white shadow-md">
-      <div className="border-b border-gray-200 p-4">
-        <h2 className="text-lg font-medium">Student Information</h2>
-      </div>
+    <div className="space-y-6">
+      <div className="overflow-hidden rounded-lg bg-white shadow-md">
+        <div className="border-b border-gray-200 p-4">
+          <h2 className="text-lg font-medium">Student Information</h2>
+        </div>
 
-      <div className="p-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-500">Student Name:</p>
-              <p className="font-medium">{studentInfo.name}</p>
+        <div className="p-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500">Full Name:</p>
+                <p className="font-medium">{`${userInfo.firstName} ${userInfo.lastName}`}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Student Code:</p>
+                <p className="font-medium">{userInfo.studentCode || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Class:</p>
+                <p className="font-medium">{userInfo.class || 'N/A'}</p>
+              </div>
             </div>
-
-            <div>
-              <p className="text-sm text-gray-500">ID:</p>
-              <p className="font-medium">{studentInfo.id}</p>
-            </div>
-
-            <div>
-              <p className="text-sm text-gray-500">Class:</p>
-              <p className="font-medium">{studentInfo.class}</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-500">Email:</p>
-              <p className="font-medium">{studentInfo.email}</p>
-            </div>
-
-            <div>
-              <p className="text-sm text-gray-500">Phone number:</p>
-              <p className="font-medium">{studentInfo.phone}</p>
-            </div>
-
-            <div>
-              <p className="text-sm text-gray-500">Date of Birth:</p>
-              <p className="font-medium">{studentInfo.dob}</p>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500">Email:</p>
+                <p className="font-medium">{userInfo.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Phone number:</p>
+                <p className="font-medium">{userInfo.phone || 'N/A'}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -108,7 +94,7 @@ const SessionInformation = ({ studentId }) => {
 }
 
 SessionInformation.propTypes = {
-  studentId: PropTypes.string.isRequired
+  userId: PropTypes.string.isRequired
 }
 
 export default SessionInformation
