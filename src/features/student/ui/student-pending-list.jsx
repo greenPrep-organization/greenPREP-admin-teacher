@@ -144,7 +144,6 @@ const PendingList = ({ sessionId }) => {
   }, [pendingSearchText])
   return (
     <div>
-      <div className="px-4 py-1 font-medium">Pending Request</div>,
       <div className="mt-8">
         <div className="mb-4 flex justify-between">
           <div className="relative">

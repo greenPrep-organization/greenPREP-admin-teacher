@@ -191,7 +191,7 @@ const SessionParticipantList = () => {
       ),
       children: (
         <div className="participant-list">
-          <div className="mb-4 flex justify-between">
+          <div className="mb-4 mt-8 flex justify-between">
             <div className="relative">
               <Input
                 key="search-input"
