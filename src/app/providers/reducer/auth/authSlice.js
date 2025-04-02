@@ -1,6 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { getStorageData } from '@shared/lib/storage'
-import { ACCESS_TOKEN_KEY } from '@shared/lib/storage/index'
+import { ACCESS_TOKEN_KEY, getStorageData } from '@shared/lib/storage'
 import { jwtDecode } from 'jwt-decode'
 const checkAuth = () => Boolean(getStorageData(ACCESS_TOKEN_KEY))
 

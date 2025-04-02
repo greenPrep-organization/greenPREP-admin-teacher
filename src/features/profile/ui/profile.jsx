@@ -91,7 +91,7 @@ const Profile = () => {
       })
 
       message.success('Profile updated successfully!')
-      refetch() // Refresh the user data
+      refetch()
       setIsEditModalOpen(false)
     } catch (error) {
       if (error.response) {
