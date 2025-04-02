@@ -1,20 +1,25 @@
 import { DownOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
 import { Button, Dropdown, Layout, Menu } from 'antd'
+import { Link } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 const { Header } = Layout
 
-const menu = (
-  <Menu>
-    <Menu.Item key="0">
-      <a href="/profile">Profile</a>
-    </Menu.Item>
-    <Menu.Item key="1">
-      <a href="/signout">Sign Out</a>
-    </Menu.Item>
-  </Menu>
-)
-
 const SharedHeader = ({ collapsed, setCollapsed }) => {
+  const { user } = useSelector(state => state.auth)
+  const userInitial = user?.firstName
+
+  const menu = (
+    <Menu>
+      <Menu.Item key="0">
+        <Link to={`/profile/${user?.id || 1}`}>Profile</Link>
+      </Menu.Item>
+      <Menu.Item key="1">
+        <Link to="/signout">Sign Out</Link>
+      </Menu.Item>
+    </Menu>
+  )
+
   return (
     <Header className="bg-primary-color flex h-[80px] items-center justify-between border-0 border-l border-solid border-neutral-400 p-4">
       <div className="flex items-center">
@@ -34,10 +39,10 @@ const SharedHeader = ({ collapsed, setCollapsed }) => {
         >
           <span className="flex items-center space-x-1">
             <span>Hi,</span>
-            <span className="">Teacher</span>
+            <span className="">{user?.firstName}</span>
           </span>
           <span className="flex h-8 w-8 items-center justify-center rounded-full border border-black bg-white font-bold text-black md:h-10 md:w-10 md:rounded-[50%]">
-            Y
+            {userInitial}
           </span>
           <DownOutlined className="text-xs text-white md:text-sm" />
         </a>
