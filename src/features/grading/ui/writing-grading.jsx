@@ -3,6 +3,7 @@ import { Button, InputNumber, Form, Card, message, Divider } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import mockData from '@features/grading/constants/writingmockdata'
 import SaveAsDraftButton from './save-as-draft-button'
+import Feedback from '@features/grading/ui/feedback-grading'
 
 const STORAGE_KEY = 'writing_grading_draft'
 
@@ -187,7 +188,12 @@ function WritingGrade() {
           </div>
         </div>
       </div>
+
+      <div className="mt-6">
+        <Feedback activePart={activePart} />
+      </div>
     </div>
   )
 }
+
 export default WritingGrade

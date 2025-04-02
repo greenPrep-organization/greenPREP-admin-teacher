@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import AudioPlayer from '@features/grading/ui/audio-player'
 import { Input } from 'antd'
+import Feedback from '@features/grading/ui/feedback-grading'
 
 const Speaking = ({ testData, isLoading }) => {
   const [activePart, setActivePart] = useState('PART 1')
@@ -97,7 +98,6 @@ const Speaking = ({ testData, isLoading }) => {
 
         <div className="w-72">
           <div className="sticky top-6 space-y-4 rounded-md border border-gray-800 p-6 shadow-2xl">
-            {/* Score Inputs */}
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h4 className="mb-4 font-bold text-[#003087]">{currentPart.Content} Scoring</h4>
               <div className="space-y-4">
@@ -131,6 +131,10 @@ const Speaking = ({ testData, isLoading }) => {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <Feedback activePart={activePart} />
       </div>
     </div>
   )

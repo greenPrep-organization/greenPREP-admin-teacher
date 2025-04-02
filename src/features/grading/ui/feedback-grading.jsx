@@ -11,22 +11,33 @@ function Feedback({
   isLoading = false,
   savedFeedback = null,
   submissionStatus = 'pending',
-  feedbackHistory = []
+  feedbackHistory = [],
+  activePart // Thêm prop activePart
 }) {
-  const [feedback, setFeedback] = useState(initialFeedback)
+  const [feedbackByPart, setFeedbackByPart] = useState({}) // State lưu feedback theo part
   const [showHistory, setShowHistory] = useState(false)
 
+  // Khởi tạo feedback cho part hiện tại
   useEffect(() => {
     if (savedFeedback) {
-      setFeedback(savedFeedback)
-    } else {
-      setFeedback(initialFeedback)
+      setFeedbackByPart(prev => ({
+        ...prev,
+        [activePart]: savedFeedback
+      }))
+    } else if (initialFeedback && !feedbackByPart[activePart]) {
+      setFeedbackByPart(prev => ({
+        ...prev,
+        [activePart]: initialFeedback
+      }))
     }
-  }, [initialFeedback, savedFeedback])
+  }, [initialFeedback, savedFeedback, activePart])
 
   const handleFeedbackChange = e => {
     const newFeedback = e.target.value
-    setFeedback(newFeedback)
+    setFeedbackByPart(prev => ({
+      ...prev,
+      [activePart]: newFeedback
+    }))
     if (onFeedbackChange) {
       onFeedbackChange(newFeedback)
     }
@@ -101,7 +112,7 @@ function Feedback({
                   ? 'Previous feedback will be shown here'
                   : 'Easy grammar, using more complex sentences and vocab to upgrade band level'
               }
-              value={feedback}
+              value={feedbackByPart[activePart] || ''} // Hiển thị feedback của part hiện tại
               onChange={handleFeedbackChange}
               autoSize={{ minRows: 3, maxRows: 6 }}
               className="w-full rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"
@@ -127,7 +138,8 @@ Feedback.propTypes = {
       timestamp: PropTypes.string.isRequired,
       type: PropTypes.oneOf(['graded', 'draft']).isRequired
     })
-  )
+  ),
+  activePart: PropTypes.string // Thêm propTypes cho activePart
 }
 
 export default Feedback
