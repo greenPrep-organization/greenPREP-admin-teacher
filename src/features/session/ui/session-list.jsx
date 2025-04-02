@@ -1,19 +1,17 @@
 import EditSession from '@/features/session/ui/edit-session'
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import { getSessionsByClassId } from '@features/session/api'
+import { useSessions } from '@features/session/hooks'
 import CreateSessionModal from '@features/session/ui/create-new-session'
 import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { formatDate, getStatusColor } from '@shared/lib/utils/index'
-import { Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
+import { Button, Empty, Input, Space, Spin, Table, message } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const SessionsList = ({ classId }) => {
-  const [sessions, setSessions] = useState([])
+  const { data: sessions = [], isLoading, isError } = useSessions(classId)
   const [filteredSessions, setFilteredSessions] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [searchText, setSearchText] = useState('')
   const [editModalVisible, setEditModalVisible] = useState(false)
   const [selectedSession, setSelectedSession] = useState(null)
@@ -22,36 +20,9 @@ const SessionsList = ({ classId }) => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const fetchSessions = async () => {
-      try {
-        const response = await getSessionsByClassId(classId)
-        if (response.status === 200) {
-          const data = response.data.data
-          const mappedSessions = data
-            .map(item => ({
-              id: item.ID,
-              name: item.sessionName,
-              key: item.sessionKey,
-              startTime: new Date(item.startTime),
-              endTime: new Date(item.endTime),
-              participants: 0,
-              status: item.status
-            }))
-            .sort((a, b) => b.startTime.getTime() - a.startTime.getTime())
-
-          setSessions(mappedSessions)
-          setFilteredSessions(mappedSessions)
-        }
-        setLoading(false)
-      } catch (err) {
-        setError('Unable to load sessions. Please try again later.')
-        console.error(err)
-        setLoading(false)
-      }
-    }
-
-    fetchSessions()
-  }, [])
+    console.log(sessions)
+    setFilteredSessions(sessions)
+  }, [sessions])
 
   useEffect(() => {
     if (!sessions.length) return
@@ -62,7 +33,6 @@ const SessionsList = ({ classId }) => {
         session.key.toLowerCase().includes(searchText.toLowerCase()) ||
         formatDate(session.startTime).includes(searchText) ||
         formatDate(session.endTime).includes(searchText)
-
       return matchesSearch
     })
     setFilteredSessions(filtered)
@@ -71,16 +41,17 @@ const SessionsList = ({ classId }) => {
   const handleDelete = async () => {
     if (!deleteSessionId) return
     const updatedSessions = sessions.filter(session => session.id !== deleteSessionId)
-    setSessions(updatedSessions)
     setFilteredSessions(updatedSessions)
     setDeleteSessionId(null)
     message.success('Session deleted successfully')
   }
 
-  const handleViewSession = useCallback(id => {
-    message.info(`Navigating to session details for ${id}`)
-    navigate(`/session/${id}`, { replace: true })
-  }, [])
+  const handleViewSession = useCallback(
+    id => {
+      navigate(`/session/${id}`, { replace: true })
+    },
+    [navigate]
+  )
 
   const handleEdit = useCallback(session => {
     setSelectedSession(session)
@@ -89,14 +60,15 @@ const SessionsList = ({ classId }) => {
 
   const handleUpdate = useCallback(
     updatedSession => {
-      setSessions(prevSessions =>
-        prevSessions.map(session => (session.id === selectedSession.id ? { ...session, ...updatedSession } : session))
+      const updatedSessions = sessions.map(session =>
+        session.id === selectedSession.id ? { ...session, ...updatedSession } : session
       )
+      setFilteredSessions(updatedSessions)
       setEditModalVisible(false)
       setSelectedSession(null)
       message.success('Session updated successfully')
     },
-    [selectedSession]
+    [selectedSession, sessions]
   )
 
   const handleCreateSession = useCallback(
@@ -111,9 +83,7 @@ const SessionsList = ({ classId }) => {
           participants: 0,
           status: 'Pending'
         }
-
         const updatedSessions = [newSession, ...sessions]
-        setSessions(updatedSessions)
         setFilteredSessions(updatedSessions)
       } catch (err) {
         message.error('Failed to create session')
@@ -190,31 +160,31 @@ const SessionsList = ({ classId }) => {
         align: 'center',
         render: (_, record) => (
           <Space size="middle">
-            <Tooltip title="Edit">
-              <Button
-                type="text"
-                icon={<EditOutlined className="text-green-500" />}
-                onClick={() => handleEdit(record)}
-              />
-            </Tooltip>
-            <Tooltip title="Delete">
-              <Button
-                type="text"
-                icon={<DeleteOutlined className="text-red-500" />}
-                onClick={() => setDeleteSessionId(record.id)}
-              />
-            </Tooltip>
+            <a onClick={() => handleEdit(record)}>
+              <EditOutlined className="text-green-500" />
+            </a>
+            <a onClick={() => setDeleteSessionId(record.id)}>
+              <DeleteOutlined className="text-red-500" />
+            </a>
           </Space>
         )
       }
     ],
-    [handleDelete, handleEdit, handleViewSession]
+    [handleViewSession, handleEdit]
   )
 
-  if (error) {
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Spin size="large" />
+      </div>
+    )
+  }
+
+  if (isError) {
     return (
       <div className="flex h-64 flex-col items-center justify-center">
-        <div className="mb-4 text-lg text-red-500">{error}</div>
+        <div className="mb-4 text-lg text-red-500">Unable to load sessions. Please try again later.</div>
         <Button type="primary" onClick={() => window.location.reload()}>
           Try Again
         </Button>
@@ -251,11 +221,7 @@ const SessionsList = ({ classId }) => {
         initialValues={selectedSession}
       />
 
-      {loading ? (
-        <div className="flex h-64 items-center justify-center">
-          <Spin size="large" />
-        </div>
-      ) : filteredSessions.length > 0 ? (
+      {filteredSessions.length > 0 ? (
         <Table
           dataSource={filteredSessions}
           columns={columns}
@@ -284,6 +250,7 @@ const SessionsList = ({ classId }) => {
         onCancel={() => setIsModalVisible(false)}
         onSubmit={handleCreateSession}
       />
+
       {deleteSessionId && (
         <DeleteSessionPopup
           isOpen={!!deleteSessionId}
