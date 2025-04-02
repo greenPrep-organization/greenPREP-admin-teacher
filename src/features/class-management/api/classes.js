@@ -1,6 +1,4 @@
-import axios from 'axios'
-// @ts-ignore
-const API_BASE_URL = import.meta.env.VITE_BASE_URL
+import axiosInstance from '@shared/config/axios'
 
 const handleApiError = (error, message) => {
   if (error.response) {
@@ -14,15 +12,16 @@ const handleApiError = (error, message) => {
 
 export const fetchClasses = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/classes`)
+    const response = await axiosInstance.get('/classes')
     return response.data
   } catch (error) {
     handleApiError(error, 'Error fetching classes')
   }
 }
+
 export const fetchClassDetails = async classId => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/sessions?classId=${classId}`)
+    const response = await axiosInstance.get(`/sessions?classId=${classId}`)
     return {
       classInfo: response.data?.data || [],
       totalSessions: response.data?.total || 0
@@ -35,11 +34,7 @@ export const fetchClassDetails = async classId => {
 
 export const createClass = async classData => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/classes`, classData, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+    const response = await axiosInstance.post('/classes', classData)
     return response.data
   } catch (error) {
     handleApiError(error, 'Error creating class')
@@ -48,11 +43,7 @@ export const createClass = async classData => {
 
 export const updateClass = async (classId, updatedData) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/classes/${classId}`, updatedData, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+    const response = await axiosInstance.put(`/classes/${classId}`, updatedData)
     return response.data
   } catch (error) {
     handleApiError(error, `Error updating class with ID ${classId}`)
@@ -61,7 +52,7 @@ export const updateClass = async (classId, updatedData) => {
 
 export const deleteClass = async classId => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/classes/${classId}`)
+    const response = await axiosInstance.delete(`/classes/${classId}`)
     return response.data
   } catch (error) {
     handleApiError(error, `Error deleting class with ID ${classId}`)
