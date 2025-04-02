@@ -3,7 +3,7 @@ import { Table, Input, Space, Button, Card, message, Typography, Breadcrumb, Spi
 import { EditOutlined, EyeOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchClasses, deleteClass, fetchClassById } from '@features/class-management/api/classes'
+import { fetchClasses, deleteClass, fetchClassDetails } from '@features/class-management/api'
 import { CreateClassModal, EditClassModal } from '@features/class-management/ui/class-modal'
 import DeleteConfirmModal from '@features/class-management/ui/delete-class'
 
@@ -35,21 +35,20 @@ const ClassList = () => {
   const { data: classDetails } = useQuery({
     queryKey: ['classDetails', classes.map(cls => cls.ID)],
     queryFn: async () => {
-      const data = await Promise.all(classes.map(cls => fetchClassById(cls.ID)))
+      const data = await Promise.all(classes.map(cls => fetchClassDetails(cls.ID)))
       return data
     },
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
     enabled: classes.length > 0
   })
 
   const enrichedClasses = useMemo(() => {
     if (!classDetails) return []
-    return classes.map(cls => {
-      const classDetail = classDetails.find(detail => detail.ID === cls.ID)
-      return {
-        ...cls,
-        sessions: classDetail?.Sessions?.length || 0
-      }
-    })
+    return classes.map((cls, index) => ({
+      ...cls,
+      sessions: classDetails[index]?.totalSessions || 0
+    }))
   }, [classes, classDetails])
 
   const filteredClasses = useMemo(() => {

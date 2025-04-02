@@ -1,13 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
-
-const API_URL = import.meta.env.VITE_BASE_URL
+import axiosInstance from '@shared/config/axios'
 
 export const useGetSpeakingTest = (topicId, skillName = 'SPEAKING') => {
   return useQuery({
     queryKey: ['speakingTest', topicId],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/topics/${topicId}`, {
+      const response = await axiosInstance.get(`/topics/${topicId}`, {
         params: { skillName }
       })
 

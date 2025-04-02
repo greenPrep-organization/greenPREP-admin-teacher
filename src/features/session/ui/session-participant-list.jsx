@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { SearchOutlined } from '@ant-design/icons'
 import { getSessionParticipants, publishSessionResults, updateParticipantLevel } from '@features/session/api'
 import { Button, Input, Select, Table, Tabs, message } from 'antd'

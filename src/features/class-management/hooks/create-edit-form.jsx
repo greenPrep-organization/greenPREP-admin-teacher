@@ -1,6 +1,6 @@
 import { Form, Input, Button, message } from 'antd'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { updateClass, createClass } from '@features/class-management/api/classes'
+import { updateClass, createClass } from '@features/class-management/api'
 import { useEffect } from 'react'
 
 const ClassForm = ({ initialData, onSuccess, isEditMode, onClose }) => {

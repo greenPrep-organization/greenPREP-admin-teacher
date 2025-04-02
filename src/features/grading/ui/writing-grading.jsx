@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button, InputNumber, Form, Card, message, Divider } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import mockData from '@features/grading/constants/writingmockdata'
-import SaveAsDraftButton from './save-as-draft-button'
+import SaveAsDraftButton from '@features/grading/ui/save-as-draft-button'
 import Feedback from '@features/grading/ui/feedback-grading'
 
 const STORAGE_KEY = 'writing_grading_draft'
@@ -12,13 +12,13 @@ function WritingGrade() {
   const [form] = Form.useForm()
   const [totalScore, setTotalScore] = useState(0)
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false)
-
+  
   const { data: studentData } = useQuery({
     queryKey: ['studentData'],
     queryFn: () => Promise.resolve(mockData),
     initialData: mockData
   })
-
+  
   const calculatePartTotal = part => {
     const values = form.getFieldsValue()
     const questions = studentData[part].questions
@@ -29,7 +29,7 @@ function WritingGrade() {
     })
     setTotalScore(total)
   }
-
+  
   useEffect(() => {
     if (!hasLoadedDraft && studentData) {
       try {
@@ -52,15 +52,15 @@ function WritingGrade() {
       }
     }
   }, [studentData, hasLoadedDraft, form, activePart])
-
+  
   useEffect(() => {
     calculatePartTotal(activePart)
   }, [activePart, studentData])
-
+  
   const handlePartChange = key => {
     setActivePart(key)
   }
-
+  
   const handleScoreChange = (value, field) => {
     let newValue = value
     if (newValue > 100) {
@@ -69,29 +69,29 @@ function WritingGrade() {
     }
     calculatePartTotal(activePart)
   }
-
+  
   const handleKeyPress = event => {
     if (!/[0-9]/.test(event.key)) {
       event.preventDefault()
     }
   }
-
+  
   const handleSubmit = () => {
     message.success('Grading submitted successfully')
   }
-
+  
   const currentPart = studentData[activePart]
   const questions = currentPart.questions
   const answers = currentPart.answers
   const instructions = currentPart.instructions
-
+  
   const renderAnswer = answer => {
     if (!answer || answer.trim() === '') {
       return <p className="italic text-gray-500">No answer submitted</p>
     }
     return <p className="whitespace-pre-wrap">{answer}</p>
   }
-
+  
   return (
     <div className="mx-auto max-w-7xl px-4">
       <div className="mb-4 max-w-min rounded-xl border border-solid border-[#C0C0C0] px-4 py-2">
@@ -109,7 +109,7 @@ function WritingGrade() {
           ))}
         </div>
       </div>
-
+      
       <div className="flex flex-col gap-6 md:flex-row">
         <div className="flex-1">
           <Card className="mb-4 border-[#C0C0C0]">
@@ -122,7 +122,7 @@ function WritingGrade() {
               </ol>
             </div>
           </Card>
-
+          
           <Card className="max-h-[400px] overflow-y-auto border-[#C0C0C0]">
             {answers.length === 0 ? (
               <p className="italic text-gray-500">No answer submitted</p>
@@ -135,7 +135,7 @@ function WritingGrade() {
             )}
           </Card>
         </div>
-
+        
         <div className="w-full md:w-80">
           <div className="mx-auto rounded-lg bg-white p-6 shadow-md">
             <Form form={form} layout="horizontal" onFinish={handleSubmit} initialValues={{}}>
@@ -164,16 +164,16 @@ function WritingGrade() {
                   </Form.Item>
                 </div>
               ))}
-
+              
               <Divider className="my-4 border-black" />
-
+              
               <div className="flex items-center">
                 <label className="w-28 text-center font-medium text-gray-700">Total</label>
                 <Form.Item className="mb-0 flex-1">
                   <InputNumber className="w-[100px] bg-gray-50 text-right" value={totalScore} disabled />
                 </Form.Item>
               </div>
-
+              
               <div className="space-y-2 pt-4">
                 <Button
                   type="primary"
@@ -188,7 +188,7 @@ function WritingGrade() {
           </div>
         </div>
       </div>
-
+      
       <div className="mt-6">
         <Feedback activePart={activePart} />
       </div>

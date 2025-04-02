@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import StudentCard from '@features/grading/ui/studentInformation'
 import Speaking from '@features/grading/ui/speaking-grading'
 import Writing from '@features/grading/ui/writing-grading'
-import Feedback from '@features/grading/ui/feedback-grading'
 import NavigationBar from '@features/grading/ui/navigation-bar'
 import { useGetSpeakingTest } from '@features/grading/api'
 import StudentListModal from '@features/grading/ui/StudentListModal'
@@ -178,10 +177,6 @@ function GradingPage() {
             ) : (
               <Writing studentData={studentMockData} studentId={selectedStudent.id} />
             )}
-          </div>
-
-          <div className="mt-6">
-            <Feedback />
           </div>
         </div>
       </div>
