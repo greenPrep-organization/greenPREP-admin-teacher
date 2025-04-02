@@ -1,7 +1,7 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Card, Col, Row, Typography, Spin, Alert, Breadcrumb, Button } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import { fetchClassDetails } from '@features/class-management/api/classes'
+import { fetchClassDetails } from '@features/class-management/api'
 import SessionsList from '@features/session/ui/session-list'
 import { HomeOutlined, LeftOutlined } from '@ant-design/icons'
 
