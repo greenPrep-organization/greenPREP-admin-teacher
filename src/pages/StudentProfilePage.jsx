@@ -1,8 +1,8 @@
-import { getDefaultAvatar } from '@shared/lib/utils/avatarUtils'
-import SessionInformation from '@features/session/ui/session-information'
 import SessionHistory from '@features/session/ui/session-history'
+import SessionInformation from '@features/session/ui/session-information'
+import { getDefaultAvatar } from '@shared/lib/utils/avatarUtils'
 import { Avatar, Breadcrumb } from 'antd'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 export default function StudentProfilePage() {
   const { studentId } = useParams()
