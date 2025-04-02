@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 
-const API_URL = 'https://greenprep-api.onrender.com/api'
+const API_URL = import.meta.env.VITE_BASE_URL
 
 export const useGetSpeakingTest = (topicId, skillName = 'SPEAKING') => {
   return useQuery({

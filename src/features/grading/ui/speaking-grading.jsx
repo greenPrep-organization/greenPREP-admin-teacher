@@ -94,7 +94,7 @@ const Speaking = ({ testData, isLoading }) => {
                   </div>
                 )}
               </div>
-              <AudioPlayer audioUrl={'https://ipaine.com/dowload/sample.mp3'} />
+              <AudioPlayer audioUrl={'https://ipaine.com/download/sample.mp3'} />
             </div>
           ))}
         </div>

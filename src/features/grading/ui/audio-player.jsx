@@ -159,7 +159,7 @@ const AudioPlayer = ({ audioUrl }) => {
           style={{ boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}
         />
         <div className="mx-4 flex flex-1 items-center gap-2">
-          <span className="t ext-gray-500 min-w-[40px] text-center text-xs">{formatTime(currentTime)}</span>
+          <span className="min-w-[40px] text-center text-xs text-gray-500">{formatTime(currentTime)}</span>
           <div
             ref={progressBarRef}
             className="relative h-[4px] flex-1 cursor-pointer overflow-hidden bg-gray-300"
