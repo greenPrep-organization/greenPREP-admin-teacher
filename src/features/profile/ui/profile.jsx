@@ -72,10 +72,8 @@ const Profile = () => {
 
   const handleInputChange = e => {
     const { name, value } = e.target
-    if (name === 'phone' && (value.length > 11 || value.length < 10)) {
-      message.error('Phone number must have 10 digits')
-      return
-    }
+    // Remove the validation check here - let users type freely
+    // Validation will happen when they try to save
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
@@ -223,27 +221,66 @@ const Profile = () => {
         </div>
       </Card>
 
-      <Modal title="Edit Profile" open={isEditModalOpen} onOk={handleSave} onCancel={handleCancelEdit}>
+      <Modal
+        title="Update Profile"
+        open={isEditModalOpen}
+        onOk={handleSave}
+        onCancel={handleCancelEdit}
+        okText="Update"
+        cancelText="Cancel"
+        okButtonProps={{ className: 'bg-blue-600 hover:bg-blue-700' }}
+        cancelButtonProps={{ className: 'hover:bg-gray-100' }}
+        width={400}
+      >
         <div className="space-y-4">
-          <div>
-            <label className="block">First Name:</label>
-            <Input value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
+          {/* Name Row */}
+          <div className="flex gap-4">
+            {/* First Name */}
+            <div className="flex-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                First name <span className="text-red-500">*</span>
+              </label>
+              <Input
+                value={formData.firstName}
+                onChange={e => setFormData({ ...formData, firstName: e.target.value })}
+                className="w-full"
+              />
+            </div>
+
+            {/* Last Name */}
+            <div className="flex-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Last name <span className="text-red-500">*</span>
+              </label>
+              <Input
+                value={formData.lastName}
+                onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                className="w-full"
+              />
+            </div>
           </div>
+
+          {/* Email */}
           <div>
-            <label className="block">Last Name:</label>
-            <Input value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Email <span className="text-red-500">*</span>
+            </label>
+            <Input
+              value={formData.email}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
+              className="w-full"
+            />
           </div>
+
+          {/* Phone Number */}
           <div>
-            <label className="block">Email:</label>
-            <Input value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
-          </div>
-          <div>
-            <label className="block">Phone:</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">Phone number</label>
             <Input
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
-              placeholder="Enter 10 digit phone number"
+              placeholder="Enter phone number"
+              className="w-full"
             />
           </div>
         </div>
@@ -253,6 +290,9 @@ const Profile = () => {
         open={isPasswordModalOpen}
         onOk={handleChangePassword}
         onCancel={() => setIsPasswordModalOpen(false)}
+        width={400}
+        okText="Change"
+        cancelText="Cancel"
       >
         <div>
           <label className="block text-sm font-semibold">Current Password:</label>
