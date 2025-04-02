@@ -1,6 +1,7 @@
-import { Modal } from 'antd'
+import { Modal, Typography } from 'antd'
 import ClassForm from '@features/class-management/hooks/create-edit-form'
-import Title from 'antd/es/typography/Title'
+
+const { Title } = Typography
 
 const CreateClassModal = ({ visible, onClose, onSuccess }) => (
   <Modal
