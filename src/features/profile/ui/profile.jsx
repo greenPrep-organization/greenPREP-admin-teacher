@@ -25,6 +25,7 @@ const passwordValidationSchema = Yup.object().shape({
 const Profile = () => {
   const auth = useSelector(state => state.auth)
   const { data: userData, isLoading, isError, refetch } = useUserProfile(auth.user?.userId)
+  console.log(userData)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
   const updateProfileMutation = useUpdateUserProfile()
@@ -114,7 +115,7 @@ const Profile = () => {
     )
   }
 
-  if (isError || !userData) {
+  if (isError) {
     message.error('Unable to load profile information. Please try again later.')
     return null
   }
