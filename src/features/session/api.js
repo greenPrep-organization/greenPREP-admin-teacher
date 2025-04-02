@@ -1,11 +1,8 @@
-import axios from 'axios'
 import axiosInstance from '@shared/config/axios'
-
-const BASE_URL = import.meta.env.VITE_BASE_URL
 
 export const getSessionDetail = async sessionId => {
   try {
-    const response = await axios.get(`${BASE_URL}/sessions/${sessionId}`)
+    const response = await axiosInstance.get(`/sessions/${sessionId}`)
     return response.data
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to fetch session details')
@@ -14,7 +11,7 @@ export const getSessionDetail = async sessionId => {
 
 export const getSessionParticipants = async (sessionId, params = {}) => {
   try {
-    const response = await axios.get(`${BASE_URL}/session-participants/${sessionId}`, { params })
+    const response = await axiosInstance.get(`/session-participants/${sessionId}`, { params })
     console.log(response)
     return response.data
   } catch (error) {
@@ -24,7 +21,7 @@ export const getSessionParticipants = async (sessionId, params = {}) => {
 
 export const updateParticipantLevel = async (sessionId, participantId, level) => {
   try {
-    const response = await axios.patch(`${BASE_URL}/sessions/${sessionId}/participants/${participantId}`, {
+    const response = await axiosInstance.patch(`/sessions/${sessionId}/participants/${participantId}`, {
       level
     })
     return response.data
@@ -35,7 +32,7 @@ export const updateParticipantLevel = async (sessionId, participantId, level) =>
 
 export const publishSessionResults = async sessionId => {
   try {
-    const response = await axios.post(`${BASE_URL}/sessions/${sessionId}/publish`)
+    const response = await axiosInstance.post(`/sessions/${sessionId}/publish`)
     return response.data
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to publish session results')
@@ -50,7 +47,7 @@ export function getSessionsByClassId(classId) {
 
 export const getUserInfo = async userId => {
   try {
-    const response = await axios.get(`${BASE_URL}/users/${userId}`, {
+    const response = await axiosInstance.get(`/users/${userId}`, {
       headers: {
         'Content-Type': 'application/json'
       }
@@ -63,7 +60,7 @@ export const getUserInfo = async userId => {
 
 export const getUserSessionHistory = async userId => {
   try {
-    const response = await axios.get(`${BASE_URL}/session-participants/user/${userId}`, {
+    const response = await axiosInstance.get(`/session-participants/user/${userId}`, {
       headers: {
         'Content-Type': 'application/json'
       }

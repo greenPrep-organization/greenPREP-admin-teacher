@@ -1,13 +1,12 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+import axiosInstance from '@shared/config/axios'
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL
 const accessToken = localStorage.getItem('access_token')
 
 const fetchUserProfile = async userId => {
   try {
     console.log(`Fetching user profile for userId: ${userId}`)
-    const { data } = await axios.get(`${API_BASE_URL}/users/${userId}`, {
+    const { data } = await axiosInstance.get(`/users/${userId}`, {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
     return data
@@ -19,7 +18,7 @@ const fetchUserProfile = async userId => {
 
 const updateUserProfile = async ({ userId, userData }) => {
   try {
-    const { data } = await axios.put(`${API_BASE_URL}/users/${userId}`, userData, {
+    const { data } = await axiosInstance.put(`/users/${userId}`, userData, {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
     return data
@@ -31,7 +30,7 @@ const updateUserProfile = async ({ userId, userData }) => {
 
 const changeUserPassword = async ({ userId, passwordData }) => {
   try {
-    const { data } = await axios.post(`${API_BASE_URL}/users/${userId}/change-password`, passwordData, {
+    const { data } = await axiosInstance.post(`/users/${userId}/change-password`, passwordData, {
       headers: { Authorization: `Bearer ${accessToken}` }
     })
     return data
