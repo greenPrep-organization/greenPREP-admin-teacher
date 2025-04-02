@@ -5,11 +5,11 @@ import CreateSessionModal from '@features/session/ui/create-new-session'
 import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { formatDate, getStatusColor } from '@shared/lib/utils/index'
-import { Breadcrumb, Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
+import { Button, Empty, Input, message, Space, Spin, Table, Tooltip } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const SessionsList = () => {
+const SessionsList = ({ classId }) => {
   const [sessions, setSessions] = useState([])
   const [filteredSessions, setFilteredSessions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -24,7 +24,7 @@ const SessionsList = () => {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const response = await getSessionsByClassId('968650f0-4ee0-498c-a49c-69d6e65d091d')
+        const response = await getSessionsByClassId(classId)
         if (response.status === 200) {
           const data = response.data.data
           const mappedSessions = data
@@ -79,7 +79,7 @@ const SessionsList = () => {
 
   const handleViewSession = useCallback(id => {
     message.info(`Navigating to session details for ${id}`)
-    navigate(`/sessions/${id}`, { replace: true })
+    navigate(`/session/${id}`, { replace: true })
   }, [])
 
   const handleEdit = useCallback(session => {
@@ -224,13 +224,6 @@ const SessionsList = () => {
 
   return (
     <div className="rounded-lg bg-white p-6 shadow">
-      <Breadcrumb className="mb-4">
-        <Breadcrumb.Item>Classes</Breadcrumb.Item>
-        <Breadcrumb.Item>Class List</Breadcrumb.Item>
-        <Breadcrumb.Item>Class Details</Breadcrumb.Item>
-        <Breadcrumb.Item>Sessions List</Breadcrumb.Item>
-      </Breadcrumb>
-
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Sessions List</h1>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>

@@ -5,6 +5,7 @@ import ClassDetailsPage from '@features/class-management/ui/view-class'
 import TeacherProfile from '../../features/profile/ui/teacher-profile'
 import SessionDetailPage from '../../pages/SessionDetailPage'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
+import GradingPage from '@pages/GradingPage'
 
 const PrivateRoute = [
   {
@@ -32,12 +33,16 @@ const PrivateRoute = [
         element: <StudentProfilePage />
       },
       {
-        path: 'session',
+        path: 'session/:sessionId',
         element: <SessionDetailPage />
       },
       {
         path: 'teacher',
         element: <TeacherProfile />
+      },
+      {
+        path: 'grading',
+        element: <GradingPage />
       }
     ]
   }
