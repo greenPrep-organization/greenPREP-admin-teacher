@@ -1,4 +1,5 @@
 import axios from 'axios'
+import axiosInstance from '@shared/config/axios'
 
 const BASE_URL = import.meta.env.VITE_BASE_URL
 
@@ -40,8 +41,6 @@ export const publishSessionResults = async sessionId => {
     throw new Error(error.response?.data?.message || 'Failed to publish session results')
   }
 }
-
-import axiosInstance from '@shared/config/axios'
 
 export function getSessionsByClassId(classId) {
   return axiosInstance.get('sessions', {
