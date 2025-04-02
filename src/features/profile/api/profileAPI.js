@@ -12,14 +12,15 @@ export const useUserProfile = userId => {
   return useQuery({
     queryKey: ['userProfile', userId],
     queryFn: () => fetchUserProfile(userId),
-    // You can add example/mock data here for development purposes
-    // placeholderData: {
-    //   email: "khanh@example.com",
-    //   firstName: "Khanh",
-    //   lastName: "Minh",
-    //   role: ['teacher'],
-    //   userId: "8f420964-edbf-44e6-ac0b-096c59bdf2db"
-    // },
-    enabled: !!userId // Only run the query if userId exists
+    placeholderData: {
+      email: 'khanh1@example.com',
+      firstName: 'Khanh',
+      lastName: 'Minh',
+      phone: '123456789',
+      role: ['teacher'],
+      userId: '8f420964-edbf-44e6-ac0b-096c59bdf2db',
+      classes: ['English', 'History']
+    },
+    enabled: !!userId
   })
 }

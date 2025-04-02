@@ -36,7 +36,7 @@ const PrivateRoute = [
         element: <SessionDetailPage />
       },
       {
-        path: 'profile',
+        path: 'profile/:userId',
         element: <Profile />
       }
     ]

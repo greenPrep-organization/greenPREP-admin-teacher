@@ -14,17 +14,26 @@ const profileValidationSchema = Yup.object().shape({
     .required('Phone number is required')
 })
 
+const passwordValidationSchema = Yup.object().shape({
+  oldPassword: Yup.string().required('Old password is required'),
+  newPassword: Yup.string().min(6, 'Password must be at least 6 characters').required('New password is required'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('newPassword'), null], 'Passwords must match')
+    .required('Confirm password is required')
+})
+
 const Profile = () => {
   const auth = useSelector(state => state.auth)
-  console.log(auth.user)
   const { data: userData, isLoading, isError } = useUserProfile(auth.user?.userId)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: ''
   })
+  const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' })
 
   // Initialize form data when userData is available
   useEffect(() => {
@@ -37,6 +46,51 @@ const Profile = () => {
       })
     }
   }, [userData])
+
+  const handleEdit = () => {
+    setFormData({
+      firstName: userData.firstName || '',
+      lastName: userData.lastName || '',
+      email: userData.email || '',
+      phone: userData.phone || ''
+    })
+    setIsEditModalOpen(true)
+  }
+
+  const handleCancelEdit = () => {
+    setFormData({
+      firstName: userData.firstName || '',
+      lastName: userData.lastName || '',
+      email: userData.email || '',
+      phone: userData.phone || ''
+    })
+    setIsEditModalOpen(false)
+  }
+
+  const handleInputChange = e => {
+    const { name, value } = e.target
+    if (name === 'phone' && (value.length > 11 || value.length < 10)) {
+      message.error('Phone number must have 10 digits')
+      return
+    }
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleSave = async () => {
+    try {
+      if (formData.phone.length < 10 || formData.phone.length > 11) {
+        message.error('Phone number must have 10 digits')
+        return
+      }
+      await profileValidationSchema.validate(formData, { abortEarly: false })
+      message.success('Update Successfully!')
+      setIsEditModalOpen(false)
+    } catch (error) {
+      error.inner.forEach(err => {
+        message.error(err.message)
+      })
+    }
+  }
 
   if (isLoading) {
     return (
@@ -51,24 +105,21 @@ const Profile = () => {
     return null
   }
 
-  const handleEdit = () => {
-    setIsEditModalOpen(true)
+  const openChangePassword = () => {
+    setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' })
+    setIsPasswordModalOpen(true)
   }
 
-  const handleSave = async () => {
+  const handleChangePassword = async () => {
     try {
-      await profileValidationSchema.validate(formData, { abortEarly: false })
-      setIsEditModalOpen(false)
-      message.success('Profile updated successfully!')
+      await passwordValidationSchema.validate(passwordData, { abortEarly: false })
+      setIsPasswordModalOpen(false)
+      message.success('Password changed successfully!')
     } catch (error) {
       error.inner.forEach(err => {
         message.error(err.message)
       })
     }
-  }
-
-  const handleChangePassword = async () => {
-    message.info('Change Password')
   }
 
   return (
@@ -84,12 +135,7 @@ const Profile = () => {
             <p className="text-gray-600">{userData.email}</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              type="primary"
-              className="bg-blue-800 hover:bg-blue-700"
-              size="large"
-              onClick={handleChangePassword}
-            >
+            <Button type="primary" className="bg-blue-800 hover:bg-blue-700" size="large" onClick={openChangePassword}>
               Change Password
             </Button>
             <Button type="default" size="large" onClick={handleEdit}>
@@ -106,9 +152,9 @@ const Profile = () => {
             <div className="flex flex-wrap gap-2">
               {Array.isArray(userData.role) ? (
                 userData.role.map((role, index) => (
-                  <Tag key={index} className="capitalize">
+                  <p key={index} className="capitalize text-gray-500">
                     {role}
-                  </Tag>
+                  </p>
                 ))
               ) : (
                 <Tag className="capitalize">{userData.role || 'No role assigned'}</Tag>
@@ -132,12 +178,12 @@ const Profile = () => {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
             <p className="mb-1 text-gray-600">Phone number</p>
-            <p className="text-gray-500">{userData.phone || 'Not provided'}</p>
+            <p className="text-gray-500">{formData.phone}</p>
           </div>
         </div>
       </Card>
 
-      <Modal title="Edit Profile" open={isEditModalOpen} onOk={handleSave} onCancel={() => setIsEditModalOpen(false)}>
+      <Modal title="Edit Profile" open={isEditModalOpen} onOk={handleSave} onCancel={handleCancelEdit}>
         <div className="space-y-4">
           <div>
             <label className="block">First Name:</label>
@@ -154,11 +200,67 @@ const Profile = () => {
           <div>
             <label className="block">Phone:</label>
             <Input
+              name="phone"
               value={formData.phone}
-              onChange={e => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="Enter 10-11 digit phone number"
+              onChange={handleInputChange}
+              placeholder="Enter 10 digit phone number"
             />
           </div>
+        </div>
+      </Modal>
+      <Modal
+        title="Change Password"
+        open={isPasswordModalOpen}
+        onOk={handleChangePassword}
+        onCancel={() => setIsPasswordModalOpen(false)}
+      >
+        <div>
+          <label className="block text-sm font-semibold">Current Password:</label>
+          <Input.Password
+            value={passwordData.oldPassword}
+            onChange={e => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
+            className="mt-2 w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-semibold">New Password:</label>
+          <Input.Password
+            value={passwordData.newPassword}
+            onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+            className="mt-2 w-full rounded-md border border-gray-300 p-2"
+          />
+          {/* Password validation list */}
+          <div className="mt-2 pl-6 text-sm text-gray-600">
+            <ul>
+              <li className={passwordData.newPassword.length >= 8 ? 'text-green-500' : 'text-red-500'}>
+                Minimum 8 characters
+              </li>
+              <li className={/[A-Z]/.test(passwordData.newPassword) ? 'text-green-500' : 'text-red-500'}>
+                At least one uppercase letter
+              </li>
+              <li className={/[0-9]/.test(passwordData.newPassword) ? 'text-green-500' : 'text-red-500'}>
+                At least one number
+              </li>
+              <li
+                className={/[!@#$%^&*(),.?":{}|<>]/.test(passwordData.newPassword) ? 'text-green-500' : 'text-red-500'}
+              >
+                At least one special character
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-sm font-semibold">Confirm Password:</label>
+          <Input.Password
+            value={passwordData.confirmPassword}
+            onChange={e => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+            className="mt-2 w-full rounded-md border border-gray-300 p-2"
+          />
+          {passwordData.newPassword !== passwordData.confirmPassword && (
+            <p className="mt-1 text-sm text-red-500">Passwords do not match</p>
+          )}
         </div>
       </Modal>
     </div>
