@@ -1,7 +1,7 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Card, Col, Row, Typography, Spin, Alert, Breadcrumb, Button } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import { fetchClassById } from '@features/class-management/api/classes'
+import { fetchClassDetails } from '@features/class-management/api/classes'
 import SessionsList from '@features/session/ui/session-list'
 import { HomeOutlined, LeftOutlined } from '@ant-design/icons'
 
@@ -19,7 +19,7 @@ const ClassDetails = () => {
   } = useQuery({
     queryKey: ['class', id],
     queryFn: async () => {
-      const res = await fetchClassById(id)
+      const res = await fetchClassDetails(id)
       return res?.data || res
     },
     staleTime: 60 * 1000,
