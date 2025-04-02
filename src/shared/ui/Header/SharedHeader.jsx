@@ -1,5 +1,5 @@
 import { DownOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
-import { Button, Dropdown, Layout, Menu } from 'antd'
+import { Avatar, Button, Dropdown, Layout, Menu } from 'antd'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
@@ -8,7 +8,6 @@ const { Header } = Layout
 const SharedHeader = ({ collapsed, setCollapsed }) => {
   // @ts-ignore
   const { user } = useSelector(state => state.auth)
-  const userInitial = user?.firstName
 
   const menu = (
     <Menu>
@@ -23,31 +22,31 @@ const SharedHeader = ({ collapsed, setCollapsed }) => {
 
   return (
     <Header className="bg-primary-color flex h-[80px] items-center justify-between border-0 border-l border-solid border-neutral-400 p-4">
-      <div className="flex items-center">
+      <div>
         <Button
           type="text"
           icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           onClick={() => setCollapsed(!collapsed)}
-          style={{
-            color: 'white'
-          }}
+          className="text-white transition hover:text-gray-300"
         />
       </div>
-      <Dropdown overlay={menu} trigger={['click']}>
-        <a
-          className="ant-dropdown-link flex h-[40px] w-auto min-w-[140px] max-w-[200px] cursor-pointer items-center justify-between gap-2.5 rounded-[5px] bg-[#3758F96B] px-2 text-white md:h-[50px] md:min-w-[180px] md:max-w-[234px]"
-          onClick={e => e.preventDefault()}
-        >
-          <span className="flex items-center space-x-1">
-            <span>Hi,</span>
-            <span className="">{user?.firstName}</span>
-          </span>
-          <span className="flex h-8 w-8 items-center justify-center rounded-full border border-black bg-white font-bold text-black md:h-10 md:w-10 md:rounded-[50%]">
-            {userInitial}
-          </span>
-          <DownOutlined className="text-xs text-white md:text-sm" />
-        </a>
-      </Dropdown>
+      <div className="flex items-center">
+        <Dropdown overlay={menu} trigger={['click']}>
+          <a
+            className="ant-dropdown-link flex h-10 w-auto min-w-[150px] max-w-[220px] cursor-pointer items-center justify-between gap-3 rounded-md bg-[#3758F9] px-3 text-white shadow-md transition hover:bg-[#2F4CC9] md:h-12 md:min-w-[180px] md:max-w-[240px]"
+            onClick={e => e.preventDefault()}
+          >
+            <span className="flex items-center space-x-1 text-sm md:text-base">
+              <span>Hi,</span>
+              <span className="font-medium">{user?.lastName}</span>
+            </span>
+            <Avatar className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-gray-500 text-sm font-semibold text-white md:h-10 md:w-10">
+              {user?.lastName?.charAt(0)}
+            </Avatar>
+            <DownOutlined className="text-sm text-white md:text-base" />
+          </a>
+        </Dropdown>
+      </div>
     </Header>
   )
 }
