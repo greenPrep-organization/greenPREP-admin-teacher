@@ -38,6 +38,8 @@ const ClassList = () => {
       const data = await Promise.all(classes.map(cls => fetchClassById(cls.ID)))
       return data
     },
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
     enabled: classes.length > 0
   })
 
