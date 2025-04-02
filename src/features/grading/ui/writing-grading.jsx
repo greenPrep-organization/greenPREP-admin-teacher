@@ -1,8 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { Button, InputNumber, Form, Card, message, Divider } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import mockData from '@features/grading/constants/writingmockdata'
-import SaveAsDraftButton from './save-as-draft-button'
+import SaveAsDraftButton from '@features/grading/ui/save-as-draft-button'
 import Feedback from '@features/grading/ui/feedback-grading'
 
 const STORAGE_KEY = 'writing_grading_draft'

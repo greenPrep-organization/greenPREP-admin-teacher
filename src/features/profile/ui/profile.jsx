@@ -1,4 +1,5 @@
-import { useChangeUserPassword, useUpdateUserProfile, useUserProfile } from '@features/profile/api/profileAPI'
+import { UserOutlined } from '@ant-design/icons'
+import { useChangeUserPassword, useUpdateUserProfile, useUserProfile } from '@features/profile/api'
 import { Avatar, Button, Card, Divider, Input, message, Modal, Spin, Tag } from 'antd'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -22,6 +23,7 @@ const passwordValidationSchema = Yup.object().shape({
 })
 
 const Profile = () => {
+  // @ts-ignore
   const auth = useSelector(state => state.auth)
   const { data: userData, isLoading, isError, refetch } = useUserProfile(auth.user?.userId)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)

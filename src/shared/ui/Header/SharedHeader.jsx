@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 const { Header } = Layout
 
 const SharedHeader = ({ collapsed, setCollapsed }) => {
+  // @ts-ignore
   const { user } = useSelector(state => state.auth)
 
   const menu = (
