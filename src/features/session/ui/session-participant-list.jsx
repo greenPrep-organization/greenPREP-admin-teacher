@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
-import { Table, Input, Button, Tabs, Select, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
-import { getSessionParticipants, updateParticipantLevel, publishSessionResults } from '@features/session/api'
+import { getSessionParticipants, publishSessionResults, updateParticipantLevel } from '@features/session/api'
+import { Button, Input, Select, Table, Tabs, message } from 'antd'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import PendingList from '../../student/ui/student-pending-list'
 
 const SessionParticipantList = () => {
   const [loading, setLoading] = useState(false)
@@ -190,7 +191,7 @@ const SessionParticipantList = () => {
       ),
       children: (
         <div className="participant-list">
-          <div className="mb-4 flex justify-between">
+          <div className="mb-4 mt-8 flex justify-between">
             <div className="relative">
               <Input
                 key="search-input"
@@ -232,7 +233,11 @@ const SessionParticipantList = () => {
           Pending Request
         </div>
       ),
-      children: <div key="pending-content">Pending Request Content</div>
+      children: (
+        <div key="pending-content">
+          <PendingList sessionId={sessionId} />
+        </div>
+      )
     }
   ]
 

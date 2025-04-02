@@ -12,14 +12,31 @@ export function getStudentsBySessionId(SessionId) {
     },
     transformRequest: [
       (data, headers) => {
-        delete headers.Authorization // Remove the Authorization header
+        delete headers.Authorization
         return data
       }
     ]
   })
 }
 
-// Example usage:
-getStudentsBySessionId('1db40057-623d-4597-b267-520dedd4dc76')
-  .then(response => console.log(response.data))
-  .catch(error => console.error(error))
+export const getPendingSessionRequests = async sessionId => {
+  try {
+    const response = await axiosInstance.request({
+      url: `/session-requests/${sessionId}`,
+      method: 'GET',
+      params: { status: 'pending' },
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      transformRequest: [
+        (data, headers) => {
+          delete headers.Authorization
+          return data
+        }
+      ]
+    })
+    return response.data
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch pending session requests')
+  }
+}
