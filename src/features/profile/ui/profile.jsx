@@ -37,7 +37,6 @@ const Profile = () => {
   })
   const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' })
 
-  // Initialize form data when userData is available
   useEffect(() => {
     if (userData) {
       setFormData({
