@@ -29,7 +29,7 @@ const PrivateRoute = [
         element: <ClassDetailsPage />
       },
       {
-        path: 'student',
+        path: 'student/:userId',
         element: <StudentProfilePage />
       },
       {
