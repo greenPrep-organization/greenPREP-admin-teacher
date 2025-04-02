@@ -1,7 +1,7 @@
 import { DownOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
 import { Button, Dropdown, Layout, Menu } from 'antd'
-import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 
 const { Header } = Layout
 
@@ -12,7 +12,7 @@ const SharedHeader = ({ collapsed, setCollapsed }) => {
   const menu = (
     <Menu>
       <Menu.Item key="0">
-        <Link to={`/profile/${user?.id}`}>Profile</Link>
+        <Link to={`/profile/${user?.userId}`}>Profile</Link>
       </Menu.Item>
       <Menu.Item key="1">
         <Link to="/signout">Sign Out</Link>

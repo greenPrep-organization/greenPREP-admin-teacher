@@ -1,6 +1,6 @@
 import axios from 'axios'
-
-const API_BASE_URL = 'https://dev-api-greenprep.onrender.com/api/classes'
+// @ts-ignore
+const API_BASE_URL = import.meta.env.VITE_BASE_URL
 
 const handleApiError = (error, message) => {
   if (error.response) {
@@ -14,7 +14,7 @@ const handleApiError = (error, message) => {
 
 export const fetchClasses = async () => {
   try {
-    const response = await axios.get(API_BASE_URL)
+    const response = await axios.get(`${API_BASE_URL}/classes`)
     return response.data
   } catch (error) {
     handleApiError(error, 'Error fetching classes')
@@ -23,7 +23,7 @@ export const fetchClasses = async () => {
 
 export const fetchClassById = async classId => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/${classId}`)
+    const response = await axios.get(`${API_BASE_URL}/classes/${classId}`)
     return response.data?.data || {}
   } catch (error) {
     handleApiError(error, `Error fetching class with ID ${classId}`)
@@ -32,7 +32,7 @@ export const fetchClassById = async classId => {
 
 export const createClass = async classData => {
   try {
-    const response = await axios.post(API_BASE_URL, classData, {
+    const response = await axios.post(`${API_BASE_URL}/classes`, classData, {
       headers: {
         'Content-Type': 'application/json'
       }
@@ -45,7 +45,7 @@ export const createClass = async classData => {
 
 export const updateClass = async (classId, updatedData) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/${classId}`, updatedData, {
+    const response = await axios.put(`${API_BASE_URL}/classes/${classId}`, updatedData, {
       headers: {
         'Content-Type': 'application/json'
       }
@@ -58,7 +58,7 @@ export const updateClass = async (classId, updatedData) => {
 
 export const deleteClass = async classId => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/${classId}`)
+    const response = await axios.delete(`${API_BASE_URL}/classes/${classId}`)
     return response.data
   } catch (error) {
     handleApiError(error, `Error deleting class with ID ${classId}`)
