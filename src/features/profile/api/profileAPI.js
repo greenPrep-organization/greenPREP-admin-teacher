@@ -1,12 +1,15 @@
-import axiosInstance from '@shared/config/axios'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL
+const API_BASE_URL = 'https://dev-api-greenprep.onrender.com'
+const accessToken = localStorage.getItem('access_token')
 
 const fetchUserProfile = async userId => {
   try {
     console.log(`Fetching user profile for userId: ${userId}`)
-    const { data } = await axiosInstance.get(`${API_BASE_URL}/users/${userId}`)
+    const { data } = await axios.get(`${API_BASE_URL}/api/users/${userId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    })
     return data
   } catch (error) {
     console.error('Error fetching user profile:', error)
@@ -16,7 +19,9 @@ const fetchUserProfile = async userId => {
 
 const updateUserProfile = async ({ userId, userData }) => {
   try {
-    const { data } = await axiosInstance.put(`${API_BASE_URL}/users/${userId}`, userData)
+    const { data } = await axios.put(`${API_BASE_URL}/users/${userId}`, userData, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    })
     return data
   } catch (error) {
     console.error('Error updating user profile:', error)
@@ -26,7 +31,9 @@ const updateUserProfile = async ({ userId, userData }) => {
 
 const changeUserPassword = async ({ userId, passwordData }) => {
   try {
-    const { data } = await axiosInstance.post(`${API_BASE_URL}/users/${userId}/change-password`, passwordData)
+    const { data } = await axios.post(`${API_BASE_URL}/users/${userId}/change-password`, passwordData, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    })
     return data
   } catch (error) {
     console.error('Error changing password:', error)
@@ -38,7 +45,7 @@ export const useUserProfile = userId => {
   return useQuery({
     queryKey: ['userProfile', userId],
     queryFn: async () => await fetchUserProfile(userId),
-    enabled: !!userId
+    enabled: !!userId && !!accessToken
   })
 }
 
