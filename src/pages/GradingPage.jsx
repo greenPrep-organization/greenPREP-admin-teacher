@@ -7,10 +7,26 @@ import Writing from '@features/grading/ui/writing-grading'
 import Feedback from '@features/grading/ui/feedback-grading'
 import NavigationBar from '@features/grading/ui/navigation-bar'
 import { useGetSpeakingTest } from '@features/grading/api'
+import StudentListModal from '@features/grading/ui/StudentListModal'
+import writingMockData from '@features/grading/constants/writingmockdata'
 
 function GradingPage() {
   const [activeSection, setActiveSection] = useState('speaking')
   const [currentStudent, setCurrentStudent] = useState(1)
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState({
+    name: 'A Nguyen',
+    id: 'GDD210011',
+    class: 'GCD1111',
+    email: '123@gmail.com',
+    phone: '0123456789',
+    image: '',
+    writing: 'Not graded',
+    speaking: 'Not graded'
+  })
+
+  const studentMockData = writingMockData[selectedStudent.id]
+
   const navigate = useNavigate()
 
   const { data: speakingTest, isLoading: speakingLoading } = useGetSpeakingTest(
@@ -18,35 +34,94 @@ function GradingPage() {
     'SPEAKING'
   )
 
-  const studentData = {
-    name: 'A Nguyen',
-    id: 'GDD210011',
-    class: 'GCD1111',
-    email: '123@gmail.com',
-    phone: '0123456789',
-    image: ''
-  }
+  const students = [
+    {
+      name: 'A Nguyen',
+      id: 'GDD210011',
+      class: 'GCD1111',
+      email: '123@gmail.com',
+      phone: '0123456789',
+      image: '',
+      writing: 'Not graded',
+      speaking: 'Not graded'
+    },
+    {
+      name: 'B Tran',
+      id: 'GDD210012',
+      class: 'GCD1111',
+      email: 'btran@gmail.com',
+      phone: '0123456790',
+      image: '',
+      writing: 'Not graded',
+      speaking: 'Not graded'
+    },
+    {
+      name: 'C Nguyen',
+      id: 'GDD210013',
+      class: 'GCD1111',
+      email: 'cnguyen@gmail.com',
+      phone: '0123456791',
+      image: '',
+      writing: 'Not graded',
+      speaking: 'Not graded'
+    },
+    {
+      name: 'A Le',
+      id: 'GDD210014',
+      class: 'GCD1111',
+      email: 'ale@gmail.com',
+      phone: '0123456792',
+      image: '',
+      writing: 'Not graded',
+      speaking: 'Not graded'
+    },
+    {
+      name: 'M. Hieu',
+      id: 'GDD210015',
+      class: 'GCD1111',
+      email: 'mhieu@gmail.com',
+      phone: '0123456793',
+      image: '',
+      writing: 'Not graded',
+      speaking: 'Not graded'
+    }
+  ]
 
   const handleBack = () => {
     navigate(-1)
   }
 
   const handlePreviousStudent = () => {
-    setCurrentStudent(prev => Math.max(1, prev - 1))
+    const currentIndex = students.findIndex(s => s.id === selectedStudent.id)
+    if (currentIndex > 0) {
+      setSelectedStudent(students[currentIndex - 1])
+      setCurrentStudent(currentIndex)
+    }
   }
 
   const handleNextStudent = () => {
-    setCurrentStudent(prev => Math.min(40, prev + 1))
+    const currentIndex = students.findIndex(s => s.id === selectedStudent.id)
+    if (currentIndex < students.length - 1) {
+      setSelectedStudent(students[currentIndex + 1])
+      setCurrentStudent(currentIndex + 2)
+    }
   }
 
   const handleChangeStudent = () => {
-    console.log('Change student clicked')
+    setIsModalVisible(true)
+  }
+
+  const handleSelectStudent = student => {
+    setSelectedStudent(student)
+    setIsModalVisible(false)
+    setCurrentStudent(students.findIndex(s => s.id === student.id) + 1)
   }
 
   const renderBreadcrumb = () => (
     <div className="mb-4">
       <div className="text-sm text-gray-600">
-        Dashboard / Classes / CLASS01 / Feb_2025 / A Nguyen / {activeSection === 'speaking' ? 'Speaking' : 'Writing'}
+        Dashboard / Classes / CLASS01 / Feb_2025 / {selectedStudent.name} /{' '}
+        {activeSection === 'speaking' ? 'Speaking' : 'Writing'}
       </div>
       <h1 className="mt-2 text-2xl font-bold">Grading</h1>
     </div>
@@ -61,14 +136,14 @@ function GradingPage() {
           onNext={handleNextStudent}
           onChangeStudent={handleChangeStudent}
           currentStudent={currentStudent}
-          totalStudents={40}
+          totalStudents={students.length}
           disabled={isLoading}
         />
       </div>
 
       <div className="flex gap-6">
         <div className="h-fit w-[340px]">
-          <StudentCard student={studentData} />
+          <StudentCard student={selectedStudent} />
         </div>
 
         <div className="flex-1">
@@ -101,7 +176,7 @@ function GradingPage() {
             {activeSection === 'speaking' ? (
               <Speaking testData={speakingTest} isLoading={speakingLoading} />
             ) : (
-              <Writing />
+              <Writing studentData={studentMockData} studentId={selectedStudent.id} />
             )}
           </div>
 
@@ -110,6 +185,13 @@ function GradingPage() {
           </div>
         </div>
       </div>
+
+      <StudentListModal
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        students={students}
+        onSelectStudent={handleSelectStudent}
+      />
     </div>
   )
 
