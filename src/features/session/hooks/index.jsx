@@ -1,4 +1,3 @@
-// useSessions.js
 import { getSessionsByClassId } from '@features/session/api'
 import { useQuery } from '@tanstack/react-query'
 

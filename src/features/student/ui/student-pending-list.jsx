@@ -10,7 +10,6 @@ const PendingList = ({ sessionId }) => {
   const [pendingPagination, setPendingPagination] = useState(DEFAULT_PAGINATION)
   const [pendingSearchText, setPendingSearchText] = useState('')
 
-  // When data is fetched or updated, apply filtering and pagination.
   useEffect(() => {
     console.log(pendingDataRaw, 'pending')
     if (!pendingDataRaw.length) return
@@ -22,7 +21,6 @@ const PendingList = ({ sessionId }) => {
         item.className.toLowerCase().includes(pendingSearchText.toLowerCase())
     )
 
-    // Update local pagination and filtered data.
     setPendingPagination(prev => ({
       ...prev,
       total: filtered.length,
@@ -33,7 +31,6 @@ const PendingList = ({ sessionId }) => {
 
   const handleEnrollStudent = async record => {
     try {
-      // Here you might call an API to enroll the student
       const newData = pendingData.filter(item => item.key !== record.key)
       setPendingData(newData)
       message.success(`${record.studentName} has been enrolled successfully`)
@@ -44,7 +41,6 @@ const PendingList = ({ sessionId }) => {
 
   const handleRejectStudent = async record => {
     try {
-      // Here you might call an API to reject the student
       const newData = pendingData.filter(item => item.key !== record.key)
       setPendingData(newData)
       message.success(`${record.studentName}'s request has been rejected`)
@@ -103,7 +99,6 @@ const PendingList = ({ sessionId }) => {
   ]
 
   const handlePendingTableChange = newPagination => {
-    // Implement pagination change by slicing the filtered results.
     const start = (newPagination.current - 1) * newPagination.pageSize
     const end = newPagination.current * newPagination.pageSize
     const filtered = pendingDataRaw.filter(
