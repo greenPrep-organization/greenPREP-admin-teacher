@@ -29,7 +29,6 @@ function WritingGrade() {
     setTotalScore(total)
   }
 
-  // Load draft data from localStorage on initial mount
   useEffect(() => {
     if (!hasLoadedDraft && studentData) {
       try {

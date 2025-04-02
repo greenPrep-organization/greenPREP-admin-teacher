@@ -5,11 +5,9 @@ const STORAGE_KEY = 'writing_grading_draft'
 function SaveAsDraftButton({ form, studentData }) {
   const handleSaveDraft = () => {
     try {
-      // Get all form values, including hidden fields
       const values = form.getFieldsValue(true)
       const draftData = []
 
-      // Collect all parts' scores
       Object.keys(studentData).forEach(part => {
         const questions = studentData[part].questions
         const scores = questions.map((_, index) => {
