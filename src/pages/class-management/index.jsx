@@ -106,7 +106,17 @@ const ClassList = () => {
   }
 
   const columns = [
-    { title: 'CLASS NAME', dataIndex: 'className', key: 'className', align: 'center' },
+    {
+      title: 'CLASS NAME',
+      dataIndex: 'className',
+      key: 'className',
+      align: 'center',
+      render: (text, record) => (
+        <a onClick={() => handleView(record)} style={{ cursor: 'pointer', color: 'black' }}>
+          {text}
+        </a>
+      )
+    },
     { title: 'NUMBER OF SESSIONS', dataIndex: 'sessions', key: 'sessions', align: 'center' },
     {
       title: 'ACTIONS',
