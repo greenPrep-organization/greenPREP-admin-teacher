@@ -1,13 +1,16 @@
-// eslint-disable-next-line no-unused-vars
-import React, { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button, InputNumber, Form, Card, message, Divider } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import mockData from '@features/grading/constants/writingmockdata'
+import SaveAsDraftButton from './save-as-draft-button'
+
+const STORAGE_KEY = 'writing_grading_draft'
 
 function WritingGrade() {
   const [activePart, setActivePart] = useState('part1')
   const [form] = Form.useForm()
   const [totalScore, setTotalScore] = useState(0)
+  const [hasLoadedDraft, setHasLoadedDraft] = useState(false)
 
   const { data: studentData } = useQuery({
     queryKey: ['studentData'],
@@ -15,10 +18,46 @@ function WritingGrade() {
     initialData: mockData
   })
 
+  const calculatePartTotal = part => {
+    const values = form.getFieldsValue()
+    const questions = studentData[part].questions
+    let total = 0
+    questions.forEach((_, index) => {
+      const fieldValue = values[`${part}_question_${index}`] || 0
+      total += fieldValue
+    })
+    setTotalScore(total)
+  }
+
+  useEffect(() => {
+    if (!hasLoadedDraft && studentData) {
+      try {
+        const draftData = JSON.parse(localStorage.getItem(STORAGE_KEY))
+        if (draftData) {
+          const formValues = {}
+          draftData.forEach(({ part, scores }) => {
+            scores.forEach(({ questionIndex, score }) => {
+              if (score !== null) {
+                formValues[`${part}_question_${questionIndex}`] = score
+              }
+            })
+          })
+          form.setFieldsValue(formValues)
+          setHasLoadedDraft(true)
+          calculatePartTotal(activePart)
+        }
+      } catch (error) {
+        console.error('Error loading draft:', error)
+      }
+    }
+  }, [studentData, hasLoadedDraft, form, activePart])
+
+  useEffect(() => {
+    calculatePartTotal(activePart)
+  }, [activePart, studentData])
+
   const handlePartChange = key => {
     setActivePart(key)
-    form.resetFields()
-    setTotalScore(0)
   }
 
   const handleScoreChange = (value, field) => {
@@ -27,17 +66,7 @@ function WritingGrade() {
       newValue = 100
       form.setFieldsValue({ [field]: 100 })
     }
-
-    const values = form.getFieldsValue()
-    const currentPart = studentData[activePart]
-    const questions = currentPart.questions
-
-    let total = 0
-    questions.forEach((_, index) => {
-      const fieldValue = values[`question_${index}`] || 0
-      total += fieldValue
-    })
-    setTotalScore(total)
+    calculatePartTotal(activePart)
   }
 
   const handleKeyPress = event => {
@@ -55,7 +84,6 @@ function WritingGrade() {
   const answers = currentPart.answers
   const instructions = currentPart.instructions
 
-  // Render answers with basic formatting support via CSS
   const renderAnswer = answer => {
     if (!answer || answer.trim() === '') {
       return <p className="italic text-gray-500">No answer submitted</p>
@@ -114,7 +142,7 @@ function WritingGrade() {
                 <div key={index} className="mb-4 flex items-center">
                   <label className="w-28 text-center font-medium text-gray-700">Question {index + 1}</label>
                   <Form.Item
-                    name={`question_${index}`}
+                    name={`${activePart}_question_${index}`}
                     className="mb-0 flex-1"
                     rules={[
                       { required: true, message: 'Please input a score' },
@@ -129,7 +157,7 @@ function WritingGrade() {
                       maxLength={3}
                       step={1}
                       precision={0}
-                      onChange={value => handleScoreChange(value, `question_${index}`)}
+                      onChange={value => handleScoreChange(value, `${activePart}_question_${index}`)}
                       onKeyPress={handleKeyPress}
                     />
                   </Form.Item>
@@ -153,7 +181,7 @@ function WritingGrade() {
                 >
                   Submit
                 </Button>
-                <Button className="w-full shadow-md transition-shadow hover:shadow-lg">Save As Draft</Button>
+                <SaveAsDraftButton form={form} studentData={studentData} />
               </div>
             </Form>
           </div>
