@@ -1,11 +1,12 @@
 import { SearchOutlined } from '@ant-design/icons'
-import { Input, Table, Select } from 'antd'
+import { Input, Table, Select, Empty } from 'antd'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
+import { getUserSessionHistory } from '../api'
 
 const { Option } = Select
 
-const SessionHistory = ({ studentId }) => {
+const SessionHistory = ({ userId }) => {
   const [loading, setLoading] = useState(false)
   const [searchText, setSearchText] = useState('')
   const [data, setData] = useState([])
@@ -14,210 +15,319 @@ const SessionHistory = ({ studentId }) => {
   const [selectedLevel, setSelectedLevel] = useState(null)
   const [error, setError] = useState(null)
 
-  // Fetch data from API
-  const fetchData = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const mockData = [
-        {
-          id: 1,
-          date: '12/02/2025',
-          sessionName: 'Feb_2025',
-          grammarVocab: 40,
-          grammarLevel: 'B1',
-          listening: 40,
-          listeningLevel: 'B1',
-          reading: 40,
-          readingLevel: 'B1',
-          speaking: 40,
-          speakingLevel: 'B1',
-          writing: 40,
-          total: 40,
-          level: 'B1'
-        },
-        {
-          id: 2,
-          date: '15/02/2025',
-          sessionName: 'Feb_2025',
-          grammarVocab: 45,
-          grammarLevel: 'B2',
-          listening: 45,
-          listeningLevel: 'B2',
-          reading: 45,
-          readingLevel: 'B2',
-          speaking: 45,
-          speakingLevel: 'B2',
-          writing: 45,
-          total: 45,
-          level: 'B2'
-        }
-      ]
-
-      setData(mockData)
-    } catch (error) {
-      console.error('Error fetching session history:', error)
-      setError('Failed to load session history')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
-    if (studentId) {
-      fetchData()
+    const fetchHistory = async () => {
+      if (!userId) return
+
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await getUserSessionHistory(userId)
+        setData(response.data || [])
+      } catch (err) {
+        setError(err.message || 'Failed to fetch session history')
+        console.error('Error fetching history:', err)
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [studentId])
+
+    fetchHistory()
+  }, [userId])
 
   const filteredData = data.filter(item => {
     const matchesSearch = item.sessionName.toLowerCase().includes(searchText.toLowerCase())
     const matchesDate = !selectedDate || selectedDate === 'all' || item.date === selectedDate
     const matchesSession = !selectedSession || selectedSession === 'all' || item.sessionName === selectedSession
-    const matchesLevel = !selectedLevel || selectedLevel === 'all' || item.level === selectedLevel
+    const matchesLevel = !selectedLevel || selectedLevel === 'all' || item.finalLevel === selectedLevel
     return matchesSearch && matchesDate && matchesSession && matchesLevel
   })
 
   const dates = [...new Set(data.map(item => item.date))]
   const sessions = [...new Set(data.map(item => item.sessionName))]
-  const levels = [...new Set(data.map(item => item.level))]
+  const levels = [...new Set(data.map(item => item.finalLevel))]
+
+  const columns = [
+    {
+      title: 'Date',
+      dataIndex: 'date',
+      key: 'date',
+      align: 'center',
+      width: 120,
+      render: text => <span style={{ fontWeight: 500 }}>{text}</span>
+    },
+    {
+      title: 'Session name',
+      dataIndex: 'sessionName',
+      key: 'sessionName',
+      align: 'center',
+      width: 180,
+      render: text => <span style={{ color: '#1890ff', fontWeight: 500 }}>{text}</span>
+    },
+    {
+      title: 'Grammar & Vocab',
+      dataIndex: 'grammarScore',
+      key: 'grammar',
+      align: 'center',
+      width: 150,
+      render: (score, record) => (
+        <div>
+          <span
+            style={{
+              color: score >= 80 ? '#52c41a' : score >= 60 ? '#faad14' : '#ff4d4f',
+              fontWeight: 500,
+              marginRight: '8px'
+            }}
+          >
+            {score}
+          </span>
+          <span
+            style={{
+              padding: '2px 8px',
+              borderRadius: '12px',
+              backgroundColor: '#e6f7ff',
+              color: '#1890ff',
+              fontWeight: 500
+            }}
+          >
+            {record.grammarLevel}
+          </span>
+        </div>
+      )
+    },
+    {
+      title: 'Listening',
+      dataIndex: 'listeningScore',
+      key: 'listening',
+      align: 'center',
+      width: 150,
+      render: (score, record) => (
+        <div>
+          <span
+            style={{
+              color: score >= 80 ? '#52c41a' : score >= 60 ? '#faad14' : '#ff4d4f',
+              fontWeight: 500,
+              marginRight: '8px'
+            }}
+          >
+            {score}
+          </span>
+          <span
+            style={{
+              padding: '2px 8px',
+              borderRadius: '12px',
+              backgroundColor: '#e6f7ff',
+              color: '#1890ff',
+              fontWeight: 500
+            }}
+          >
+            {record.listeningLevel}
+          </span>
+        </div>
+      )
+    },
+    {
+      title: 'Reading',
+      dataIndex: 'readingScore',
+      key: 'reading',
+      align: 'center',
+      width: 150,
+      render: (score, record) => (
+        <div>
+          <span
+            style={{
+              color: score >= 80 ? '#52c41a' : score >= 60 ? '#faad14' : '#ff4d4f',
+              fontWeight: 500,
+              marginRight: '8px'
+            }}
+          >
+            {score}
+          </span>
+          <span
+            style={{
+              padding: '2px 8px',
+              borderRadius: '12px',
+              backgroundColor: '#e6f7ff',
+              color: '#1890ff',
+              fontWeight: 500
+            }}
+          >
+            {record.readingLevel}
+          </span>
+        </div>
+      )
+    },
+    {
+      title: 'Speaking',
+      dataIndex: 'speakingScore',
+      key: 'speaking',
+      align: 'center',
+      width: 150,
+      render: (score, record) => (
+        <div>
+          <span
+            style={{
+              color: score >= 80 ? '#52c41a' : score >= 60 ? '#faad14' : '#ff4d4f',
+              fontWeight: 500,
+              marginRight: '8px'
+            }}
+          >
+            {score}
+          </span>
+          <span
+            style={{
+              padding: '2px 8px',
+              borderRadius: '12px',
+              backgroundColor: '#e6f7ff',
+              color: '#1890ff',
+              fontWeight: 500
+            }}
+          >
+            {record.speakingLevel}
+          </span>
+        </div>
+      )
+    },
+    {
+      title: 'Writing',
+      dataIndex: 'writingScore',
+      key: 'writing',
+      align: 'center',
+      width: 150,
+      render: (score, record) => (
+        <div>
+          <span
+            style={{
+              color: score >= 80 ? '#52c41a' : score >= 60 ? '#faad14' : '#ff4d4f',
+              fontWeight: 500,
+              marginRight: '8px'
+            }}
+          >
+            {score}
+          </span>
+          <span
+            style={{
+              padding: '2px 8px',
+              borderRadius: '12px',
+              backgroundColor: '#e6f7ff',
+              color: '#1890ff',
+              fontWeight: 500
+            }}
+          >
+            {record.writingLevel}
+          </span>
+        </div>
+      )
+    },
+    {
+      title: 'Total',
+      dataIndex: 'total',
+      key: 'total',
+      align: 'center',
+      width: 100,
+      render: score => (
+        <span
+          style={{
+            fontSize: '16px',
+            fontWeight: 'bold',
+            color: score >= 80 ? '#52c41a' : score >= 60 ? '#faad14' : '#ff4d4f'
+          }}
+        >
+          {score}
+        </span>
+      )
+    },
+    {
+      title: 'Final Level',
+      dataIndex: 'finalLevel',
+      key: 'finalLevel',
+      align: 'center',
+      width: 120,
+      render: level => (
+        <span
+          style={{
+            padding: '4px 12px',
+            borderRadius: '16px',
+            backgroundColor: '#1890ff',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '14px'
+          }}
+        >
+          {level}
+        </span>
+      )
+    }
+  ]
 
   if (error) {
-    return (
-      <div className="rounded-lg bg-white p-6 shadow-md">
-        <div className="text-center text-red-500">{error}</div>
-      </div>
-    )
+    return <div style={{ padding: '24px', textAlign: 'center', color: '#ff4d4f' }}>{error}</div>
   }
 
   return (
-    <div className="rounded-lg bg-white p-6 shadow-md">
-      <div className="mb-6">
-        <h1 className="mb-4 text-2xl font-semibold">History</h1>
-        <div className="mb-4 flex gap-4">
-          <Input
-            placeholder="Search session name"
-            prefix={<SearchOutlined />}
-            onChange={e => setSearchText(e.target.value)}
-            className="max-w-xs"
-          />
-          <Select
-            placeholder="Date"
-            onChange={setSelectedDate}
-            className="min-w-[120px] rounded-md !bg-[#002B5B] !text-white"
-          >
-            <Option value="all">All</Option>
-            {dates.map(date => (
-              <Option key={date} value={date}>
-                {date}
-              </Option>
-            ))}
-          </Select>
-          <Select
-            placeholder="Session"
-            onChange={setSelectedSession}
-            className="min-w-[120px] rounded-md !bg-[#002B5B] !text-white"
-          >
-            <Option value="all">All</Option>
-            {sessions.map(session => (
-              <Option key={session} value={session}>
-                {session}
-              </Option>
-            ))}
-          </Select>
-          <Select
-            placeholder="Level"
-            onChange={setSelectedLevel}
-            className="min-w-[120px] rounded-md !bg-[#002B5B] !text-white"
-          >
-            <Option value="all">All</Option>
-            {levels.map(level => (
-              <Option key={level} value={level}>
-                {level}
-              </Option>
-            ))}
-          </Select>
-        </div>
+    <div style={{ background: '#fff', padding: '24px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      <h2 style={{ marginBottom: '24px', fontSize: '24px', fontWeight: 'bold' }}>Session History</h2>
+      <div style={{ marginBottom: 24, display: 'flex', gap: 16 }}>
+        <Input
+          placeholder="Search session name"
+          prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+          value={searchText}
+          onChange={e => setSearchText(e.target.value)}
+          style={{ width: 300 }}
+        />
+        <Select style={{ width: 120 }} placeholder="Date" allowClear value={selectedDate} onChange={setSelectedDate}>
+          <Option value="all">All</Option>
+          {dates.map(date => (
+            <Option key={date} value={date}>
+              {date}
+            </Option>
+          ))}
+        </Select>
+        <Select
+          style={{ width: 120 }}
+          placeholder="Session"
+          allowClear
+          value={selectedSession}
+          onChange={setSelectedSession}
+        >
+          <Option value="all">All</Option>
+          {sessions.map(session => (
+            <Option key={session} value={session}>
+              {session}
+            </Option>
+          ))}
+        </Select>
+        <Select style={{ width: 120 }} placeholder="Level" allowClear value={selectedLevel} onChange={setSelectedLevel}>
+          <Option value="all">All</Option>
+          {levels.map(level => (
+            <Option key={level} value={level}>
+              {level}
+            </Option>
+          ))}
+        </Select>
       </div>
 
       <Table
-        columns={[
-          {
-            title: 'Date',
-            dataIndex: 'date',
-            key: 'date',
-            align: 'center',
-            width: 120
-          },
-          {
-            title: 'Session name',
-            dataIndex: 'sessionName',
-            key: 'sessionName',
-            align: 'center'
-          },
-          {
-            title: 'Grammar & Vocab',
-            dataIndex: 'grammarVocab',
-            key: 'grammarVocab',
-            align: 'center',
-            render: (score, record) => `${score} | ${record.grammarLevel}`
-          },
-          {
-            title: 'Listening',
-            dataIndex: 'listening',
-            key: 'listening',
-            align: 'center',
-            render: (score, record) => `${score} | ${record.listeningLevel}`
-          },
-          {
-            title: 'Reading',
-            dataIndex: 'reading',
-            key: 'reading',
-            align: 'center',
-            render: (score, record) => `${score} | ${record.readingLevel}`
-          },
-          {
-            title: 'Speaking',
-            dataIndex: 'speaking',
-            key: 'speaking',
-            align: 'center',
-            render: (score, record) => `${score} | ${record.speakingLevel}`
-          },
-          {
-            title: 'Writing',
-            dataIndex: 'writing',
-            key: 'writing',
-            align: 'center'
-          },
-          {
-            title: 'Total',
-            dataIndex: 'total',
-            key: 'total',
-            align: 'center'
-          },
-          {
-            title: 'Level',
-            dataIndex: 'level',
-            key: 'level',
-            align: 'center'
-          }
-        ]}
+        columns={columns}
         dataSource={filteredData}
         loading={loading}
         rowKey="id"
         pagination={{
-          pageSize: 3,
-          showSizeChanger: true,
-          showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total}`
+          pageSize: 5,
+          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
         }}
-        className="overflow-x-auto"
+        scroll={{ x: 'max-content' }}
+        bordered
+        locale={{
+          emptyText: <Empty description="No data" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        }}
       />
     </div>
   )
 }
 
 SessionHistory.propTypes = {
-  studentId: PropTypes.string.isRequired
+  userId: PropTypes.string.isRequired
 }
 
 export default SessionHistory

@@ -61,3 +61,16 @@ export const getUserInfo = async userId => {
     throw new Error(error.response?.data?.message || 'Failed to fetch user information')
   }
 }
+
+export const getUserSessionHistory = async userId => {
+  try {
+    const response = await axios.get(`${BASE_URL}/session-participants/user/${userId}`, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    return response.data
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to fetch session history')
+  }
+}
