@@ -10,7 +10,7 @@ const profileValidationSchema = Yup.object().shape({
   lastName: Yup.string().required('Last name is required'),
   email: Yup.string().email('Invalid email format').required('Email is required'),
   phone: Yup.string()
-    .matches(/^[0-9]{10,11}$/, 'Phone number must be 10-11 digits')
+    .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
     .required('Phone number is required')
 })
 
@@ -75,8 +75,8 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
-      if (formData.phone.length < 10 || formData.phone.length > 11) {
-        message.error('Phone number must have 10-11 digits')
+      if (formData.phone.length < 10 || formData.phone.length > 10) {
+        message.error('Phone number must have 10 digits')
         return
       }
       await profileValidationSchema.validate(formData, { abortEarly: false })
