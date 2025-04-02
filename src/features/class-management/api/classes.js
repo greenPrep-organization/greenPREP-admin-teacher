@@ -22,12 +22,11 @@ export const fetchClasses = async () => {
 }
 export const fetchClassDetails = async classId => {
   try {
-    const response = await fetch(`${API_BASE_URL}/sessions?classId=${classId}`)
-    const data = await response.json()
+    const response = await axios.get(`${API_BASE_URL}/sessions?classId=${classId}`)
 
     return {
-      classInfo: data?.data || [],
-      totalSessions: data?.total || 0
+      classInfo: response.data?.data || [],
+      totalSessions: response.data?.total || 0
     }
   } catch (error) {
     handleApiError(error, `Error fetching details for class ID ${classId}`)
