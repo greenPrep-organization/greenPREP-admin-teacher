@@ -1,4 +1,4 @@
-import { Warning } from '@assets/Images/index'
+import { Warning } from '@assets/images'
 import { Button, Modal } from 'antd'
 import { useState } from 'react'
 
