@@ -25,8 +25,6 @@ const passwordValidationSchema = Yup.object().shape({
 const Profile = () => {
   const auth = useSelector(state => state.auth)
   const { data: userData, isLoading, isError, refetch } = useUserProfile(auth.user?.userId)
-  console.log(userData)
-
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
   const updateProfileMutation = useUpdateUserProfile()
@@ -72,8 +70,6 @@ const Profile = () => {
 
   const handleInputChange = e => {
     const { name, value } = e.target
-    // Remove the validation check here - let users type freely
-    // Validation will happen when they try to save
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
@@ -233,9 +229,7 @@ const Profile = () => {
         width={400}
       >
         <div className="space-y-4">
-          {/* Name Row */}
           <div className="flex gap-4">
-            {/* First Name */}
             <div className="flex-1">
               <label className="mb-1 block text-sm font-medium text-gray-700">
                 First name <span className="text-red-500">*</span>
@@ -247,7 +241,6 @@ const Profile = () => {
               />
             </div>
 
-            {/* Last Name */}
             <div className="flex-1">
               <label className="mb-1 block text-sm font-medium text-gray-700">
                 Last name <span className="text-red-500">*</span>
@@ -260,7 +253,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Email */}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Email <span className="text-red-500">*</span>
@@ -272,7 +264,6 @@ const Profile = () => {
             />
           </div>
 
-          {/* Phone Number */}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Phone number</label>
             <Input
@@ -310,7 +301,6 @@ const Profile = () => {
             onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })}
             className="mt-2 w-full rounded-md border border-gray-300 p-2"
           />
-          {/* Password validation list */}
           <div className="mt-2 pl-6 text-sm text-gray-600">
             <ul>
               <li className={passwordData.newPassword.length >= 8 ? 'text-green-500' : 'text-red-500'}>
