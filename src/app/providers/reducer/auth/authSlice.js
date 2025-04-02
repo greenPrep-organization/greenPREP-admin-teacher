@@ -1,11 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { getStorageData } from '@shared/lib/storage'
+import { ACCESS_TOKEN_KEY } from '@shared/lib/storage/index'
 import { jwtDecode } from 'jwt-decode'
-const checkAuth = () => Boolean(getStorageData('access_token'))
+const checkAuth = () => Boolean(getStorageData(ACCESS_TOKEN_KEY))
 
 const getUserRole = () => {
   try {
-    const token = getStorageData('access_token')
+    const token = getStorageData(ACCESS_TOKEN_KEY)
     if (!token) return null
     const decodedToken = jwtDecode(token)
 
@@ -18,7 +19,7 @@ const getUserRole = () => {
 
 const getUserData = () => {
   try {
-    const token = getStorageData('access_token')
+    const token = getStorageData(ACCESS_TOKEN_KEY)
     if (!token) return null
     const decodedToken = jwtDecode(token)
 

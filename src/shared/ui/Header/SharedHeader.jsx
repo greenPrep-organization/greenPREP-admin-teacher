@@ -12,7 +12,7 @@ const SharedHeader = ({ collapsed, setCollapsed }) => {
   const menu = (
     <Menu>
       <Menu.Item key="0">
-        <Link to={`/profile/${user?.id}`}>Profile</Link>
+        <Link to={`/profile/${user?.userId}`}>Profile</Link>
       </Menu.Item>
       <Menu.Item key="1">
         <Link to="/signout">Sign Out</Link>
