@@ -5,9 +5,11 @@ import NotFound from '@pages/NotFoundPage'
 import Layout from '@shared/ui/Layout/Layout'
 import PublicRoute from '@app/routes/PublicRoute'
 import LoginPage from '@pages/LoginPage'
-
+import ForgotPassword from '@pages/ForgotPassword'
+import ResetPassword from '@pages/ResetPassword'
 import { useSelector } from 'react-redux'
 
+// @ts-ignore
 const ProtectedRoute = ({ children }) => {
   const isAuth = useSelector(state => state.auth.isAuth)
   return isAuth ? children : <Navigate to="/login" replace />
@@ -18,6 +20,14 @@ const router = createBrowserRouter(
     {
       path: '/login',
       element: <LoginPage />
+    },
+    {
+      path: '/forgot-password',
+      element: <ForgotPassword />
+    },
+    {
+      path: '/reset-password',
+      element: <ResetPassword />
     },
     {
       path: '/',
