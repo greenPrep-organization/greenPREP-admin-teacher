@@ -1,5 +1,5 @@
 import { UserOutlined } from '@ant-design/icons'
-import { useUserProfile } from '@features/profile/api/profileAPI'
+import { useChangeUserPassword, useUpdateUserProfile, useUserProfile } from '@features/profile/api/profileAPI'
 import { Avatar, Button, Card, Divider, Input, message, Modal, Spin, Tag } from 'antd'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -24,9 +24,11 @@ const passwordValidationSchema = Yup.object().shape({
 
 const Profile = () => {
   const auth = useSelector(state => state.auth)
-  const { data: userData, isLoading, isError } = useUserProfile(auth.user?.userId)
+  const { data: userData, isLoading, isError, refetch } = useUserProfile(auth.user?.userId)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
+  const updateProfileMutation = useUpdateUserProfile()
+  const changePasswordMutation = useChangeUserPassword()
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -79,16 +81,29 @@ const Profile = () => {
   const handleSave = async () => {
     try {
       if (formData.phone.length < 10 || formData.phone.length > 11) {
-        message.error('Phone number must have 10 digits')
+        message.error('Phone number must have 10-11 digits')
         return
       }
       await profileValidationSchema.validate(formData, { abortEarly: false })
-      message.success('Update Successfully!')
+
+      await updateProfileMutation.mutateAsync({
+        userId: auth.user?.userId,
+        userData: formData
+      })
+
+      message.success('Profile updated successfully!')
+      refetch() // Refresh the user data
       setIsEditModalOpen(false)
     } catch (error) {
-      error.inner.forEach(err => {
-        message.error(err.message)
-      })
+      if (error.response) {
+        message.error(error.response.data.message || 'Failed to update profile')
+      } else if (error.inner) {
+        error.inner.forEach(err => {
+          message.error(err.message)
+        })
+      } else {
+        message.error('Failed to update profile')
+      }
     }
   }
 
@@ -113,12 +128,28 @@ const Profile = () => {
   const handleChangePassword = async () => {
     try {
       await passwordValidationSchema.validate(passwordData, { abortEarly: false })
+
+      await changePasswordMutation.mutateAsync({
+        userId: auth.user?.userId,
+        passwordData: {
+          oldPassword: passwordData.oldPassword,
+          newPassword: passwordData.newPassword
+        }
+      })
+
       setIsPasswordModalOpen(false)
       message.success('Password changed successfully!')
+      setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' })
     } catch (error) {
-      error.inner.forEach(err => {
-        message.error(err.message)
-      })
+      if (error.response) {
+        message.error(error.response.data.message || 'Failed to change password')
+      } else if (error.inner) {
+        error.inner.forEach(err => {
+          message.error(err.message)
+        })
+      } else {
+        message.error('Failed to change password')
+      }
     }
   }
 
