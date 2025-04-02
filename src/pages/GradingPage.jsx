@@ -4,12 +4,19 @@ import { useNavigate } from 'react-router-dom'
 import StudentCard from '@features/grading/ui/studentInformation'
 import Speaking from '@features/grading/ui/speaking-grading'
 import Writing from '@features/grading/ui/writing-grading'
+import Feedback from '@features/grading/ui/feedback-grading'
 import NavigationBar from '@features/grading/ui/navigation-bar'
+import { useGetSpeakingTest } from '@features/grading/api'
 
 function GradingPage() {
   const [activeSection, setActiveSection] = useState('speaking')
   const [currentStudent, setCurrentStudent] = useState(1)
   const navigate = useNavigate()
+
+  const { data: speakingTest, isLoading: speakingLoading } = useGetSpeakingTest(
+    'ef6b69aa-2ec2-4c65-bf48-294fd12e13fc',
+    'SPEAKING'
+  )
 
   const studentData = {
     name: 'A Nguyen',
@@ -55,6 +62,7 @@ function GradingPage() {
           onChangeStudent={handleChangeStudent}
           currentStudent={currentStudent}
           totalStudents={40}
+          disabled={isLoading}
         />
       </div>
 
@@ -90,14 +98,22 @@ function GradingPage() {
           </div>
 
           <div className="rounded-b-[10px] border border-gray-200 bg-white p-6 shadow-md">
-            {activeSection === 'speaking' ? <Speaking /> : <Writing />}
+            {activeSection === 'speaking' ? (
+              <Speaking testData={speakingTest} isLoading={speakingLoading} />
+            ) : (
+              <Writing />
+            )}
           </div>
 
-          <div className="mt-6"></div>
+          <div className="mt-6">
+            <Feedback />
+          </div>
         </div>
       </div>
     </div>
   )
+
+  const isLoading = activeSection === 'speaking' ? speakingLoading : false
 
   return (
     <div className="">

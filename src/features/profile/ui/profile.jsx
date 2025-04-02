@@ -26,6 +26,7 @@ const Profile = () => {
   const auth = useSelector(state => state.auth)
   const { data: userData, isLoading, isError, refetch } = useUserProfile(auth.user?.userId)
   console.log(userData)
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
   const updateProfileMutation = useUpdateUserProfile()
@@ -181,8 +182,8 @@ const Profile = () => {
           <div>
             <p className="mb-1 text-gray-600">Role</p>
             <div className="flex flex-wrap gap-2">
-              {Array.isArray(userData?.role) ? (
-                userData.role.map((role, index) => (
+              {Array.isArray(userData?.roleIDs) && userData?.roleIDs?.length > 0 ? (
+                userData.roleIDs.map((role, index) => (
                   <p key={index} className="capitalize text-gray-500">
                     {role}
                   </p>
@@ -194,12 +195,20 @@ const Profile = () => {
           </div>
           <div>
             <p className="mb-1 text-gray-600">Classes</p>
-            {userData?.classes?.length > 0 ? (
-              userData?.classes.map((cls, index) => (
-                <p key={index} className="text-gray-500">
-                  {cls}
-                </p>
-              ))
+            {userData?.class ? (
+              Array.isArray(userData.class) ? (
+                userData.class.length > 0 ? (
+                  userData.class.map((cls, index) => (
+                    <p key={index} className="text-gray-500">
+                      {cls}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-gray-500">No classes assigned</p>
+                )
+              ) : (
+                <p className="text-gray-500">{userData.class}</p>
+              )
             ) : (
               <p className="text-gray-500">No classes assigned</p>
             )}

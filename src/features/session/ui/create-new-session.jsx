@@ -1,5 +1,5 @@
 // features/sessions/components/CreateSessionModal.jsx
-import { Modal, Form, Input, Select, DatePicker, notification } from 'antd'
+import { Modal, Form, Input, Select, DatePicker, notification, Button } from 'antd'
 import dayjs from 'dayjs'
 import PropTypes from 'prop-types'
 
@@ -54,16 +54,18 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
       destroyOnClose
       className="custom-modal"
       footer={[
-        <div key="footer" className="flex justify-end gap-2">
-          <button
-            onClick={onCancel}
-            className="rounded border border-gray-300 px-4 py-1 text-gray-700 hover:border-gray-400 hover:text-gray-800"
-          >
+        <div key="footer" className="flex justify-center gap-2">
+          <Button key="cancel" onClick={onCancel} className="h-10 w-24 border border-[#D1D5DB] text-[#374151]">
             Cancel
-          </button>
-          <button onClick={handleSubmit} className="rounded bg-[#003366] px-4 py-1 text-white hover:bg-[#002347]">
+          </Button>
+          <Button
+            key="submit"
+            type="primary"
+            onClick={handleSubmit}
+            className="h-10 w-24 bg-[#003087] hover:bg-[#003087]/90"
+          >
             Create
-          </button>
+          </Button>
         </div>
       ]}
     >
@@ -111,7 +113,8 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
             rules={[{ required: true, message: 'Please select start date' }]}
           >
             <DatePicker
-              format="DD/MM/YYYY"
+              showTime
+              format="DD/MM/YYYY HH:mm"
               className="w-full rounded"
               disabledDate={current => current && current < dayjs().startOf('day')}
             />
@@ -124,16 +127,26 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
               { required: true, message: 'Please select end date' },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || !getFieldValue('startDate') || value.isAfter(getFieldValue('startDate'))) {
+                  const startDate = getFieldValue('startDate')
+                  if (!value || !startDate) {
                     return Promise.resolve()
                   }
-                  return Promise.reject(new Error('End date must be after start date'))
+
+                  // Convert to milliseconds for comparison
+                  const startTime = startDate.valueOf()
+                  const endTime = value.valueOf()
+
+                  if (endTime <= startTime) {
+                    return Promise.reject(new Error('End time must be after start time'))
+                  }
+                  return Promise.resolve()
                 }
               })
             ]}
           >
             <DatePicker
-              format="DD/MM/YYYY"
+              showTime
+              format="DD/MM/YYYY HH:mm"
               className="w-full rounded"
               disabledDate={current => current && current < dayjs().startOf('day')}
             />
