@@ -12,12 +12,11 @@ function Feedback({
   savedFeedback = null,
   submissionStatus = 'pending',
   feedbackHistory = [],
-  activePart // Thêm prop activePart
+  activePart
 }) {
-  const [feedbackByPart, setFeedbackByPart] = useState({}) // State lưu feedback theo part
+  const [feedbackByPart, setFeedbackByPart] = useState({})
   const [showHistory, setShowHistory] = useState(false)
 
-  // Khởi tạo feedback cho part hiện tại
   useEffect(() => {
     if (savedFeedback) {
       setFeedbackByPart(prev => ({
@@ -112,7 +111,7 @@ function Feedback({
                   ? 'Previous feedback will be shown here'
                   : 'Easy grammar, using more complex sentences and vocab to upgrade band level'
               }
-              value={feedbackByPart[activePart] || ''} // Hiển thị feedback của part hiện tại
+              value={feedbackByPart[activePart] || ''}
               onChange={handleFeedbackChange}
               autoSize={{ minRows: 3, maxRows: 6 }}
               className="w-full rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"
@@ -139,7 +138,7 @@ Feedback.propTypes = {
       type: PropTypes.oneOf(['graded', 'draft']).isRequired
     })
   ),
-  activePart: PropTypes.string // Thêm propTypes cho activePart
+  activePart: PropTypes.string
 }
 
 export default Feedback
