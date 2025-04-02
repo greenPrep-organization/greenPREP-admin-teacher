@@ -20,13 +20,18 @@ export const fetchClasses = async () => {
     handleApiError(error, 'Error fetching classes')
   }
 }
-
-export const fetchClassById = async classId => {
+export const fetchClassDetails = async classId => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/classes/${classId}`)
-    return response.data?.data || {}
+    const response = await fetch(`${API_BASE_URL}/sessions?classId=${classId}`)
+    const data = await response.json()
+
+    return {
+      classInfo: data?.data || [],
+      totalSessions: data?.total || 0
+    }
   } catch (error) {
-    handleApiError(error, `Error fetching class with ID ${classId}`)
+    handleApiError(error, `Error fetching details for class ID ${classId}`)
+    return { classInfo: [], totalSessions: 0 }
   }
 }
 
