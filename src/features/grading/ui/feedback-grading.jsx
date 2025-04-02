@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Card, Input, Spin, Timeline, Tooltip } from 'antd'
 import PropTypes from 'prop-types'
 import { ClockCircleOutlined, CheckCircleOutlined } from '@ant-design/icons'
-import { sharedFeedbacks } from '../constants/shared-state'
+import { sharedFeedbacks } from '@features/grading/constants/shared-state'
 
 const { TextArea } = Input
 

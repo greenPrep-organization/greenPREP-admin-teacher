@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import AudioPlayer from '@features/grading/ui/audio-player'
 import Feedback from '@features/grading/ui/feedback-grading'
-import GradingScoringPanel from './grading-scoring-panel'
+import GradingScoringPanel from '@features/grading/ui/grading-scoring-panel'
 
 const SPEAKING_STORAGE_KEY = 'speaking_grading_draft'
 

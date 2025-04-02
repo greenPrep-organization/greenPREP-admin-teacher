@@ -1,7 +1,7 @@
 import { Input, Divider } from 'antd'
 import { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
-import SaveAsDraftButton from './save-as-draft-button'
+import SaveAsDraftButton from '@features/grading/ui/save-as-draft-button'
 import { sharedScores } from '@features/grading/constants/shared-state'
 
 const GradingScoringPanel = ({ activePart, questions, scores, setScores, type = 'writing', onSubmit }) => {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import mockData from '@features/grading/constants/writingmockdata'
-import GradingScoringPanel from './grading-scoring-panel'
+import GradingScoringPanel from '@features/grading/ui/grading-scoring-panel'
 import Feedback from '@features/grading/ui/feedback-grading'
 
 const STORAGE_KEY = 'writing_grading_draft'
