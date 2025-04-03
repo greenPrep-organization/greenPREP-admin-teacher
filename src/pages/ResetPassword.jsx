@@ -1,9 +1,10 @@
 import { ForgotPasswordImg } from '@assets/images'
 import { Form, Input, Button, Typography, Image, message, ConfigProvider } from 'antd'
-import { EyeInvisibleOutlined, EyeTwoTone, CheckCircleOutlined } from '@ant-design/icons'
+import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useResetPassword } from '@features/auth/api'
+import ResetPasswordSuccess from './ResetPasswordSuccess'
 
 const { Title, Paragraph } = Typography
 
@@ -14,6 +15,7 @@ const ResetPassword = () => {
   const resetPasswordMutation = useResetPassword()
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false)
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false)
 
   const validatePasswordComplexity = (_, value) => {
     if (!value) {
@@ -48,12 +50,7 @@ const ResetPassword = () => {
         { token, newPassword: values.newPassword },
         {
           onSuccess: () => {
-            message.success({
-              content: 'Password has been updated successfully',
-              duration: 3,
-              icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />
-            })
-            navigate('/login')
+            setIsSuccessModalVisible(true)
           },
           onError: error => {
             console.error('Reset password error:', error)
@@ -212,6 +209,8 @@ const ResetPassword = () => {
           </div>
         </div>
       </div>
+
+      <ResetPasswordSuccess open={isSuccessModalVisible} />
     </ConfigProvider>
   )
 }
