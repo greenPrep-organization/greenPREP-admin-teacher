@@ -47,7 +47,7 @@ const ClassList = () => {
       const timer = setTimeout(() => {
         setCachedData(filteredClasses)
         setIsDataReady(true)
-      }, 3000)
+      }, 2000)
       return () => clearTimeout(timer)
     }
   }, [isFetching, isLoading, filteredClasses])
