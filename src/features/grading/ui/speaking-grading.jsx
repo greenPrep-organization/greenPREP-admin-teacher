@@ -2,8 +2,12 @@ import { Button, Spin } from 'antd'
 import { useState, useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import AudioPlayer from '@features/grading/ui/audio-player'
-import { Input } from 'antd'
 import Feedback from '@features/grading/ui/feedback-grading'
+import GradingScoringPanel from '@features/grading/ui/grading-scoring-panel'
+
+const SPEAKING_STORAGE_KEY = 'speaking_grading_draft'
+
+let hasLoadedSpeakingDraft = false
 
 const Speaking = ({ testData, isLoading }) => {
   const [activePart, setActivePart] = useState('PART 1')
@@ -11,16 +15,43 @@ const Speaking = ({ testData, isLoading }) => {
   const parts = useMemo(() => testData?.Parts || [], [testData])
 
   useEffect(() => {
+    if (!hasLoadedSpeakingDraft && testData) {
+      try {
+        const draftData = JSON.parse(localStorage.getItem(SPEAKING_STORAGE_KEY))
+        if (draftData && Array.isArray(draftData)) {
+          const loadedScores = {}
+
+          draftData.forEach(({ part, scores: partScores }) => {
+            const partName = `PART ${part.slice(-1)}`
+
+            partScores.forEach(({ questionIndex, score }) => {
+              if (score !== null && score !== undefined) {
+                const currentPart = parts.find(p => p.Content === partName)
+                if (currentPart && currentPart.Questions && currentPart.Questions[questionIndex]) {
+                  const questionId = currentPart.Questions[questionIndex].ID
+                  loadedScores[`${partName}-${questionId}`] = score
+                }
+              }
+            })
+          })
+
+          setScores(loadedScores)
+          hasLoadedSpeakingDraft = true
+        }
+      } catch (error) {
+        console.error('Error loading draft:', error)
+      }
+    }
+  }, [testData, parts])
+
+  useEffect(() => {
     if (parts.length > 0 && !parts.find(p => p.Content === activePart)) {
       setActivePart(parts[0].Content)
     }
   }, [parts, activePart])
 
-  const handleScoreChange = (questionId, value) => {
-    setScores(prev => ({
-      ...prev,
-      [questionId]: value
-    }))
+  const handleSubmit = () => {
+    // Handle submission logic here
   }
 
   if (isLoading) {
@@ -96,45 +127,18 @@ const Speaking = ({ testData, isLoading }) => {
           ))}
         </div>
 
-        <div className="w-72">
-          <div className="sticky top-6 space-y-4 rounded-md border border-gray-800 p-6 shadow-2xl">
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h4 className="mb-4 font-bold text-[#003087]">{currentPart.Content} Scoring</h4>
-              <div className="space-y-4">
-                {currentPart.Questions?.map((question, index) => (
-                  <div key={`score-${question.ID}`} className="flex items-center justify-between gap-3">
-                    <span className="text-sm text-[#003087]">Question {index + 1}:</span>
-                    <Input
-                      type="number"
-                      className="h-9 w-24 rounded-lg bg-white text-center focus:border-[#003087]"
-                      placeholder="Score"
-                      min={0}
-                      max={10}
-                      value={scores[`${currentPart.Content}-${question.ID}`] || ''}
-                      onChange={e => handleScoreChange(`${currentPart.Content}-${question.ID}`, e.target.value)}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              <Button type="primary" className="h-10 w-full rounded-lg bg-[#003087] text-white hover:bg-[#002366]">
-                Submit
-              </Button>
-              <Button
-                type="default"
-                className="h-10 w-full rounded-lg border border-[#003087] bg-white text-[#003087] hover:bg-[#f0f2ff]"
-              >
-                Save As Draft
-              </Button>
-            </div>
-          </div>
-        </div>
+        <GradingScoringPanel
+          activePart={activePart}
+          questions={currentPart.Questions || []}
+          scores={scores}
+          setScores={setScores}
+          type="speaking"
+          onSubmit={handleSubmit}
+        />
       </div>
 
       <div className="mt-6">
-        <Feedback activePart={activePart} />
+        <Feedback activePart={activePart} type="speaking" />
       </div>
     </div>
   )
