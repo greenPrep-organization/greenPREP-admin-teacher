@@ -1,21 +1,21 @@
 import SessionDetail from '@/features/session/ui/session-detail'
 import SessionParticipantList from '@features/session/ui/session-participant-list'
 import { Button } from 'antd'
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { LeftOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 
 const SessionDetailPage = () => {
   const navigate = useNavigate()
 
-  const handleBack = () => {
-    navigate(-1)
-  }
-
   return (
     <div className="space-y-6 p-6">
       <div className="mb-4 flex items-center">
-        <Button icon={<ArrowLeftOutlined />} onClick={handleBack} className="flex items-center">
-          Back
+        <Button
+          onClick={() => navigate('/classes-management')}
+          type="primary"
+          style={{ backgroundColor: '#013088', border: 'none', marginBottom: '16px' }}
+        >
+          <LeftOutlined /> Back
         </Button>
       </div>
       <div className="rounded-lg bg-white">
