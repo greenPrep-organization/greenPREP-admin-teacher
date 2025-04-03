@@ -45,10 +45,16 @@ const ClassList = () => {
 
   const enrichedClasses = useMemo(() => {
     if (!classDetails) return []
-    return classes.map((cls, index) => ({
-      ...cls,
-      sessions: classDetails[index]?.totalSessions || 0
-    }))
+
+    return (
+      classes
+        .map((cls, index) => ({
+          ...cls,
+          sessions: classDetails[index]?.totalSessions || 0
+        }))
+        // @ts-ignore
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+    )
   }, [classes, classDetails])
 
   const filteredClasses = useMemo(() => {
