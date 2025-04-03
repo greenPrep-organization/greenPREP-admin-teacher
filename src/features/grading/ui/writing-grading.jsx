@@ -1,28 +1,29 @@
 import { useState, useEffect } from 'react'
-import { Button } from 'antd'
+import { Card } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import mockData from '@features/grading/constants/writingmockdata'
 import GradingScoringPanel from '@features/grading/ui/grading-scoring-panel'
 import Feedback from '@features/grading/ui/feedback-grading'
+import PropTypes from 'prop-types'
 
 const STORAGE_KEY = 'writing_grading_draft'
 
 let hasLoadedWritingDraft = false
 
-function WritingGrade() {
+function WritingGrade({ studentId }) {
   const [activePart, setActivePart] = useState('part1')
   const [scores, setScores] = useState({})
 
   const { data: studentData } = useQuery({
-    queryKey: ['studentData'],
-    queryFn: () => Promise.resolve(mockData),
-    initialData: mockData
+    queryKey: ['studentData', studentId],
+    queryFn: () => Promise.resolve(mockData[studentId]),
+    initialData: mockData[studentId]
   })
 
   useEffect(() => {
     if (!hasLoadedWritingDraft && studentData) {
       try {
-        const draftData = JSON.parse(localStorage.getItem(STORAGE_KEY))
+        const draftData = JSON.parse(localStorage.getItem(`${STORAGE_KEY}_${studentId}`))
         if (draftData) {
           const loadedScores = {}
           draftData.forEach(({ part, scores: partScores }) => {
@@ -39,7 +40,7 @@ function WritingGrade() {
         console.error('Error loading draft:', error)
       }
     }
-  }, [studentData])
+  }, [studentData, studentId])
 
   const handlePartChange = key => {
     setActivePart(key)
@@ -49,10 +50,10 @@ function WritingGrade() {
     // Handle submission logic here
   }
 
-  const currentPart = studentData[activePart]
-  const questions = currentPart.questions
-  const answers = currentPart.answers
-  const instructions = currentPart.instructions
+  const currentPart = studentData?.[activePart] || { questions: [], answers: [], instructions: '' }
+  const questions = currentPart.questions || []
+  const answers = currentPart.answers || []
+  const instructions = currentPart.instructions || ''
 
   const renderAnswer = answer => {
     if (!answer || answer.trim() === '') {
@@ -62,48 +63,47 @@ function WritingGrade() {
   }
 
   return (
-    <div>
-      <div className="mb-6 flex w-fit gap-2 rounded-xl border border-gray-200 bg-white p-2 shadow-sm">
-        {['part1', 'part2', 'part3', 'part4'].map(part => (
-          <Button
-            key={part}
-            type={activePart === part ? 'primary' : 'default'}
-            onClick={() => handlePartChange(part)}
-            className={`min-w-[80px] rounded-xl border-none ${
-              activePart === part ? 'bg-[#003087] text-white' : 'bg-white text-black'
-            }`}
-          >
-            {`PART ${part.slice(-1)}`}
-          </Button>
-        ))}
+    <div className="mx-auto max-w-7xl px-4">
+      <div className="mb-4 max-w-min rounded-xl border border-solid border-[#C0C0C0] px-4 py-2">
+        <div className="flex flex-nowrap gap-1">
+          {['part1', 'part2', 'part3', 'part4'].map(part => (
+            <button
+              key={part}
+              onClick={() => handlePartChange(part)}
+              className={`whitespace-nowrap rounded-md border border-[#C0C0C0] px-2 py-1 transition-colors ${
+                activePart === part ? 'bg-[#003366] text-white' : 'bg-white text-black hover:bg-gray-50'
+              }`}
+            >
+              {`Part ${part.slice(-1)}`}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="flex gap-8">
-        <div className="flex-1 space-y-5">
-          <div className="mb-4">
-            <h3 className="text-lg font-medium text-[#003087]">{`PART ${activePart.slice(-1)}:`}</h3>
-            <div className="mt-1 text-base">{instructions}</div>
-            <ol className="list-decimal space-y-1 pl-6">
-              {questions.map((question, index) => (
-                <li key={index}>{question}</li>
-              ))}
-            </ol>
-          </div>
-
-          <div className="rounded-lg bg-white">
-            <div className="mb-3 rounded-xl border border-gray-100 bg-gray-50 p-4">
-              <p className="font-medium text-[#003087]">Student Answers:</p>
-              {answers.length === 0 ? (
-                <p className="italic text-gray-500">No answer submitted</p>
-              ) : (
-                <ol className="list-decimal space-y-4 pl-6">
-                  {answers.map((answer, index) => (
-                    <li key={index}>{renderAnswer(answer)}</li>
-                  ))}
-                </ol>
-              )}
+      <div className="flex flex-col gap-6 md:flex-row">
+        <div className="flex-1">
+          <Card className="mb-4 border-[#C0C0C0]">
+            <div className="text-sm">
+              <p className="mb-2 whitespace-pre-wrap">{instructions}</p>
+              <ol className="list-decimal space-y-1 pl-6">
+                {questions.map((question, index) => (
+                  <li key={index}>{question}</li>
+                ))}
+              </ol>
             </div>
-          </div>
+          </Card>
+
+          <Card className="max-h-[400px] overflow-y-auto border-[#C0C0C0]">
+            {answers.length === 0 ? (
+              <p className="italic text-gray-500">No answer submitted</p>
+            ) : (
+              <ol className="list-decimal space-y-4 pl-6">
+                {answers.map((answer, index) => (
+                  <li key={index}>{renderAnswer(answer)}</li>
+                ))}
+              </ol>
+            )}
+          </Card>
         </div>
 
         <GradingScoringPanel
@@ -121,6 +121,10 @@ function WritingGrade() {
       </div>
     </div>
   )
+}
+
+WritingGrade.propTypes = {
+  studentId: PropTypes.string.isRequired
 }
 
 export default WritingGrade

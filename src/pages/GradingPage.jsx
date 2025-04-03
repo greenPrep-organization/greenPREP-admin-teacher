@@ -1,52 +1,79 @@
 import { useState } from 'react'
-import { Button } from 'antd'
+import { Button, Breadcrumb } from 'antd'
 import { useNavigate } from 'react-router-dom'
-import StudentCard from '@features/grading/ui/studentInformation'
+import StudentCard from '@features/grading/ui/student-information'
 import Speaking from '@features/grading/ui/speaking-grading'
 import Writing from '@features/grading/ui/writing-grading'
 import NavigationBar from '@features/grading/ui/navigation-bar'
 import { useGetSpeakingTest } from '@features/grading/api'
+import StudentListPopup from '@features/grading/ui/StudentListPopup'
+import studentMockData from '@features/grading/constants/studentMockData.js'
 
 function GradingPage() {
   const [activeSection, setActiveSection] = useState('speaking')
   const [currentStudent, setCurrentStudent] = useState(1)
+  const [isPopupVisible, setIsPopupVisible] = useState(false)
   const navigate = useNavigate()
 
+  const GRADING_CONFIG = {
+    SPEAKING_TEST_ID: 'ef6b69aa-2ec2-4c65-bf48-294fd12e13fc',
+    TEST_TYPE: 'SPEAKING',
+    CLASS_NAME: 'CLASS01',
+    TERM: 'Feb_2025',
+    DASHBOARD_PATH: 'Dashboard',
+    CLASSES_PATH: 'Classes'
+  }
+
+  const studentList = studentMockData
+  const [studentData, setStudentData] = useState(studentList[0])
+
   const { data: speakingTest, isLoading: speakingLoading } = useGetSpeakingTest(
-    'ef6b69aa-2ec2-4c65-bf48-294fd12e13fc',
-    'SPEAKING'
+    GRADING_CONFIG.SPEAKING_TEST_ID,
+    GRADING_CONFIG.TEST_TYPE
   )
 
-  const studentData = {
-    name: 'A Nguyen',
-    id: 'GDD210011',
-    class: 'GCD1111',
-    email: '123@gmail.com',
-    phone: '0123456789',
-    image: ''
+  const navigateToPreviousStudent = () => {
+    const prevIndex = Math.max(0, currentStudent - 2)
+    setCurrentStudent(prevIndex + 1)
+    setStudentData(studentList[prevIndex])
+  }
+
+  const navigateToNextStudent = () => {
+    const nextIndex = Math.min(studentList.length - 1, currentStudent)
+    setCurrentStudent(nextIndex + 1)
+    setStudentData(studentList[nextIndex])
   }
 
   const handleBack = () => {
     navigate(-1)
   }
 
-  const handlePreviousStudent = () => {
-    setCurrentStudent(prev => Math.max(1, prev - 1))
-  }
-
-  const handleNextStudent = () => {
-    setCurrentStudent(prev => Math.min(40, prev + 1))
-  }
-
   const handleChangeStudent = () => {
-    console.log('Change student clicked')
+    setIsPopupVisible(true)
   }
+
+  const handleClosePopup = () => {
+    setIsPopupVisible(false)
+  }
+
+  const handleSelectStudent = student => {
+    setStudentData(student)
+    setCurrentStudent(studentList.findIndex(s => s.id === student.id) + 1)
+    setIsPopupVisible(false)
+  }
+
+  const breadcrumbItems = [
+    { title: GRADING_CONFIG.DASHBOARD_PATH },
+    { title: GRADING_CONFIG.CLASSES_PATH },
+    { title: GRADING_CONFIG.CLASS_NAME },
+    { title: GRADING_CONFIG.TERM },
+    { title: studentData.name },
+    { title: activeSection === 'speaking' ? 'Speaking' : 'Writing' }
+  ]
 
   const renderBreadcrumb = () => (
     <div className="mb-4">
-      <div className="text-sm text-gray-600">
-        Dashboard / Classes / CLASS01 / Feb_2025 / A Nguyen / {activeSection === 'speaking' ? 'Speaking' : 'Writing'}
-      </div>
+      <Breadcrumb items={breadcrumbItems} className="text-sm text-gray-600" />
       <h1 className="mt-2 text-2xl font-bold">Grading</h1>
     </div>
   )
@@ -56,11 +83,11 @@ function GradingPage() {
       <div className="mb-6">
         <NavigationBar
           onBack={handleBack}
-          onPrevious={handlePreviousStudent}
-          onNext={handleNextStudent}
+          onPrevious={navigateToPreviousStudent}
+          onNext={navigateToNextStudent}
           onChangeStudent={handleChangeStudent}
           currentStudent={currentStudent}
-          totalStudents={40}
+          totalStudents={studentList.length}
           disabled={isLoading}
         />
       </div>
@@ -71,14 +98,14 @@ function GradingPage() {
         </div>
 
         <div className="flex-1">
-          <div className="align-center flex rounded-t-[10px] bg-[#f3f4f6] pb-[12px] pl-[12px] pt-[12px]">
+          <div className="flex items-center rounded-t-[10px] bg-gray-100 p-3">
             <Button
               type={activeSection === 'speaking' ? 'primary' : 'default'}
               onClick={() => setActiveSection('speaking')}
-              className={`mr-[12px] h-[36px] min-w-[120px] rounded-lg border ${
+              className={`mr-3 h-9 min-w-[120px] rounded-lg ${
                 activeSection === 'speaking'
-                  ? 'border-none bg-[#003087] text-white hover:bg-[#002366]'
-                  : 'border-gray-300 bg-white'
+                  ? 'bg-[#003087] text-white hover:bg-[#002366]'
+                  : 'border-gray-300 bg-white text-black'
               }`}
             >
               Speaking
@@ -86,10 +113,10 @@ function GradingPage() {
             <Button
               type={activeSection === 'writing' ? 'primary' : 'default'}
               onClick={() => setActiveSection('writing')}
-              className={`h-[36px] min-w-[120px] border ${
+              className={`h-9 min-w-[120px] rounded-lg ${
                 activeSection === 'writing'
-                  ? 'border-none bg-[#003087] text-white hover:bg-[#002366]'
-                  : 'border-gray-300 bg-white'
+                  ? 'bg-[#003087] text-white hover:bg-[#002366]'
+                  : 'border-gray-300 bg-white text-black'
               }`}
             >
               Writing
@@ -100,7 +127,7 @@ function GradingPage() {
             {activeSection === 'speaking' ? (
               <Speaking testData={speakingTest} isLoading={speakingLoading} />
             ) : (
-              <Writing />
+              <Writing studentId={studentData.id} />
             )}
           </div>
         </div>
@@ -111,9 +138,15 @@ function GradingPage() {
   const isLoading = activeSection === 'speaking' ? speakingLoading : false
 
   return (
-    <div className="">
+    <div className="container mx-auto">
       {renderBreadcrumb()}
       {renderMainContent()}
+      <StudentListPopup
+        visible={isPopupVisible}
+        onCancel={handleClosePopup}
+        onSelectStudent={handleSelectStudent}
+        studentList={studentList}
+      />
     </div>
   )
 }
