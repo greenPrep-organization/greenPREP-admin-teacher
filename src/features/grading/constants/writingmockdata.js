@@ -1,7 +1,8 @@
 const mockData = {
   GDD210011: {
     part1: {
-      instructions: "Part 1. You want to join the Museum club. You have 5 messages from a member of the club. Write short answers (1-5 words) to each message. Recommended time: 3 minutes. (1 point)\n* (You're allowed to write up to 10 words without affecting your grade).",
+      instructions:
+        "Part 1. You want to join the Museum club. You have 5 messages from a member of the club. Write short answers (1-5 words) to each message. Recommended time: 3 minutes. (1 point)\n* (You're allowed to write up to 10 words without affecting your grade).",
       questions: [
         'Are you interested in art?',
         'Where did you go last night?',
@@ -12,7 +13,7 @@ const mockData = {
       answers: [
         'Yes, I love paintings.',
         'I went to a café.',
-        "A white shirt and jeans.",
+        'A white shirt and jeans.',
         'Football is the most popular.',
         'Hanging out and chatting.'
       ]
@@ -20,17 +21,12 @@ const mockData = {
     part2: {
       instructions: 'Part 2. Write a short essay about your favorite museum. (5 points)',
       questions: ['Describe your favorite museum and why you like it.'],
-      answers: [
-        'The National Art Museum is my favorite. It has amazing art.'
-      ]
+      answers: ['The National Art Museum is my favorite. It has amazing art.']
     },
     part3: {
       instructions: 'Part 3. Compare and contrast two different types of museums. (10 points)',
       questions: ['Compare art museums and science museums.', 'Discuss the educational value of each type.'],
-      answers: [
-        'Art museums show creativity, science museums show technology.',
-        'Both teach, but in different ways.'
-      ]
+      answers: ['Art museums show creativity, science museums show technology.', 'Both teach, but in different ways.']
     },
     part4: {
       instructions: 'Part 4. Analyze the role of museums in modern society. (15 points)',
@@ -48,7 +44,8 @@ const mockData = {
   },
   GDD210012: {
     part1: {
-      instructions: "Part 1. You want to join the Museum club. You have 5 messages from a member of the club. Write short answers (1-5 words) to each message. Recommended time: 3 minutes. (1 point)\n* (You're allowed to write up to 10 words without affecting your grade).",
+      instructions:
+        "Part 1. You want to join the Museum club. You have 5 messages from a member of the club. Write short answers (1-5 words) to each message. Recommended time: 3 minutes. (1 point)\n* (You're allowed to write up to 10 words without affecting your grade).",
       questions: [
         'Are you interested in art?',
         'Where did you go last night?',
@@ -67,17 +64,12 @@ const mockData = {
     part2: {
       instructions: 'Part 2. Write a short essay about your favorite museum. (5 points)',
       questions: ['Describe your favorite museum and why you like it.'],
-      answers: [
-        'The Science Museum is great. It’s interactive and fun.'
-      ]
+      answers: ['The Science Museum is great. It’s interactive and fun.']
     },
     part3: {
       instructions: 'Part 3. Compare and contrast two different types of museums. (10 points)',
       questions: ['Compare art museums and science museums.', 'Discuss the educational value of each type.'],
-      answers: [
-        'Art is quiet, science is hands-on.',
-        'Science teaches facts, art teaches feelings.'
-      ]
+      answers: ['Art is quiet, science is hands-on.', 'Science teaches facts, art teaches feelings.']
     },
     part4: {
       instructions: 'Part 4. Analyze the role of museums in modern society. (15 points)',
@@ -86,16 +78,13 @@ const mockData = {
         'What is the social impact of museums in communities?',
         'Lmao i just delete wrong'
       ],
-      answers: [
-        'They use apps now.',
-        'Museums educate the public.',
-        'They’ll use AI soon.'
-      ]
+      answers: ['They use apps now.', 'Museums educate the public.', 'They’ll use AI soon.']
     }
   },
   GDD210013: {
     part1: {
-      instructions: "Part 1. You want to join the Museum club. You have 5 messages from a member of the club. Write short answers (1-5 words) to each message. Recommended time: 3 minutes. (1 point)\n* (You're allowed to write up to 10 words without affecting your grade).",
+      instructions:
+        "Part 1. You want to join the Museum club. You have 5 messages from a member of the club. Write short answers (1-5 words) to each message. Recommended time: 3 minutes. (1 point)\n* (You're allowed to write up to 10 words without affecting your grade).",
       questions: [
         'Are you interested in art?',
         'Where did you go last night?',
@@ -114,17 +103,12 @@ const mockData = {
     part2: {
       instructions: 'Part 2. Write a short essay about your favorite museum. (5 points)',
       questions: ['Describe your favorite museum and why you like it.'],
-      answers: [
-        'The History Museum is cool. It tells old stories.'
-      ]
+      answers: ['The History Museum is cool. It tells old stories.']
     },
     part3: {
       instructions: 'Part 3. Compare and contrast two different types of museums. (10 points)',
       questions: ['Compare art museums and science museums.', 'Discuss the educational value of each type.'],
-      answers: [
-        'Art is pretty, science is exciting.',
-        'Both inspire learning differently.'
-      ]
+      answers: ['Art is pretty, science is exciting.', 'Both inspire learning differently.']
     },
     part4: {
       instructions: 'Part 4. Analyze the role of museums in modern society. (15 points)',
@@ -133,11 +117,7 @@ const mockData = {
         'What is the social impact of museums in communities?',
         'Lmao i just delete wrong'
       ],
-      answers: [
-        'Online exhibits are new.',
-        'They connect people.',
-        'Museums will grow smarter.'
-      ]
+      answers: ['Online exhibits are new.', 'They connect people.', 'Museums will grow smarter.']
     }
   }
 }
