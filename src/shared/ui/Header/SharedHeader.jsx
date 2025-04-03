@@ -5,17 +5,15 @@ import { Link } from 'react-router-dom'
 
 const { Header } = Layout
 
-const SharedHeader = ({ collapsed, setCollapsed }) => {
-  // @ts-ignore
+const SharedHeader = ({ collapsed, setCollapsed, onLogoutClick }) => {
   const { user } = useSelector(state => state.auth)
-
   const menu = (
     <Menu>
       <Menu.Item key="0">
         <Link to={`/profile/${user?.userId}`}>Profile</Link>
       </Menu.Item>
-      <Menu.Item key="1">
-        <Link to="/signout">Sign Out</Link>
+      <Menu.Item key="1" onClick={onLogoutClick}>
+        Sign Out
       </Menu.Item>
     </Menu>
   )
