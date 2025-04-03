@@ -18,7 +18,6 @@ export const useFetchClassDetails = classes => {
       return data
     },
     staleTime: 60 * 1000,
-    refetchOnWindowFocus: false,
-    enabled: classes.length > 0
+    refetchOnWindowFocus: false
   })
 }
