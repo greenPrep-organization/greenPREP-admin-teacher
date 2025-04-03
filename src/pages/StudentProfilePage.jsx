@@ -35,7 +35,10 @@ export default function StudentProfilePage() {
 
           <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <SessionInformation studentId={studentId} />
+              <SessionInformation
+                // @ts-ignore
+                studentId={studentId}
+              />
             </div>
 
             <div className="lg:col-span-1">
@@ -48,7 +51,10 @@ export default function StudentProfilePage() {
           </div>
 
           <div className="mt-6">
-            <SessionHistory studentId={studentId} />
+            <SessionHistory
+              // @ts-ignore
+              studentId={studentId}
+            />
           </div>
         </main>
       </div>

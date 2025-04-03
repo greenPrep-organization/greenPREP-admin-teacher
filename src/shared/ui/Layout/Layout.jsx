@@ -3,8 +3,8 @@ import ReadOutlined from '@ant-design/icons/lib/icons/ReadOutlined'
 import UserOutlined from '@ant-design/icons/lib/icons/UserOutlined'
 import { Logo } from '@assets/images'
 import { Layout as AntdLayout, Menu } from 'antd'
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import SharedHeader from '../Header/SharedHeader'
 import LogoutModal from '@pages/LogoutModal'
 
@@ -12,7 +12,24 @@ const { Sider, Content } = AntdLayout
 
 const Layout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false)
+
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
+
+  const location = useLocation()
+  const [selectedKey, setSelectedKey] = useState('1')
+
+  useEffect(() => {
+    switch (location.pathname) {
+      case '/':
+        setSelectedKey('1')
+        break
+      case '/classes-management':
+        setSelectedKey('2')
+        break
+      default:
+        setSelectedKey('1')
+    }
+  }, [location.pathname])
 
   return (
     <AntdLayout className="min-h-screen">
@@ -23,12 +40,12 @@ const Layout = ({ children }) => {
         <Menu
           className="bg-primary-color custom-sidebar-menu"
           mode="inline"
-          defaultSelectedKeys={['1']}
+          selectedKeys={[selectedKey]}
           items={[
             {
               key: '1',
               icon: <UserOutlined />,
-              label: <Link to="/dashboard">Dashboard</Link>
+              label: <Link to="/">Dashboard</Link>
             },
             {
               key: '2',

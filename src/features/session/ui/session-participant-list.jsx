@@ -1,9 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { SearchOutlined } from '@ant-design/icons'
-import { getSessionParticipants, publishSessionResults, updateParticipantLevel } from '@features/session/api'
-import { Button, Input, Select, Table, Tabs, message } from 'antd'
+import { getSessionParticipants, updateParticipantLevel } from '@features/session/api'
+import { Input, Select, Table, Tabs, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import PendingList from '../../student/ui/student-pending-list'
+import PublishPopup from './publish-popup'
 
 const SessionParticipantList = () => {
   const [loading, setLoading] = useState(false)
@@ -164,18 +166,8 @@ const SessionParticipantList = () => {
   const handleSearch = value => {
     setSearchText(value)
   }
-
-  const handleReadyToPublish = async () => {
-    if (!readyToPublish) {
-      message.warning('Please ensure all students have been assigned a level')
-      return
-    }
-    try {
-      await publishSessionResults(sessionId)
-      message.success('Session results published successfully')
-    } catch (error) {
-      message.error(error.message || 'Failed to publish session results')
-    }
+  const handleStudentApproved = () => {
+    fetchData(pagination)
   }
 
   const items = [
@@ -202,15 +194,11 @@ const SessionParticipantList = () => {
                 className="w-64"
               />
             </div>
-            <Button
-              key="publish-button"
-              type="primary"
-              disabled={!readyToPublish}
-              onClick={handleReadyToPublish}
-              className={`${readyToPublish ? 'bg-primary text-white' : 'bg-bg-gray text-text-disabled'}`}
-            >
-              Ready to Publish
-            </Button>
+            <PublishPopup
+              sessionId={sessionId}
+              disabled={readyToPublish}
+              onPublishSuccess={() => setReadyToPublish(false)}
+            />
           </div>
 
           <Table
@@ -235,7 +223,7 @@ const SessionParticipantList = () => {
       ),
       children: (
         <div key="pending-content">
-          <PendingList sessionId={sessionId} />
+          <PendingList sessionId={sessionId} onStudentApproved={handleStudentApproved} />
         </div>
       )
     }

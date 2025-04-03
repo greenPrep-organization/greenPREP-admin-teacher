@@ -3,7 +3,7 @@ import { Table, Input, Space, Button, Card, message, Typography, Breadcrumb, Spi
 import { EditOutlined, EyeOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchClasses, deleteClass, fetchClassDetails } from '@features/class-management/api/classes'
+import { fetchClasses, deleteClass, fetchClassDetails } from '@features/class-management/api'
 import { CreateClassModal, EditClassModal } from '@features/class-management/ui/class-modal'
 import DeleteConfirmModal from '@features/class-management/ui/delete-class'
 
@@ -45,10 +45,15 @@ const ClassList = () => {
 
   const enrichedClasses = useMemo(() => {
     if (!classDetails) return []
-    return classes.map((cls, index) => ({
-      ...cls,
-      sessions: classDetails[index]?.totalSessions || 0
-    }))
+    return (
+      classes
+        .map((cls, index) => ({
+          ...cls,
+          sessions: classDetails[index]?.totalSessions || 0
+        }))
+        // @ts-ignore
+        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+    )
   }, [classes, classDetails])
 
   const filteredClasses = useMemo(() => {

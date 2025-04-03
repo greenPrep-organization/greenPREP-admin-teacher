@@ -1,5 +1,5 @@
 import { UserOutlined } from '@ant-design/icons'
-import { useChangeUserPassword, useUpdateUserProfile, useUserProfile } from '@features/profile/api/profileAPI'
+import { useChangeUserPassword, useUpdateUserProfile, useUserProfile } from '@features/profile/api'
 import { Avatar, Button, Card, Divider, Input, message, Modal, Spin, Tag } from 'antd'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -10,7 +10,7 @@ const profileValidationSchema = Yup.object().shape({
   lastName: Yup.string().required('Last name is required'),
   email: Yup.string().email('Invalid email format').required('Email is required'),
   phone: Yup.string()
-    .matches(/^[0-9]{10,11}$/, 'Phone number must be 10-11 digits')
+    .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
     .required('Phone number is required')
 })
 
@@ -23,9 +23,9 @@ const passwordValidationSchema = Yup.object().shape({
 })
 
 const Profile = () => {
+  // @ts-ignore
   const auth = useSelector(state => state.auth)
   const { data: userData, isLoading, isError, refetch } = useUserProfile(auth.user?.userId)
-
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
   const updateProfileMutation = useUpdateUserProfile()
@@ -71,15 +71,13 @@ const Profile = () => {
 
   const handleInputChange = e => {
     const { name, value } = e.target
-    // Remove the validation check here - let users type freely
-    // Validation will happen when they try to save
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   const handleSave = async () => {
     try {
-      if (formData.phone.length < 10 || formData.phone.length > 11) {
-        message.error('Phone number must have 10-11 digits')
+      if (formData.phone.length < 10 || formData.phone.length > 10) {
+        message.error('Phone number must have 10 digits')
         return
       }
       await profileValidationSchema.validate(formData, { abortEarly: false })
@@ -156,7 +154,9 @@ const Profile = () => {
       <h1 className="mb-6 text-3xl font-bold text-gray-800">Profile</h1>
       <Card className="mb-6 overflow-hidden rounded-lg border border-gray-200 shadow-sm">
         <div className="flex flex-col gap-6 md:flex-row md:items-center">
-          <Avatar size={100} icon={<UserOutlined />} className="bg-gray-800" />
+          <Avatar className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-100 bg-gray-400 text-4xl font-bold text-black md:h-24 md:w-24 md:rounded-[50%]">
+            {userData?.lastName?.charAt(0)}
+          </Avatar>
           <div className="flex-grow">
             <h2 className="text-2xl font-semibold text-gray-800">
               {userData?.firstName} {userData?.lastName}
@@ -232,9 +232,7 @@ const Profile = () => {
         width={400}
       >
         <div className="space-y-4">
-          {/* Name Row */}
           <div className="flex gap-4">
-            {/* First Name */}
             <div className="flex-1">
               <label className="mb-1 block text-sm font-medium text-gray-700">
                 First name <span className="text-red-500">*</span>
@@ -246,7 +244,6 @@ const Profile = () => {
               />
             </div>
 
-            {/* Last Name */}
             <div className="flex-1">
               <label className="mb-1 block text-sm font-medium text-gray-700">
                 Last name <span className="text-red-500">*</span>
@@ -259,7 +256,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Email */}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Email <span className="text-red-500">*</span>
@@ -271,7 +267,6 @@ const Profile = () => {
             />
           </div>
 
-          {/* Phone Number */}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Phone number</label>
             <Input
@@ -309,7 +304,6 @@ const Profile = () => {
             onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })}
             className="mt-2 w-full rounded-md border border-gray-300 p-2"
           />
-          {/* Password validation list */}
           <div className="mt-2 pl-6 text-sm text-gray-600">
             <ul>
               <li className={passwordData.newPassword.length >= 8 ? 'text-green-500' : 'text-red-500'}>

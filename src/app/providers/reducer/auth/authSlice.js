@@ -9,6 +9,7 @@ const getUserRole = () => {
     if (!token) return null
     const decodedToken = jwtDecode(token)
 
+    // @ts-ignore
     return decodedToken.role || null
   } catch (error) {
     console.error('Error decoding token:', error)
