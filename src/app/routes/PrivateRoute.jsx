@@ -1,9 +1,10 @@
 import ClassDetailsPage from '@features/class-management/ui/view-class'
 import Profile from '@features/profile/ui/profile'
 import ClassListPage from '@pages/class-management'
+import DashboardPage from '@pages/DashboardPage'
 import GradingPage from '@pages/GradingPage'
-import StudentProfilePage from '@pages/StudentProfilePage'
 import SessionDetailPage from '@pages/SessionDetailPage'
+import StudentProfilePage from '@pages/StudentProfilePage'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 
 const PrivateRoute = [
@@ -12,8 +13,8 @@ const PrivateRoute = [
     element: <ProtectedRoute />,
     children: [
       {
-        path: 'homepage',
-        element: 'homepage'
+        index: true,
+        element: <DashboardPage />
       },
       {
         path: 'classes-management',
