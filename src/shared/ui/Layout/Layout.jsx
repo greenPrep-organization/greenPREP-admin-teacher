@@ -4,16 +4,14 @@ import UserOutlined from '@ant-design/icons/lib/icons/UserOutlined'
 import { Logo } from '@assets/images'
 import { Layout as AntdLayout, Menu } from 'antd'
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import SharedHeader from '../Header/SharedHeader'
-
 const { Sider, Content } = AntdLayout
-
 const Layout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false)
   const location = useLocation()
   const [selectedKey, setSelectedKey] = useState('1')
-
+  const navigate = useNavigate()
   useEffect(() => {
     switch (location.pathname) {
       case '/':
@@ -26,7 +24,10 @@ const Layout = ({ children }) => {
         setSelectedKey('1')
     }
   }, [location.pathname])
-
+  const handleLogout = () => {
+    localStorage.removeItem('access_token')
+    navigate('/login')
+  }
   return (
     <AntdLayout className="min-h-screen">
       <Sider className="bg-primary-color" width={250} collapsed={collapsed} trigger={null} collapsible>
@@ -57,9 +58,10 @@ const Layout = ({ children }) => {
               icon: <LogoutOutlined />,
               label: 'Sign out',
               style: {
-                backgroundColor: '#ff4d4f',
+                backgroundColor: '#FF4D4F',
                 color: 'white'
-              }
+              },
+              onClick: handleLogout
             }
           ]}
         />
@@ -71,5 +73,4 @@ const Layout = ({ children }) => {
     </AntdLayout>
   )
 }
-
 export default Layout
