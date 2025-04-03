@@ -6,12 +6,17 @@ import { Layout as AntdLayout, Menu } from 'antd'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import SharedHeader from '../Header/SharedHeader'
+import { useNavigate } from 'react-router-dom'
 
 const { Sider, Content } = AntdLayout
 
 const Layout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false)
-
+  const navigate = useNavigate()
+  const handleLogout = () => {
+    localStorage.removeItem('access_token')
+    navigate('/login')
+  }
   return (
     <AntdLayout className="min-h-screen">
       <Sider className="bg-primary-color" width={250} collapsed={collapsed} trigger={null} collapsible>
@@ -44,7 +49,8 @@ const Layout = ({ children }) => {
               style: {
                 backgroundColor: '#ff4d4f',
                 color: 'white'
-              }
+              },
+              onClick: handleLogout
             }
           ]}
         />
