@@ -1,22 +1,30 @@
 import { DownOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
+import LogoutModal from '@pages/LogoutModal'
 import { Button, Dropdown, Layout, Menu } from 'antd'
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 const { Header } = Layout
 
-const SharedHeader = ({ collapsed, setCollapsed }) => {
+// eslint-disable-next-line no-unused-vars
+const SharedHeader = ({ collapsed, setCollapsed, onLogoutClick }) => {
   // @ts-ignore
   const { user } = useSelector(state => state.auth)
   const userInitial = user?.firstName
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
+
+  const handleLogoutClick = () => {
+    setIsLogoutModalOpen(true)
+  }
 
   const menu = (
     <Menu>
       <Menu.Item key="0">
         <Link to={`/profile/${user?.userId}`}>Profile</Link>
       </Menu.Item>
-      <Menu.Item key="1">
-        <Link to="/signout">Sign Out</Link>
+      <Menu.Item key="1" onClick={handleLogoutClick}>
+        Sign Out
       </Menu.Item>
     </Menu>
   )
@@ -48,6 +56,7 @@ const SharedHeader = ({ collapsed, setCollapsed }) => {
           <DownOutlined className="text-xs text-white md:text-sm" />
         </a>
       </Dropdown>
+      <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} />
     </Header>
   )
 }

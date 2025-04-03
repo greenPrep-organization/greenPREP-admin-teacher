@@ -1,18 +1,18 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
-import { Button, InputNumber, Form, Card, message, Divider } from 'antd'
+import { Card } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import mockData from '@features/grading/constants/writingmockdata'
-import SaveAsDraftButton from '@features/grading/ui/save-as-draft-button'
+import GradingScoringPanel from '@features/grading/ui/grading-scoring-panel'
 import Feedback from '@features/grading/ui/feedback-grading'
+import PropTypes from 'prop-types'
 
 const STORAGE_KEY = 'writing_grading_draft'
 
-function WritingGrade() {
+let hasLoadedWritingDraft = false
+
+function WritingGrade({ studentId }) {
   const [activePart, setActivePart] = useState('part1')
-  const [form] = Form.useForm()
-  const [totalScore, setTotalScore] = useState(0)
-  const [hasLoadedDraft, setHasLoadedDraft] = useState(false)
+  const [scores, setScores] = useState({})
 
   const { data: studentData } = useQuery({
     queryKey: ['studentData'],
@@ -20,65 +20,34 @@ function WritingGrade() {
     initialData: mockData
   })
 
-  const calculatePartTotal = part => {
-    const values = form.getFieldsValue()
-    const questions = studentData[part].questions
-    let total = 0
-    questions.forEach((_, index) => {
-      const fieldValue = values[`${part}_question_${index}`] || 0
-      total += fieldValue
-    })
-    setTotalScore(total)
-  }
-
   useEffect(() => {
-    if (!hasLoadedDraft && studentData) {
+    if (!hasLoadedWritingDraft && studentData) {
       try {
         const draftData = JSON.parse(localStorage.getItem(STORAGE_KEY))
         if (draftData) {
-          const formValues = {}
-          draftData.forEach(({ part, scores }) => {
-            scores.forEach(({ questionIndex, score }) => {
+          const loadedScores = {}
+          draftData.forEach(({ part, scores: partScores }) => {
+            partScores.forEach(({ questionIndex, score }) => {
               if (score !== null) {
-                formValues[`${part}_question_${questionIndex}`] = score
+                loadedScores[`${part}_question_${questionIndex}`] = score
               }
             })
           })
-          form.setFieldsValue(formValues)
-          setHasLoadedDraft(true)
-          calculatePartTotal(activePart)
+          setScores(loadedScores)
+          hasLoadedWritingDraft = true
         }
       } catch (error) {
         console.error('Error loading draft:', error)
       }
     }
-  }, [studentData, hasLoadedDraft, form, activePart])
-
-  useEffect(() => {
-    calculatePartTotal(activePart)
-  }, [activePart, studentData])
+  }, [studentData, studentId])
 
   const handlePartChange = key => {
     setActivePart(key)
   }
 
-  const handleScoreChange = (value, field) => {
-    let newValue = value
-    if (newValue > 100) {
-      newValue = 100
-      form.setFieldsValue({ [field]: 100 })
-    }
-    calculatePartTotal(activePart)
-  }
-
-  const handleKeyPress = event => {
-    if (!/[0-9]/.test(event.key)) {
-      event.preventDefault()
-    }
-  }
-
   const handleSubmit = () => {
-    message.success('Grading submitted successfully')
+    // Handle submission logic here
   }
 
   const currentPart = studentData[activePart]
@@ -137,64 +106,25 @@ function WritingGrade() {
           </Card>
         </div>
 
-        <div className="w-full md:w-80">
-          <div className="mx-auto rounded-lg bg-white p-6 shadow-md">
-            <Form form={form} layout="horizontal" onFinish={handleSubmit} initialValues={{}}>
-              {questions.map((_, index) => (
-                <div key={index} className="mb-4 flex items-center">
-                  <label className="w-28 text-center font-medium text-gray-700">Question {index + 1}</label>
-                  <Form.Item
-                    name={`${activePart}_question_${index}`}
-                    className="mb-0 flex-1"
-                    rules={[
-                      { required: true, message: 'Please input a score' },
-                      { type: 'integer', message: 'Score must be an integer' },
-                      { type: 'number', min: 0, max: 100, message: 'Score must be between 0 and 100' }
-                    ]}
-                  >
-                    <InputNumber
-                      className="w-[100px] text-right"
-                      min={0}
-                      max={999}
-                      maxLength={3}
-                      step={1}
-                      precision={0}
-                      onChange={value => handleScoreChange(value, `${activePart}_question_${index}`)}
-                      onKeyPress={handleKeyPress}
-                    />
-                  </Form.Item>
-                </div>
-              ))}
-
-              <Divider className="my-4 border-black" />
-
-              <div className="flex items-center">
-                <label className="w-28 text-center font-medium text-gray-700">Total</label>
-                <Form.Item className="mb-0 flex-1">
-                  <InputNumber className="w-[100px] bg-gray-50 text-right" value={totalScore} disabled />
-                </Form.Item>
-              </div>
-
-              <div className="space-y-2 pt-4">
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  className="w-full bg-[#003366] shadow-md transition-shadow hover:shadow-lg"
-                >
-                  Submit
-                </Button>
-                <SaveAsDraftButton form={form} studentData={studentData} />
-              </div>
-            </Form>
-          </div>
-        </div>
+        <GradingScoringPanel
+          activePart={activePart}
+          questions={questions}
+          scores={scores}
+          setScores={setScores}
+          type="writing"
+          onSubmit={handleSubmit}
+        />
       </div>
 
       <div className="mt-6">
-        <Feedback activePart={activePart} />
+        <Feedback activePart={activePart} type="writing" />
       </div>
     </div>
   )
+}
+
+WritingGrade.propTypes = {
+  studentId: PropTypes.string.isRequired
 }
 
 export default WritingGrade
