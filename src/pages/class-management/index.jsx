@@ -45,7 +45,6 @@ const ClassList = () => {
 
   const enrichedClasses = useMemo(() => {
     if (!classDetails) return []
-
     return (
       classes
         .map((cls, index) => ({
