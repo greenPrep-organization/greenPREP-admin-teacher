@@ -9,6 +9,25 @@ import { Button, Empty, Input, Space, Spin, Table, message } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+const testSets = [
+  {
+    id: 1,
+    name: 'Test Set 1'
+  },
+  {
+    id: 2,
+    name: 'Test Set 2'
+  },
+  {
+    id: 3,
+    name: 'Test Set 3'
+  },
+  {
+    id: 4,
+    name: 'Test Set 4'
+  }
+]
+
 const SessionsList = ({ classId }) => {
   const { data: sessions = [], isLoading, isError } = useSessions(classId)
   const [filteredSessions, setFilteredSessions] = useState([])
@@ -247,6 +266,7 @@ const SessionsList = ({ classId }) => {
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onSubmit={handleCreateSession}
+        testSets={testSets}
       />
 
       {deleteSessionId && (
