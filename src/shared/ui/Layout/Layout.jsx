@@ -6,11 +6,13 @@ import { Layout as AntdLayout, Menu } from 'antd'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import SharedHeader from '../Header/SharedHeader'
+import LogoutModal from '@pages/LogoutModal'
 
 const { Sider, Content } = AntdLayout
 
 const Layout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false)
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
 
   return (
     <AntdLayout className="min-h-screen">
@@ -41,6 +43,7 @@ const Layout = ({ children }) => {
               key: '3',
               icon: <LogoutOutlined />,
               label: 'Sign out',
+              onClick: () => setIsLogoutModalOpen(true),
               style: {
                 backgroundColor: '#ff4d4f',
                 color: 'white'
@@ -50,9 +53,15 @@ const Layout = ({ children }) => {
         />
       </Sider>
       <AntdLayout>
-        <SharedHeader collapsed={collapsed} setCollapsed={setCollapsed} />
+        <SharedHeader
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+          onLogoutClick={() => setIsLogoutModalOpen(true)}
+        />
         <Content className="m-4 bg-white p-4">{children}</Content>
       </AntdLayout>
+
+      <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} />
     </AntdLayout>
   )
 }
