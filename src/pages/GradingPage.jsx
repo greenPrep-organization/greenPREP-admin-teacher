@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button, Breadcrumb } from 'antd'
 import { useNavigate } from 'react-router-dom'
-import StudentCard from '@features/grading/ui/studentInformation'
+import StudentCard from '@features/grading/ui/student-information'
 import Speaking from '@features/grading/ui/speaking-grading'
 import Writing from '@features/grading/ui/writing-grading'
 import NavigationBar from '@features/grading/ui/navigation-bar'

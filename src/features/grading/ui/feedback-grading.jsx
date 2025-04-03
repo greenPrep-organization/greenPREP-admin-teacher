@@ -1,10 +1,22 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, Input, Spin, Timeline, Tooltip } from 'antd'
 import PropTypes from 'prop-types'
 import { ClockCircleOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { sharedFeedbacks } from '@features/grading/constants/shared-state'
 
 const { TextArea } = Input
+
+const FEEDBACK_STORAGE_KEY = 'grading_feedbacks'
+
+try {
+  const savedFeedbacks = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY))
+  if (savedFeedbacks) {
+    sharedFeedbacks.writing = savedFeedbacks.writing || {}
+    sharedFeedbacks.speaking = savedFeedbacks.speaking || {}
+  }
+} catch (error) {
+  console.error('Error loading feedbacks from localStorage:', error)
+}
 
 function Feedback({
   initialFeedback = '',
@@ -13,48 +25,74 @@ function Feedback({
   savedFeedback = null,
   submissionStatus = 'pending',
   feedbackHistory = [],
-  activePart
+  activePart,
+  type = 'writing'
 }) {
   const [feedbackByPart, setFeedbackByPart] = useState({})
   const [showHistory, setShowHistory] = useState(false)
 
+  const getPartKey = useCallback(
+    part => {
+      return `${type}_${part}`
+    },
+    [type]
+  )
+
   useEffect(() => {
     if (savedFeedback) {
-      setFeedbackByPart(prev => ({
-        ...prev,
-        [activePart]: savedFeedback
-      }))
-    } else if (initialFeedback && !feedbackByPart[activePart]) {
-      setFeedbackByPart(prev => ({
-        ...prev,
-        [activePart]: initialFeedback
-      }))
+      sharedFeedbacks[type][activePart] = savedFeedback
     }
-  }, [initialFeedback, savedFeedback, activePart])
+
+    if (!savedFeedback && !initialFeedback) {
+      setFeedbackByPart(prev => ({
+        ...prev,
+        [getPartKey(activePart)]: sharedFeedbacks[type][activePart] || ''
+      }))
+    } else if (initialFeedback) {
+      const partKey = getPartKey(activePart)
+      setFeedbackByPart(prev => {
+        if (!prev[partKey]) {
+          sharedFeedbacks[type][activePart] = initialFeedback
+          return {
+            ...prev,
+            [partKey]: initialFeedback
+          }
+        }
+        return prev
+      })
+    }
+  }, [initialFeedback, savedFeedback, activePart, type, getPartKey])
 
   const handleFeedbackChange = e => {
     const newFeedback = e.target.value
+    const partKey = getPartKey(activePart)
+
     setFeedbackByPart(prev => ({
       ...prev,
-      [activePart]: newFeedback
+      [partKey]: newFeedback
     }))
+
+    sharedFeedbacks[type][activePart] = newFeedback
+
     if (onFeedbackChange) {
-      onFeedbackChange(newFeedback)
+      onFeedbackChange(newFeedback, activePart, type)
     }
   }
 
   const renderFeedbackHistory = () => {
-    if (!feedbackHistory || feedbackHistory.length === 0) {
-      return <div className="py-4 text-center text-gray-500">No previous feedback history</div>
+    const filteredHistory = feedbackHistory.filter(entry => entry.part === activePart && entry.type === type)
+
+    if (!filteredHistory || filteredHistory.length === 0) {
+      return <div className="py-4 text-center text-gray-500">No previous feedback history for this part</div>
     }
 
     return (
       <Timeline className="mt-4">
-        {feedbackHistory.map((entry, index) => (
+        {filteredHistory.map((entry, index) => (
           <Timeline.Item
             key={index}
             dot={
-              entry.type === 'graded' ? (
+              entry.status === 'graded' ? (
                 <CheckCircleOutlined className="text-green-500" />
               ) : (
                 <ClockCircleOutlined className="text-blue-500" />
@@ -75,6 +113,8 @@ function Feedback({
       </Timeline>
     )
   }
+
+  const currentFeedback = feedbackByPart[getPartKey(activePart)] || sharedFeedbacks[type][activePart] || ''
 
   return (
     <Card
@@ -112,7 +152,7 @@ function Feedback({
                   ? 'Previous feedback will be shown here'
                   : 'Easy grammar, using more complex sentences and vocab to upgrade band level'
               }
-              value={feedbackByPart[activePart] || ''}
+              value={currentFeedback}
               onChange={handleFeedbackChange}
               autoSize={{ minRows: 3, maxRows: 6 }}
               className="w-full rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"
@@ -136,10 +176,13 @@ Feedback.propTypes = {
       feedback: PropTypes.string.isRequired,
       grade: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
       timestamp: PropTypes.string.isRequired,
-      type: PropTypes.oneOf(['graded', 'draft']).isRequired
+      status: PropTypes.oneOf(['graded', 'draft']).isRequired,
+      part: PropTypes.string.isRequired,
+      type: PropTypes.oneOf(['writing', 'speaking']).isRequired
     })
   ),
-  activePart: PropTypes.string
+  activePart: PropTypes.string,
+  type: PropTypes.oneOf(['writing', 'speaking'])
 }
 
 export default Feedback

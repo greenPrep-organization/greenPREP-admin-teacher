@@ -5,8 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 const { Header } = Layout
 
-const SharedHeader = ({ collapsed, setCollapsed }) => {
-  // @ts-ignore
+const SharedHeader = ({ collapsed, setCollapsed, onLogoutClick }) => {
   const { user } = useSelector(state => state.auth)
   const navigate = useNavigate()
   const handleLogout = () => {

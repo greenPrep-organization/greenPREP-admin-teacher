@@ -18,6 +18,7 @@ const SessionParticipantList = () => {
   const [searchText, setSearchText] = useState('')
   const [readyToPublish, setReadyToPublish] = useState(false)
   const { sessionId } = useParams()
+  const [originalData, setOriginalData] = useState([])
 
   const levelOptions = [
     { value: 'A1', label: 'A1' },
@@ -134,14 +135,16 @@ const SessionParticipantList = () => {
       })
       console.log('Participants data received:', response.data)
 
-      setData(response.data || [])
+      const responseData = response.data || []
+      setOriginalData(responseData)
+      setData(responseData)
       setPagination({
         current: params.current || 1,
         pageSize: params.pageSize || 10,
-        total: response.data?.length || 0
+        total: responseData.length
       })
 
-      const allHaveLevel = (response.data || []).every(item => item.Level)
+      const allHaveLevel = responseData.every(item => item.Level)
       setReadyToPublish(allHaveLevel)
     } catch (error) {
       message.error(error.message || 'Failed to fetch data')
@@ -154,7 +157,29 @@ const SessionParticipantList = () => {
     if (sessionId) {
       fetchData(pagination)
     }
-  }, [searchText, sessionId])
+  }, [sessionId])
+
+  useEffect(() => {
+    if (originalData.length > 0) {
+      if (!searchText.trim()) {
+        setData(originalData)
+        setPagination(prev => ({
+          ...prev,
+          total: originalData.length
+        }))
+      } else {
+        const filtered = originalData.filter(item => {
+          const fullName = item.User?.fullName?.toLowerCase() || ''
+          return fullName.includes(searchText.toLowerCase())
+        })
+        setData(filtered)
+        setPagination(prev => ({
+          ...prev,
+          total: filtered.length
+        }))
+      }
+    }
+  }, [searchText, originalData])
 
   const handleTableChange = newPagination => {
     fetchData({
