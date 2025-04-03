@@ -166,6 +166,9 @@ const SessionParticipantList = () => {
   const handleSearch = value => {
     setSearchText(value)
   }
+  const handleStudentApproved = () => {
+    fetchData(pagination)
+  }
 
   const items = [
     {
@@ -220,7 +223,7 @@ const SessionParticipantList = () => {
       ),
       children: (
         <div key="pending-content">
-          <PendingList sessionId={sessionId} />
+          <PendingList sessionId={sessionId} onStudentApproved={handleStudentApproved} />
         </div>
       )
     }

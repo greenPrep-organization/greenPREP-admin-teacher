@@ -40,3 +40,21 @@ export const getPendingSessionRequests = async sessionId => {
     throw new Error(error.response?.data?.message || 'Failed to fetch pending session requests')
   }
 }
+
+export const approveSessionRequest = async (sessionId, requestId) => {
+  try {
+    const response = await axiosInstance.request({
+      url: `/session-requests/${sessionId}/approve`,
+      method: 'PATCH',
+      data: {
+        requestId
+      },
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    return response.data
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to approve session request')
+  }
+}

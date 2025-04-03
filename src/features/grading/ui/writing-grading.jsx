@@ -1,28 +1,27 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react'
 import { Button, InputNumber, Form, Card, message, Divider } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import mockData from '@features/grading/constants/writingmockdata'
+import mockData from '@features/grading/constants/writingmockdata.js'
 import SaveAsDraftButton from '@features/grading/ui/save-as-draft-button'
 import Feedback from '@features/grading/ui/feedback-grading'
 
 const STORAGE_KEY = 'writing_grading_draft'
 
-function WritingGrade() {
+function WritingGrade({ studentId }) {
   const [activePart, setActivePart] = useState('part1')
   const [form] = Form.useForm()
   const [totalScore, setTotalScore] = useState(0)
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false)
 
   const { data: studentData } = useQuery({
-    queryKey: ['studentData'],
-    queryFn: () => Promise.resolve(mockData),
-    initialData: mockData
+    queryKey: ['studentData', studentId],
+    queryFn: () => Promise.resolve(mockData[studentId]),
+    initialData: mockData[studentId]
   })
 
   const calculatePartTotal = part => {
     const values = form.getFieldsValue()
-    const questions = studentData[part].questions
+    const questions = studentData[part]?.questions || []
     let total = 0
     questions.forEach((_, index) => {
       const fieldValue = values[`${part}_question_${index}`] || 0
@@ -34,7 +33,7 @@ function WritingGrade() {
   useEffect(() => {
     if (!hasLoadedDraft && studentData) {
       try {
-        const draftData = JSON.parse(localStorage.getItem(STORAGE_KEY))
+        const draftData = JSON.parse(localStorage.getItem(`${STORAGE_KEY}_${studentId}`))
         if (draftData) {
           const formValues = {}
           draftData.forEach(({ part, scores }) => {
@@ -47,12 +46,16 @@ function WritingGrade() {
           form.setFieldsValue(formValues)
           setHasLoadedDraft(true)
           calculatePartTotal(activePart)
+        } else {
+          form.resetFields()
+          calculatePartTotal(activePart)
         }
       } catch (error) {
         console.error('Error loading draft:', error)
+        form.resetFields()
       }
     }
-  }, [studentData, hasLoadedDraft, form, activePart])
+  }, [studentData, hasLoadedDraft, form, activePart, studentId])
 
   useEffect(() => {
     calculatePartTotal(activePart)
@@ -81,10 +84,10 @@ function WritingGrade() {
     message.success('Grading submitted successfully')
   }
 
-  const currentPart = studentData[activePart]
-  const questions = currentPart.questions
-  const answers = currentPart.answers
-  const instructions = currentPart.instructions
+  const currentPart = studentData?.[activePart] || { questions: [], answers: [], instructions: '' }
+  const questions = currentPart.questions || []
+  const answers = currentPart.answers || []
+  const instructions = currentPart.instructions || ''
 
   const renderAnswer = answer => {
     if (!answer || answer.trim() === '') {

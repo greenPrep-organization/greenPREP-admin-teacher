@@ -1,17 +1,24 @@
 import { SearchOutlined } from '@ant-design/icons'
-import { usePendingSessionRequests } from '@features/student/hooks/index'
+import { usePendingSessionRequests, useApproveSessionRequest } from '@features/student/hooks/index'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { Button, Input, Table, message } from 'antd'
 import { useEffect, useState } from 'react'
+import ApproveSessionPopup from '@features/student/ui/approve-session-request'
 
-const PendingList = ({ sessionId }) => {
+const PendingList = ({ sessionId, onStudentApproved }) => {
   const { data: pendingDataRaw = [], isLoading, isError } = usePendingSessionRequests(sessionId)
   const [pendingData, setPendingData] = useState([])
-  const [pendingPagination, setPendingPagination] = useState(DEFAULT_PAGINATION)
+  const [pendingPagination, setPendingPagination] = useState({
+    ...DEFAULT_PAGINATION,
+    size: 'default'
+  })
   const [pendingSearchText, setPendingSearchText] = useState('')
+  const [selectedRequest, setSelectedRequest] = useState(null)
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false)
+  const { mutate: approveRequest, isPending: isApproving } = useApproveSessionRequest(sessionId)
 
   useEffect(() => {
-    console.log(pendingDataRaw, 'pending')
+    console.log(pendingDataRaw)
     if (!pendingDataRaw.length) return
 
     const filtered = pendingDataRaw.filter(
@@ -29,16 +36,6 @@ const PendingList = ({ sessionId }) => {
     setPendingData(filtered.slice(0, pendingPagination.pageSize))
   }, [pendingDataRaw, pendingSearchText, pendingPagination.pageSize])
 
-  const handleEnrollStudent = async record => {
-    try {
-      const newData = pendingData.filter(item => item.key !== record.key)
-      setPendingData(newData)
-      message.success(`${record.studentName} has been enrolled successfully`)
-    } catch {
-      message.error('Failed to enroll student')
-    }
-  }
-
   const handleRejectStudent = async record => {
     try {
       const newData = pendingData.filter(item => item.key !== record.key)
@@ -46,6 +43,30 @@ const PendingList = ({ sessionId }) => {
       message.success(`${record.studentName}'s request has been rejected`)
     } catch {
       message.error('Failed to reject student')
+    }
+  }
+
+  const handleApproveStudent = async record => {
+    setSelectedRequest(record)
+    setIsApproveModalOpen(true)
+  }
+
+  const handleConfirmApprove = async () => {
+    try {
+      await approveRequest(selectedRequest.key)
+      const newData = pendingData.filter(item => item.key !== selectedRequest.key)
+      setPendingData(newData)
+      setPendingPagination(prev => ({
+        ...prev,
+        total: prev.total - 1
+      }))
+      message.success(`${selectedRequest.studentName} has been approved successfully`)
+      onStudentApproved()
+    } catch (error) {
+      message.error(error.message || 'Failed to approve student')
+    } finally {
+      setIsApproveModalOpen(false)
+      setSelectedRequest(null)
     }
   }
 
@@ -82,7 +103,7 @@ const PendingList = ({ sessionId }) => {
           <Button
             type="text"
             className="flex items-center justify-center text-green-500 hover:text-green-700"
-            onClick={() => handleEnrollStudent(record)}
+            onClick={() => handleApproveStudent(record)}
           >
             <span className="flex h-6 w-6 items-center justify-center rounded-full border border-green-500">✓</span>
           </Button>
@@ -110,7 +131,8 @@ const PendingList = ({ sessionId }) => {
     setPendingData(filtered.slice(start, end))
     setPendingPagination({
       ...newPagination,
-      total: filtered.length
+      total: filtered.length,
+      size: 'default'
     })
   }
 
@@ -141,8 +163,18 @@ const PendingList = ({ sessionId }) => {
         dataSource={pendingData}
         pagination={pendingPagination}
         onChange={handlePendingTableChange}
-        loading={false}
+        loading={isLoading}
         scroll={{ x: 800 }}
+      />
+      <ApproveSessionPopup
+        isOpen={isApproveModalOpen}
+        onClose={() => {
+          setIsApproveModalOpen(false)
+          setSelectedRequest(null)
+        }}
+        onApprove={handleConfirmApprove}
+        studentName={selectedRequest?.studentName}
+        loading={isApproving}
       />
     </div>
   )
