@@ -11,11 +11,8 @@ const CalendarCard = () => {
   }
 
   return (
-    <Card title="Calendar" className="mx-auto w-full max-w-3xl rounded-lg shadow-lg">
+    <Card title="Calendar" className="mx-auto w-full max-w-2xl rounded-lg shadow-lg">
       <Calendar fullscreen={false} value={selectedDate} onSelect={handleDateSelect} />
-      <p className="mt-4 text-center">
-        Selected Date: <strong>{selectedDate.format('YYYY-MM-DD')}</strong>
-      </p>
     </Card>
   )
 }

@@ -1,6 +1,6 @@
 import { Card } from 'antd'
 
-export const DonutChart = () => {
+export const PieChart = () => {
   const statisticsData = [
     { status: 'Approved', value: 10 },
     { status: 'Pending', value: 40 },
@@ -44,7 +44,7 @@ export const DonutChart = () => {
         </div>
         <div className="flex-1 space-y-4">
           {statisticsData.map((item, index) => (
-            <div key={item.status} className="flex items-center justify-between">
+            <div key={item.status} className="flex items-start justify-between">
               <div className="flex items-center">
                 <div
                   className="mr-2 h-3 w-3 rounded-full"
