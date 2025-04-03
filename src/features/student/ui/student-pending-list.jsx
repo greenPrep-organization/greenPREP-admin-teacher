@@ -1,13 +1,12 @@
 import { SearchOutlined } from '@ant-design/icons'
-import { usePendingSessionRequests } from '@features/student/hooks/index'
+import { usePendingSessionRequests, useApproveSessionRequest } from '@features/student/hooks/index'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { Button, Input, Table, message } from 'antd'
 import { useEffect, useState } from 'react'
 import ApproveSessionPopup from '@features/student/ui/approve-session-request'
-import { approveSessionRequest } from '@features/student/api'
 
 const PendingList = ({ sessionId, onStudentApproved }) => {
-  const { data: pendingDataRaw = [], isLoading, isError, refetch } = usePendingSessionRequests(sessionId)
+  const { data: pendingDataRaw = [], isLoading, isError } = usePendingSessionRequests(sessionId)
   const [pendingData, setPendingData] = useState([])
   const [pendingPagination, setPendingPagination] = useState({
     ...DEFAULT_PAGINATION,
@@ -16,6 +15,7 @@ const PendingList = ({ sessionId, onStudentApproved }) => {
   const [pendingSearchText, setPendingSearchText] = useState('')
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false)
+  const { mutate: approveRequest, isPending: isApproving } = useApproveSessionRequest(sessionId)
 
   useEffect(() => {
     console.log(pendingDataRaw)
@@ -53,7 +53,7 @@ const PendingList = ({ sessionId, onStudentApproved }) => {
 
   const handleConfirmApprove = async () => {
     try {
-      await approveSessionRequest(sessionId, selectedRequest.key)
+      await approveRequest(selectedRequest.key)
       const newData = pendingData.filter(item => item.key !== selectedRequest.key)
       setPendingData(newData)
       setPendingPagination(prev => ({
@@ -62,7 +62,6 @@ const PendingList = ({ sessionId, onStudentApproved }) => {
       }))
       message.success(`${selectedRequest.studentName} has been approved successfully`)
       onStudentApproved()
-      refetch()
     } catch (error) {
       message.error(error.message || 'Failed to approve student')
     } finally {
@@ -175,6 +174,7 @@ const PendingList = ({ sessionId, onStudentApproved }) => {
         }}
         onApprove={handleConfirmApprove}
         studentName={selectedRequest?.studentName}
+        loading={isApproving}
       />
     </div>
   )

@@ -1,16 +1,11 @@
-import { Check } from '@assets/images'
 import { Button, Modal } from 'antd'
-import { useState } from 'react'
+import { CheckCircleOutlined } from '@ant-design/icons'
 
-const ApproveSessionPopup = ({ isOpen, onClose, onApprove, studentName }) => {
-  const [loading, setLoading] = useState(false)
-
+const ApproveSessionPopup = ({ isOpen, onClose, onApprove, studentName, loading }) => {
   const handleApprove = async () => {
-    setLoading(true)
     try {
       await onApprove()
     } finally {
-      setLoading(false)
       onClose()
     }
   }
@@ -18,7 +13,7 @@ const ApproveSessionPopup = ({ isOpen, onClose, onApprove, studentName }) => {
   return (
     <Modal open={isOpen} onCancel={onClose} footer={null} closable={false} centered width={400}>
       <div className="flex flex-col items-center">
-        <img src={Check} alt="" className="mb-4 h-12 w-12 text-yellow-500" />
+        <CheckCircleOutlined className="mb-4 text-4xl text-yellow-500" />
         <p className="mb-6 text-center text-lg">
           Are you sure you want to approve {studentName}&apos;s session request?
         </p>
