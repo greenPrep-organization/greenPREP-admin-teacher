@@ -1,21 +1,25 @@
 import { DownOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
 import { Avatar, Button, Dropdown, Layout, Menu } from 'antd'
 import { useSelector } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const { Header } = Layout
 
 const SharedHeader = ({ collapsed, setCollapsed }) => {
   // @ts-ignore
   const { user } = useSelector(state => state.auth)
-
+  const navigate = useNavigate()
+  const handleLogout = () => {
+    localStorage.removeItem('access_token')
+    navigate('/login')
+  }
   const menu = (
     <Menu>
       <Menu.Item key="0">
         <Link to={`/profile/${user?.userId}`}>Profile</Link>
       </Menu.Item>
-      <Menu.Item key="1">
-        <Link to="/signout">Sign Out</Link>
+      <Menu.Item key="1" onClick={handleLogout}>
+        Sign Out
       </Menu.Item>
     </Menu>
   )
