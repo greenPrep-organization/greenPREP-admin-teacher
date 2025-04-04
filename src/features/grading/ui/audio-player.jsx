@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { Button } from 'antd'
+import { Button, Dropdown } from 'antd'
 import PropTypes from 'prop-types'
 import { useState, useEffect, useRef, useCallback } from 'react'
 
@@ -8,6 +7,8 @@ const AudioPlayer = ({ audioUrl }) => {
   const [progress, setProgress] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [playbackRate, setPlaybackRate] = useState(1)
+  const [isDragging, setIsDragging] = useState(false)
   const audioRef = useRef(null)
   const progressBarRef = useRef(null)
   const containerRef = useRef(null)
@@ -138,6 +139,61 @@ const AudioPlayer = ({ audioUrl }) => {
     }
   }
 
+  const handleProgressBarMouseDown = e => {
+    setIsDragging(true)
+    handleProgressBarClick(e)
+  }
+
+  const handleProgressBarMouseMove = e => {
+    if (isDragging) {
+      handleProgressBarClick(e)
+    }
+  }
+
+  const handleProgressBarMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  const handleProgressBarMouseLeave = () => {
+    setIsDragging(false)
+  }
+
+  const handlePlaybackRateChange = rate => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate
+      setPlaybackRate(rate)
+    }
+  }
+
+  const handleSpeedClick = () => {
+    const currentIndex = playbackRateItems.findIndex(item => parseFloat(item.key) === playbackRate)
+    const nextIndex = (currentIndex + 1) % playbackRateItems.length
+    handlePlaybackRateChange(parseFloat(playbackRateItems[nextIndex].key))
+  }
+
+  const playbackRateItems = [
+    { key: '0.5', label: '0.5x' },
+    { key: '1', label: '1x' },
+    { key: '1.25', label: '1.25x' },
+    { key: '1.5', label: '1.5x' },
+    { key: '2', label: '2x' }
+  ]
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = playbackRate
+    }
+  }, [playbackRate])
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleProgressBarMouseMove)
+    window.addEventListener('mouseup', handleProgressBarMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', handleProgressBarMouseMove)
+      window.removeEventListener('mouseup', handleProgressBarMouseUp)
+    }
+  }, [isDragging])
+
   return (
     <>
       <audio ref={audioRef} src={audioUrl} preload="metadata" />
@@ -158,13 +214,37 @@ const AudioPlayer = ({ audioUrl }) => {
           <span className="min-w-[40px] text-center text-xs text-gray-500">{formatTime(currentTime)}</span>
           <div
             ref={progressBarRef}
-            className="relative h-[4px] flex-1 cursor-pointer overflow-hidden bg-gray-300"
-            onClick={handleProgressBarClick}
+            className="relative h-[6px] flex-1 cursor-pointer rounded-full bg-gray-200"
+            onMouseDown={handleProgressBarMouseDown}
+            onMouseLeave={handleProgressBarMouseLeave}
           >
-            <div className="absolute left-0 top-0 h-full bg-yellow-500" style={{ width: `${progress}%` }} />
+            <div
+              className="absolute left-0 top-0 h-full rounded-full bg-yellow-500"
+              style={{ width: `${progress}%` }}
+            />
+            <div
+              className="absolute top-1/2 h-4 w-4 -translate-y-1/2 transform rounded-full border-2 border-yellow-500 bg-[#4a3aff] shadow-md transition-transform hover:scale-110"
+              style={{ left: `${progress}%`, marginLeft: '-8px' }}
+            />
           </div>
           <span className="min-w-[40px] text-center text-xs text-gray-500">{formatTime(duration)}</span>
         </div>
+        <Dropdown
+          menu={{
+            items: playbackRateItems,
+            onClick: e => handlePlaybackRateChange(parseFloat(e.key))
+          }}
+          placement="top"
+          trigger={['hover']}
+        >
+          <Button
+            type="text"
+            onClick={handleSpeedClick}
+            className="mr-2 flex h-8 w-8 min-w-0 items-center justify-center bg-white p-0 text-blue-600 hover:bg-blue-100"
+          >
+            {playbackRate}x
+          </Button>
+        </Dropdown>
         <Button
           type="text"
           icon={<span className="flex h-full w-full items-center justify-center">⬇</span>}
