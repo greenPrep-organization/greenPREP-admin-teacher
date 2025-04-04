@@ -51,7 +51,7 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
       open={open}
       onCancel={onCancel}
       footer={
-        <div className="flex justify-center space-x-4">
+        <div className="flex justify-end space-x-4">
           <Button key="cancel" onClick={onCancel} className="h-10 w-24 border border-[#D1D5DB] text-[#374151]">
             Cancel
           </Button>
