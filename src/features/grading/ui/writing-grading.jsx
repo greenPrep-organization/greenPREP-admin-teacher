@@ -113,6 +113,7 @@ function WritingGrade({ studentId }) {
           setScores={setScores}
           type="writing"
           onSubmit={handleSubmit}
+          studentId={studentId}
         />
       </div>
 
