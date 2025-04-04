@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import SaveAsDraftButton from '@features/grading/ui/save-as-draft-button'
 import { sharedScores } from '@features/grading/constants/shared-state'
-import ExportToPdfButton from "@features/grading/ui/export-to-pdf.jsx";
+import ExportToPdfButton from '@features/grading/ui/export-to-pdf.jsx'
 
 const GradingScoringPanel = ({ activePart, questions, scores, setScores, type = 'writing', onSubmit, studentId }) => {
   const [totalScore, setTotalScore] = useState(0)
@@ -134,7 +134,7 @@ GradingScoringPanel.propTypes = {
   setScores: PropTypes.func.isRequired,
   type: PropTypes.oneOf(['writing', 'speaking']),
   onSubmit: PropTypes.func.isRequired,
-  studentId: PropTypes.string.isRequired,
+  studentId: PropTypes.string.isRequired
 }
 
 export default GradingScoringPanel
