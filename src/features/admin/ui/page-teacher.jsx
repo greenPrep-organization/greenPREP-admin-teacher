@@ -24,21 +24,21 @@ const AdminTeachers = () => {
     refetch()
     setIsEditModalOpen(false)
   }
-  const handleRoleChange = async (teacherId, currentRoles, newRole) => {
+
+  const handleRoleChange = async (teacherId, newRoles) => {
     try {
-      const updatedRoles = currentRoles.includes(newRole)
-        ? currentRoles.filter(role => role !== newRole)
-        : [...currentRoles, newRole]
+      const rolesToUpdate = newRoles.length === 0 ? [] : newRoles
 
       await updateProfileMutation.mutateAsync({
         userId: teacherId,
-        userData: { roleIDs: updatedRoles }
+        userData: { roleIDs: rolesToUpdate }
       })
 
       message.success('Role updated successfully!')
       refetch()
-    } catch {
+    } catch (error) {
       message.error('Failed to update role')
+      console.error('Error updating role:', error)
     }
   }
 
@@ -86,12 +86,10 @@ const AdminTeachers = () => {
       render: (role, record) => (
         <Select
           mode="multiple"
-          value={record.roleIDs}
+          value={record.roleIDs || []}
           onChange={newRoles => handleRoleChange(record.ID, newRoles)}
-          options={[{ label: 'Admin', value: 'admin' }]}
+          options={[{ label: 'admin', value: 'admin' }]}
           placeholder="Select roles"
-          notFoundContent={null}
-          allowClear={false}
         />
       )
     },
@@ -150,13 +148,11 @@ const AdminTeachers = () => {
           dataSource={teachers}
           rowKey="ID"
           pagination={{
-            pageSize: 10,
-            showSizeChanger: false
+            pageSize: 10
           }}
         />
       </Card>
 
-      {/* Call the EditTeacherModal component */}
       <EditTeacherModal
         isVisible={isEditModalOpen}
         teacherId={selectedTeacher}

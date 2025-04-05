@@ -23,7 +23,7 @@ const fetchTeacherProfile = async userId => {
     const { data } = await axiosInstance.get(`/users/${userId}`)
     return data
   } catch (error) {
-    console.error('Error updating user profile:', error)
+    console.error('Error fetching user profile:', error)
     throw error
   }
 }
@@ -34,6 +34,20 @@ const updateTeacherProfile = async ({ userId, userData }) => {
     return data
   } catch (error) {
     console.error('Error updating user profile:', error)
+    throw error
+  }
+}
+
+// New function for reset password
+const resetPassword = async ({ token, newPassword }) => {
+  try {
+    const { data } = await axiosInstance.post('/users/reset-password', {
+      token,
+      newPassword
+    })
+    return data
+  } catch (error) {
+    console.error('Error resetting password:', error)
     throw error
   }
 }
@@ -57,5 +71,12 @@ export const useTeachers = () => {
     queryKey: ['teachers'],
     queryFn: fetchTeachers,
     retry: 1
+  })
+}
+
+// New mutation hook for reset password
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: resetPassword
   })
 }
