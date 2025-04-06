@@ -1,15 +1,45 @@
-import { Modal, Form, Input, Button } from 'antd'
+import { useCreateTeacher } from '@/features/admin/api/index'
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons'
+import { EMAIL_REG, PASSWORD_REG, PHONE_REG } from '@shared/lib/constants/reg'
+import { Button, Form, Input, Modal } from 'antd'
+import * as Yup from 'yup'
 
-export const CreateTeacher = ({ open, onClose }) => {
+const teacherValidationSchema = Yup.object().shape({
+  firstName: Yup.string().required('First name is required'),
+  lastName: Yup.string().required('Last name is required'),
+  email: Yup.string().matches(EMAIL_REG, 'Invalid email format').required('Email is required'),
+  phone: Yup.string().matches(PHONE_REG, 'Phone number is not valid').required('Phone number is required')
+})
+
+export const CreateTeacher = ({ open, onClose, onSave }) => {
   const [form] = Form.useForm()
+  // @ts-ignore
+  const { mutate: createTeacher, isLoading, error } = useCreateTeacher()
 
   const handleSubmit = async () => {
     try {
+      const formData = form.getFieldsValue()
+      await teacherValidationSchema.validate(formData, { abortEarly: false })
+      const teacherData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        teacherCode: formData.teacherId,
+        roleIDs: ['teacher'],
+        class: '',
+        phone: ''
+      }
+      await createTeacher(teacherData)
       form.resetFields()
+      onSave()
       onClose()
     } catch (error) {
-      console.error('Validation failed:', error)
+      if (error instanceof Yup.ValidationError) {
+        console.error('Schema Validation Error:', error.errors)
+      } else {
+        console.error('Error in submitting form:', error)
+      }
     }
   }
 
@@ -28,6 +58,10 @@ export const CreateTeacher = ({ open, onClose }) => {
             type="primary"
             onClick={handleSubmit}
             className="h-10 w-24 bg-[#003087] hover:bg-[#003087]/90"
+            loading={isLoading}
+            onError={() => {
+              console.error('Error creating teacher:', error)
+            }}
           >
             Create
           </Button>
@@ -43,6 +77,7 @@ export const CreateTeacher = ({ open, onClose }) => {
             name="firstName"
             label={<span>First name</span>}
             rules={[{ required: true, message: 'Please input first name!' }]}
+            hasFeedback
           >
             <Input placeholder="Enter first name" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
           </Form.Item>
@@ -51,6 +86,7 @@ export const CreateTeacher = ({ open, onClose }) => {
             name="lastName"
             label={<span>Last name</span>}
             rules={[{ required: true, message: 'Please input last name!' }]}
+            hasFeedback
           >
             <Input placeholder="Enter last name" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
           </Form.Item>
@@ -62,8 +98,9 @@ export const CreateTeacher = ({ open, onClose }) => {
             label={<span>Email</span>}
             rules={[
               { required: true, message: 'Please input email!' },
-              { type: 'email', message: 'Please enter a valid email!' }
+              { pattern: EMAIL_REG, type: 'email', message: 'Please enter a valid email!' }
             ]}
+            hasFeedback
           >
             <Input placeholder="Enter email" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
           </Form.Item>
@@ -71,16 +108,46 @@ export const CreateTeacher = ({ open, onClose }) => {
           <Form.Item
             name="teacherId"
             label={<span>Teacher ID</span>}
-            rules={[{ required: true, message: 'Please input teacher ID!' }]}
+            rules={[
+              { required: true, message: 'Please input teacher ID!' },
+              { pattern: /^TC\d{5}$/, message: 'Teacher ID must start with TC followed by 5 digits' }
+            ]}
+            hasFeedback
           >
             <Input placeholder="Enter teacher ID" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
           </Form.Item>
         </div>
 
         <Form.Item
+          name="phone"
+          label={<span>Phone</span>}
+          rules={[
+            {
+              required: true,
+              message: 'Please input your phone number!'
+            },
+            {
+              pattern: PHONE_REG,
+              message: 'Phone number must be at least 10 digits long and contain only numbers.'
+            }
+          ]}
+          hasFeedback
+        >
+          <Input placeholder="Enter phone number" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
+        </Form.Item>
+
+        <Form.Item
           name="password"
           label={<span>Password</span>}
-          rules={[{ required: true, message: 'Please input password!' }]}
+          rules={[
+            { required: true, message: 'Please input password!' },
+            {
+              pattern: PASSWORD_REG,
+              message:
+                'Password more than 8 characters, at least one uppercase letter, one lowercase letter, one number and one special character.'
+            }
+          ]}
+          hasFeedback
         >
           <Input.Password
             placeholder="Enter password"

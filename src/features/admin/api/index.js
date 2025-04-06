@@ -18,13 +18,12 @@ const fetchTeachers = async (params = {}) => {
   }
 }
 
-const fetchUserProfile = async userId => {
+const createTeacher = async teacherData => {
   try {
-    console.log(`Fetching user profile for userId: ${userId}`)
-    const { data } = await axiosInstance.get(`/users/${userId}`)
+    const { data } = await axiosInstance.post('/users/register', teacherData)
     return data
   } catch (error) {
-    console.error('Error fetching user profile:', error)
+    console.error('Error creating teacher:', error)
     throw error
   }
 }
@@ -70,11 +69,18 @@ export const useTeacherProfile = userId => {
     enabled: !!userId
   })
 }
-export const useUserProfile = userId => {
-  return useQuery({
-    queryKey: ['userProfile', userId],
-    queryFn: async () => await fetchUserProfile(userId),
-    enabled: !!userId
+
+export const useCreateTeacher = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: createTeacher,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teachers'] })
+    },
+    onError: error => {
+      console.error('Error creating teacher:', error)
+    }
   })
 }
 

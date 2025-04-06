@@ -1,7 +1,7 @@
 import { useTeacherProfile, useUpdateTeacherProfile } from '@features/admin/api'
 import ResetPasswordModal from '@features/admin/ui/reset-password'
 import { EMAIL_REG, PHONE_REG } from '@shared/lib/constants/reg'
-import { Button, Input, message, Modal } from 'antd'
+import { Button, Form, Input, message, Modal } from 'antd'
 import { useEffect, useState } from 'react'
 import * as Yup from 'yup'
 
@@ -13,20 +13,14 @@ const profileValidationSchema = Yup.object().shape({
 })
 
 const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    teacherCode: ''
-  })
+  const [form] = Form.useForm() // Using form.useForm to handle form state and validation
   const { data: singleTeacherData } = useTeacherProfile(teacherId)
   const updateProfileMutation = useUpdateTeacherProfile()
   const [resetPasswordModalVisible, setResetPasswordModalVisible] = useState(false)
 
   useEffect(() => {
     if (singleTeacherData) {
-      setFormData({
+      form.setFieldsValue({
         firstName: singleTeacherData.firstName,
         lastName: singleTeacherData.lastName,
         email: singleTeacherData.email,
@@ -34,40 +28,22 @@ const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
         teacherCode: singleTeacherData.teacherCode
       })
     }
-  }, [singleTeacherData])
-
-  const handleInputChange = e => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
+  }, [singleTeacherData, form])
 
   const handleSave = async () => {
     try {
-      await profileValidationSchema.validate(formData, { abortEarly: false })
+      await form.validateFields()
+      await profileValidationSchema.validate(form.validateFields, { abortEarly: false })
 
       await updateProfileMutation.mutateAsync({
         userId: teacherId,
-        userData: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          teacherCode: formData.teacherCode
-        }
+        userData: form.getFieldsValue()
       })
 
       message.success('Teacher updated successfully!')
       onSave()
-    } catch (error) {
-      if (error.response) {
-        message.error(error.response.data.message || 'Failed to update teacher')
-      } else if (error.inner) {
-        error.inner.forEach(err => {
-          message.error(err.message)
-        })
-      } else {
-        message.error('Failed to update teacher')
-      }
+    } catch {
+      message.error('Failed to update teacher')
     }
   }
 
@@ -87,42 +63,65 @@ const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
         confirmLoading={updateProfileMutation.isPending}
         width={600}
       >
-        <div className="space-y-4">
+        <Form form={form} layout="vertical" className="space-y-4">
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                First name <span className="text-red-500">*</span>
-              </label>
-              <Input name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full" />
+              <Form.Item
+                label="First name"
+                name="firstName"
+                rules={[{ required: true, message: 'First name is required' }]}
+              >
+                <Input className="w-full" />
+              </Form.Item>
             </div>
 
             <div className="flex-1">
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Last name <span className="text-red-500">*</span>
-              </label>
-              <Input name="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full" />
+              <Form.Item
+                label="Last name"
+                name="lastName"
+                rules={[{ required: true, message: 'Last name is required' }]}
+              >
+                <Input className="w-full" />
+              </Form.Item>
             </div>
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <Input name="email" value={formData.email} onChange={handleInputChange} className="w-full" />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Teacher ID <span className="text-red-500">*</span>
-            </label>
-            <Input name="teacherCode" value={formData.teacherCode} onChange={handleInputChange} />
-          </div>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              { required: true, message: 'Email is required' },
+              { pattern: EMAIL_REG, message: 'Invalid email format' }
+            ]}
+            hasFeedback
+          >
+            <Input className="w-full" />
+          </Form.Item>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Phone number <span className="text-red-500">*</span>
-            </label>
-            <Input name="phone" value={formData.phone} onChange={handleInputChange} className="w-full" />
-          </div>
+          <Form.Item
+            label="Teacher ID"
+            name="teacherCode"
+            rules={[
+              { required: true, message: 'Teacher ID is required' },
+              { pattern: /^TC\d{5}$/, message: 'Teacher ID must start with TC followed by 5 digits' }
+            ]}
+            hasFeedback
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            label="Phone number"
+            name="phone"
+            rules={[
+              { required: true, message: 'Phone number is required' },
+              { pattern: PHONE_REG, message: 'Phone number is not valid' }
+            ]}
+            hasFeedback
+          >
+            <Input className="w-full" />
+          </Form.Item>
+
           <Button
             type="link"
             onClick={handleResetPassword}
@@ -130,7 +129,7 @@ const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
           >
             Reset Password
           </Button>
-        </div>
+        </Form>
       </Modal>
       <ResetPasswordModal
         isVisible={resetPasswordModalVisible}
