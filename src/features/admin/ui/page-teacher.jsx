@@ -1,14 +1,24 @@
 import { useTeachers, useUpdateTeacherProfile } from '@features/admin/api'
 import EditTeacherModal from '@features/admin/ui/edit-teacher'
 import { Avatar, Button, Card, message, Select, Spin, Table, Tag } from 'antd'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 
 const AdminTeachers = () => {
+  const auth = useSelector(state => state.auth)
+  const navigate = useNavigate()
   const [selectedTeacher, setSelectedTeacher] = useState(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const { data: teachersData, isLoading, isError, refetch } = useTeachers()
   const teachers = teachersData?.data?.teachers || []
   const updateProfileMutation = useUpdateTeacherProfile()
+
+  useEffect(() => {
+    if (!auth.role.includes('admin')) {
+      navigate('/')
+    }
+  }, [auth, navigate])
 
   const handleEdit = teacher => {
     setSelectedTeacher(teacher)
