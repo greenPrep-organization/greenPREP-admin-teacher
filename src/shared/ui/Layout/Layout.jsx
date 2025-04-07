@@ -48,18 +48,16 @@ const Layout = ({ children }) => {
     className: 'hover:bg-blue-600 transition-colors duration-200'
   })
 
-  if (!auth.role.includes('admin')) {
-    menuItems.push({
-      key: '2',
-      icon: <ReadOutlined className="text-lg" />,
-      label: (
-        <Link to="/classes-management" className="text-white hover:text-white">
-          Classes
-        </Link>
-      ),
-      className: 'hover:bg-blue-600 transition-colors duration-200'
-    })
-  }
+  menuItems.push({
+    key: '2',
+    icon: <ReadOutlined className="text-lg" />,
+    label: (
+      <Link to="/classes-management" className="text-white hover:text-white">
+        Classes
+      </Link>
+    ),
+    className: 'hover:bg-blue-600 transition-colors duration-200'
+  })
 
   if (auth.role.includes('admin')) {
     menuItems.push({
