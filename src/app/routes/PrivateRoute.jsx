@@ -5,7 +5,6 @@ import DashboardPage from '@pages/DashboardPage'
 import GradingPage from '@pages/GradingPage'
 import SessionDetailPage from '@pages/SessionDetailPage'
 import StudentProfilePage from '@pages/StudentProfilePage'
-import AdminTeachers from '../../features/admin/ui/page-teacher'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 
 const PrivateRoute = [
@@ -40,10 +39,6 @@ const PrivateRoute = [
       {
         path: 'grading',
         element: <GradingPage />
-      },
-      {
-        path: 'admin',
-        element: <AdminTeachers />
       }
     ]
   }
