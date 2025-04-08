@@ -92,7 +92,7 @@ function GradingPage() {
         />
       </div>
 
-      <div className="flex gap-6">
+      <div>
         <div className="h-fit w-[340px]">
           <StudentCard student={studentData} />
         </div>
