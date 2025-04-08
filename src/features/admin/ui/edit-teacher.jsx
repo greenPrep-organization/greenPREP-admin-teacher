@@ -1,5 +1,5 @@
 import { useTeacherProfile, useUpdateTeacherProfile } from '@features/admin/api'
-// import ResetPasswordModal from '@features/admin/ui/reset-password'
+import ResetPasswordModal from '@features/admin/ui/reset-password-teacher'
 import { EMAIL_REG, PHONE_REG } from '@shared/lib/constants/reg'
 import { Button, Form, Input, message, Modal } from 'antd'
 import { useEffect, useState } from 'react'
@@ -16,7 +16,7 @@ const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
   const [form] = Form.useForm()
   const { data: singleTeacherData } = useTeacherProfile(teacherId)
   const updateProfileMutation = useUpdateTeacherProfile()
-  // eslint-disable-next-line no-unused-vars
+
   const [resetPasswordModalVisible, setResetPasswordModalVisible] = useState(false)
 
   useEffect(() => {
@@ -132,11 +132,11 @@ const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
           </Button>
         </Form>
       </Modal>
-      {/* <ResetPasswordModal
+      <ResetPasswordModal
         isVisible={resetPasswordModalVisible}
         onCancel={() => setResetPasswordModalVisible(false)}
         onResetSuccess={() => setResetPasswordModalVisible(false)}
-      /> */}
+      />
     </>
   )
 }
