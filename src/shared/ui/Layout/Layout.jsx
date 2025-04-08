@@ -60,7 +60,7 @@ const Layout = ({ children }) => {
     className: 'hover:bg-blue-600 transition-colors duration-200'
   })
 
-  if (auth.role.includes('admin')) {
+  if (auth?.role?.includes('admin')) {
     menuItems.push({
       key: '3',
       icon: <TeamOutlined className="text-lg" />,
