@@ -58,3 +58,29 @@ export const getUserSessionHistory = async userId => {
     throw new Error(error.response?.data?.message || 'Failed to fetch session history')
   }
 }
+
+export const createSession = async sessionData => {
+  try {
+    const payload = {
+      sessionName: sessionData.name,
+      sessionKey: sessionData.key,
+      examSet: sessionData.testSetId,
+      startTime: sessionData.startTime,
+      endTime: sessionData.endTime,
+      status: 'NOT_STARTED',
+      ClassID: sessionData.ClassID
+    }
+
+    console.log('📤 Sending payload:', JSON.stringify(payload, null, 2))
+
+    const response = await axiosInstance.post('/sessions/', payload)
+    return response.data
+  } catch (error) {
+    console.error('❌ API Error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    })
+    throw error
+  }
+}

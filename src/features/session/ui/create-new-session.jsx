@@ -3,31 +3,41 @@ import { Modal, Form, Input, Select, DatePicker, notification, Button } from 'an
 import dayjs from 'dayjs'
 import PropTypes from 'prop-types'
 import { CalendarOutlined } from '@ant-design/icons'
+import { useCreateSession } from '@features/session/hooks'
 
-const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
+const CreateSessionModal = ({ visible, onCancel, classId, testSets }) => {
   const [form] = Form.useForm()
+  const mutation = useCreateSession(classId)
+  const isLoading = mutation.isPending
 
   const handleSubmit = async () => {
     try {
-      const values = await form.validateFields()
-      const sessionData = {
-        name: values.name,
-        key: values.key,
-        testSetId: values.testSetId,
-        startTime: values.startDate.toDate(),
-        endTime: values.endDate.toDate()
+      if (!classId) {
+        throw new Error('ClassID is required')
       }
 
-      await onSubmit(sessionData)
+      const values = await form.validateFields()
+
+      // Format dữ liệu theo đúng yêu cầu
+      const sessionData = {
+        name: values.name.trim(),
+        key: values.key.trim(),
+        testSetId: values.testSetId,
+        startTime: values.startDate.toDate(),
+        endTime: values.endDate.toDate(),
+        ClassID: classId
+      }
+
+      // Log dữ liệu để debug
+      console.log('📝 Form data:', {
+        values,
+        sessionData
+      })
+
+      await mutation.mutateAsync(sessionData)
       notification.success({
-        message: (
-          <div className="flex items-center gap-3">
-            <div>
-              <div className="font-medium text-[#1D1C20]">Create Session Successfully</div>
-              <div className="text-[13px] text-[#00000073]">Your session has been created</div>
-            </div>
-          </div>
-        ),
+        message: 'Create Session Successfully',
+        description: 'Your session has been created',
         placement: 'topRight',
         duration: 3,
         className: 'custom-notification-success'
@@ -36,12 +46,13 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
       form.resetFields()
       onCancel()
     } catch (error) {
-      console.error('Validation failed:', error)
+      console.error('❌ Form error:', error)
       notification.error({
         message: 'Failed to create session',
-        description: 'Please check your input and try again',
+        description: error.message || 'Please check your input and try again',
         placement: 'topRight',
-        duration: 3
+        duration: 3,
+        className: 'custom-notification-error'
       })
     }
   }
@@ -63,6 +74,7 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
             key="submit"
             type="primary"
             onClick={handleSubmit}
+            loading={isLoading}
             className="h-10 w-24 bg-[#003087] hover:bg-[#003087]/90"
           >
             Create
@@ -162,7 +174,7 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
 CreateSessionModal.propTypes = {
   visible: PropTypes.bool.isRequired,
   onCancel: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
+  classId: PropTypes.string.isRequired,
   testSets: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
