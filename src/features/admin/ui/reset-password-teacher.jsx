@@ -1,4 +1,4 @@
-import { useResetPassword } from '@features/admin/api'
+import { useResetPassword } from '@features/admin/hooks/useAdmin'
 import { message, Modal } from 'antd'
 import { useState } from 'react'
 
