@@ -1,4 +1,4 @@
-import { useCreateTeacher } from '@/features/admin/api'
+import { useCreateTeacher } from '@/features/admin/hooks/useAdmin'
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons'
 import { EMAIL_REG, PASSWORD_REG, PHONE_REG } from '@shared/lib/constants/reg'
 import { Button, Form, Input, message, Modal } from 'antd'

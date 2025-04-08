@@ -1,6 +1,8 @@
-import { UserOutlined } from '@ant-design/icons'
-import { useChangeUserPassword, useUpdateUserProfile, useUserProfile } from '@features/profile/api'
-import { Avatar, Button, Card, Divider, Input, message, Modal, Spin, Tag } from 'antd'
+import { useChangeUserPassword, useUpdateUserProfile, useUserProfile } from '@features/profile/hooks/useProfile'
+import ChangePasswordModal from '@features/profile/ui/change-password-profile'
+import EditProfileModal from '@features/profile/ui/edit-profile'
+import { EMAIL_REG, PHONE_REG } from '@shared/lib/constants/reg'
+import { Avatar, Button, Card, Divider, message, Spin, Tag } from 'antd'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import * as Yup from 'yup'
@@ -8,18 +10,10 @@ import * as Yup from 'yup'
 const profileValidationSchema = Yup.object().shape({
   firstName: Yup.string().required('First name is required'),
   lastName: Yup.string().required('Last name is required'),
-  email: Yup.string().email('Invalid email format').required('Email is required'),
+  email: Yup.string().matches(EMAIL_REG, 'Invalid email format').required('Email is required'),
   phone: Yup.string()
-    .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
+    .matches(PHONE_REG, { message: 'Invalid phone number format' })
     .required('Phone number is required')
-})
-
-const passwordValidationSchema = Yup.object().shape({
-  oldPassword: Yup.string().required('Old password is required'),
-  newPassword: Yup.string().min(6, 'Password must be at least 6 characters').required('New password is required'),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref('newPassword'), null], 'Passwords must match')
-    .required('Confirm password is required')
 })
 
 const Profile = () => {
@@ -36,6 +30,7 @@ const Profile = () => {
     email: '',
     phone: ''
   })
+  // eslint-disable-next-line no-unused-vars
   const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' })
 
   useEffect(() => {
@@ -67,11 +62,6 @@ const Profile = () => {
       phone: userData.phone || ''
     })
     setIsEditModalOpen(false)
-  }
-
-  const handleInputChange = e => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   const handleSave = async () => {
@@ -119,34 +109,6 @@ const Profile = () => {
   const openChangePassword = () => {
     setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' })
     setIsPasswordModalOpen(true)
-  }
-
-  const handleChangePassword = async () => {
-    try {
-      await passwordValidationSchema.validate(passwordData, { abortEarly: false })
-
-      await changePasswordMutation.mutateAsync({
-        userId: auth.user?.userId,
-        passwordData: {
-          oldPassword: passwordData.oldPassword,
-          newPassword: passwordData.newPassword
-        }
-      })
-
-      setIsPasswordModalOpen(false)
-      message.success('Password changed successfully!')
-      setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' })
-    } catch (error) {
-      if (error.response) {
-        message.error(error.response.data.message || 'Failed to change password')
-      } else if (error.inner) {
-        error.inner.forEach(err => {
-          message.error(err.message)
-        })
-      } else {
-        message.error('Failed to change password')
-      }
-    }
   }
 
   return (
@@ -215,127 +177,37 @@ const Profile = () => {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
             <p className="mb-1 text-gray-600">Phone number</p>
-            <p className="text-gray-500">{formData.phone}</p>
+            <p className="text-gray-500">{userData.phone}</p>
           </div>
         </div>
       </Card>
 
-      <Modal
-        title="Update Profile"
+      <EditProfileModal
         open={isEditModalOpen}
-        onOk={handleSave}
         onCancel={handleCancelEdit}
-        okText="Update"
-        cancelText="Cancel"
-        okButtonProps={{ className: 'bg-blue-600 hover:bg-blue-700' }}
-        cancelButtonProps={{ className: 'hover:bg-gray-100' }}
-        width={400}
-      >
-        <div className="space-y-4">
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                First name <span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.firstName}
-                onChange={e => setFormData({ ...formData, firstName: e.target.value })}
-                className="w-full"
-              />
-            </div>
+        onSave={handleSave}
+        formData={formData}
+        setFormData={setFormData}
+      />
 
-            <div className="flex-1">
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Last name <span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.lastName}
-                onChange={e => setFormData({ ...formData, lastName: e.target.value })}
-                className="w-full"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <Input
-              value={formData.email}
-              onChange={e => setFormData({ ...formData, email: e.target.value })}
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Phone number</label>
-            <Input
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              placeholder="Enter phone number"
-              className="w-full"
-            />
-          </div>
-        </div>
-      </Modal>
-      <Modal
-        title="Change Password"
+      <ChangePasswordModal
         open={isPasswordModalOpen}
-        onOk={handleChangePassword}
         onCancel={() => setIsPasswordModalOpen(false)}
-        width={400}
-        okText="Change"
-        cancelText="Cancel"
-      >
-        <div>
-          <label className="block text-sm font-semibold">Current Password:</label>
-          <Input.Password
-            value={passwordData.oldPassword}
-            onChange={e => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
-            className="mt-2 w-full rounded-md border border-gray-300 p-2"
-          />
-        </div>
-
-        <div className="mt-4">
-          <label className="block text-sm font-semibold">New Password:</label>
-          <Input.Password
-            value={passwordData.newPassword}
-            onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-            className="mt-2 w-full rounded-md border border-gray-300 p-2"
-          />
-          <div className="mt-2 pl-6 text-sm text-gray-600">
-            <ul>
-              <li className={passwordData.newPassword.length >= 8 ? 'text-green-500' : 'text-red-500'}>
-                Minimum 8 characters
-              </li>
-              <li className={/[A-Z]/.test(passwordData.newPassword) ? 'text-green-500' : 'text-red-500'}>
-                At least one uppercase letter
-              </li>
-              <li className={/[0-9]/.test(passwordData.newPassword) ? 'text-green-500' : 'text-red-500'}>
-                At least one number
-              </li>
-              <li
-                className={/[!@#$%^&*(),.?":{}|<>]/.test(passwordData.newPassword) ? 'text-green-500' : 'text-red-500'}
-              >
-                At least one special character
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <label className="block text-sm font-semibold">Confirm Password:</label>
-          <Input.Password
-            value={passwordData.confirmPassword}
-            onChange={e => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-            className="mt-2 w-full rounded-md border border-gray-300 p-2"
-          />
-          {passwordData.newPassword !== passwordData.confirmPassword && (
-            <p className="mt-1 text-sm text-red-500">Passwords do not match</p>
-          )}
-        </div>
-      </Modal>
+        userId={auth.user?.userId}
+        onSubmit={async (userId, passwordData) => {
+          try {
+            await changePasswordMutation.mutateAsync({ userId, passwordData })
+            message.success('Password changed successfully!')
+            setIsPasswordModalOpen(false)
+          } catch (error) {
+            if (error.response) {
+              message.error(error.response.data.message || 'Failed to change password')
+            } else {
+              message.error('Failed to change password')
+            }
+          }
+        }}
+      />
     </div>
   )
 }
