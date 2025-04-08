@@ -82,7 +82,10 @@ const ClassList = () => {
       key: 'className',
       align: 'center',
       render: (text, record) => (
-        <a onClick={() => handleView(record)} style={{ cursor: 'pointer', color: 'black' }}>
+        <a
+          onClick={() => handleView(record)}
+          style={{ cursor: 'pointer', color: 'black', display: 'inline-block', textAlign: 'left' }}
+        >
           {text}
         </a>
       )

@@ -52,20 +52,47 @@ const ClassDetails = () => {
       >
         <LeftOutlined /> Back
       </Button>
-      <Title level={3} style={{ textAlign: 'left', marginBottom: '16px' }}>
-        Class Details
+      <Title
+        level={3}
+        style={{
+          textAlign: 'left',
+          marginBottom: '24px',
+          fontSize: '24px',
+          fontWeight: '600',
+          color: '#1A1A1A'
+        }}
+      >
+        Class details
       </Title>
 
       <Card className="shadow-md" style={{ marginTop: '16px' }}>
-        <div style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: '8px', fontSize: '18px', fontWeight: '600' }}>
-          Class Information
+        <div
+          style={{
+            borderBottom: '1px solid #f0f0f0',
+            paddingBottom: '8px',
+            fontSize: '16px',
+            fontWeight: '500'
+          }}
+        >
+          Class information
         </div>
 
         <Row style={{ marginTop: '16px' }} justify="space-between">
           <Col>
-            <div style={{ fontSize: '16px' }}>
+            <div
+              style={{
+                fontSize: '14px'
+              }}
+            >
               Class Name:{' '}
-              <span style={{ fontWeight: '600', marginLeft: '50px' }}>{classDetails?.className ?? 'N/A'}</span>
+              <span
+                style={{
+                  fontWeight: '500',
+                  marginLeft: '50px'
+                }}
+              >
+                {classDetails?.className ?? 'N/A'}
+              </span>
             </div>
           </Col>
         </Row>
