@@ -1,48 +1,14 @@
-import { Button, Spin } from 'antd'
+import { Button, Spin, Input } from 'antd'
 import { useState, useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import AudioPlayer from '@features/grading/ui/audio-player'
-import Feedback from '@features/grading/ui/feedback-grading'
-import GradingScoringPanel from '@features/grading/ui/grading-scoring-panel'
 
-const SPEAKING_STORAGE_KEY = 'speaking_grading_draft'
-
-let hasLoadedSpeakingDraft = false
+const { TextArea } = Input
 
 const Speaking = ({ testData, isLoading }) => {
   const [activePart, setActivePart] = useState('PART 1')
-  const [scores, setScores] = useState({})
+  const [questionFeedbacks, setQuestionFeedbacks] = useState({})
   const parts = useMemo(() => testData?.Parts || [], [testData])
-
-  useEffect(() => {
-    if (!hasLoadedSpeakingDraft && testData) {
-      try {
-        const draftData = JSON.parse(localStorage.getItem(SPEAKING_STORAGE_KEY))
-        if (draftData && Array.isArray(draftData)) {
-          const loadedScores = {}
-
-          draftData.forEach(({ part, scores: partScores }) => {
-            const partName = `PART ${part.slice(-1)}`
-
-            partScores.forEach(({ questionIndex, score }) => {
-              if (score !== null && score !== undefined) {
-                const currentPart = parts.find(p => p.Content === partName)
-                if (currentPart && currentPart.Questions && currentPart.Questions[questionIndex]) {
-                  const questionId = currentPart.Questions[questionIndex].ID
-                  loadedScores[`${partName}-${questionId}`] = score
-                }
-              }
-            })
-          })
-
-          setScores(loadedScores)
-          hasLoadedSpeakingDraft = true
-        }
-      } catch (error) {
-        console.error('Error loading draft:', error)
-      }
-    }
-  }, [testData, parts])
 
   useEffect(() => {
     if (parts.length > 0 && !parts.find(p => p.Content === activePart)) {
@@ -50,8 +16,11 @@ const Speaking = ({ testData, isLoading }) => {
     }
   }, [parts, activePart])
 
-  const handleSubmit = () => {
-    // Handle submission logic here
+  const handleQuestionFeedbackChange = (questionId, feedback) => {
+    setQuestionFeedbacks(prev => ({
+      ...prev,
+      [questionId]: feedback
+    }))
   }
 
   if (isLoading) {
@@ -80,14 +49,14 @@ const Speaking = ({ testData, isLoading }) => {
 
   return (
     <div>
-      <div className="mb-6 flex w-fit gap-2 rounded-xl border border-gray-200 bg-white p-2 shadow-sm">
+      {/* Part selection tabs */}
+      <div className="mb-6 flex gap-1">
         {parts.map(part => (
           <Button
             key={part.ID}
-            type={activePart === part.Content ? 'primary' : 'default'}
             onClick={() => setActivePart(part.Content)}
-            className={`min-w-[80px] rounded-xl border-none ${
-              activePart === part.Content ? 'bg-[#003087] text-white' : 'bg-white text-black'
+            className={`min-w-[80px] rounded-lg border-none px-4 py-1 ${
+              activePart === part.Content ? 'bg-[#003087] text-white' : 'bg-white text-black hover:bg-gray-50'
             }`}
           >
             {part.Content}
@@ -95,50 +64,57 @@ const Speaking = ({ testData, isLoading }) => {
         ))}
       </div>
 
-      <div className="flex gap-8">
-        <div className="flex-1 space-y-5">
-          <div className="mb-4">
-            <h3 className="text-lg font-medium text-[#003087]">{currentPart.Content}:</h3>
+      <div className="space-y-6">
+        {/* Part title and instructions */}
+        <div>
+          <h3 className="mb-2 text-lg font-medium text-[#003087]">{currentPart.Content}</h3>
+          <div className="rounded-lg border border-solid border-[#003087] p-4">
             {currentPart.Questions?.map(question => (
-              <div key={`title-${question.ID}`} className="mt-1 text-base">
+              <div key={`title-${question.ID}`} className="text-base">
                 {question.Content}
               </div>
             ))}
           </div>
+        </div>
 
+        {/* Questions */}
+        <div className="space-y-6">
           {currentPart.Questions?.map((question, index) => (
-            <div key={question.ID} className="rounded-lg bg-white">
-              <div className="mb-3 rounded-xl border border-gray-100 bg-gray-50 p-4">
-                <p className="font-medium text-[#003087]">
-                  Question {index + 1}: {question.Content}
-                </p>
-                {question.ImageKeys?.[0] && (
-                  <div className="mt-4">
-                    <img
-                      src={question.ImageKeys[0]}
-                      alt={`Question ${index + 1}`}
-                      className="max-h-[200px] rounded-lg object-cover"
-                    />
+            <div key={question.ID} className="grid grid-cols-[1fr,1fr] gap-6">
+              {/* Left container - Question and Student Answer */}
+              <div className="overflow-hidden rounded-lg border border-gray-300 shadow-md">
+                <div className="bg-[#E5E7EB] px-4 py-3">
+                  <p className="text-base">
+                    Question {index + 1}: {question.Content}
+                  </p>
+                </div>
+
+                <div className="space-y-4 p-4">
+                  <div>
+                    <p className="mb-2 text-base">Student Answer:</p>
+                    <AudioPlayer audioUrl={'https://ipaine.com/download/sample.mp3'} />
                   </div>
-                )}
+                </div>
               </div>
-              <AudioPlayer audioUrl={'https://ipaine.com/download/sample.mp3'} />
+
+              {/* Right container - Comment */}
+              <div className="overflow-hidden rounded-lg border border-gray-300 shadow-md">
+                <div className="bg-[#E5E7EB] px-4 py-3">
+                  <p className="text-base">Comment</p>
+                </div>
+                <div className="p-4">
+                  <TextArea
+                    value={questionFeedbacks[question.ID] || ''}
+                    onChange={e => handleQuestionFeedbackChange(question.ID, e.target.value)}
+                    placeholder="Enter your feedback here..."
+                    autoSize={{ minRows: 3, maxRows: 6 }}
+                    className="w-full rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"
+                  />
+                </div>
+              </div>
             </div>
           ))}
         </div>
-
-        <GradingScoringPanel
-          activePart={activePart}
-          questions={currentPart.Questions || []}
-          scores={scores}
-          setScores={setScores}
-          type="speaking"
-          onSubmit={handleSubmit}
-        />
-      </div>
-
-      <div className="mt-6">
-        <Feedback activePart={activePart} type="speaking" />
       </div>
     </div>
   )
