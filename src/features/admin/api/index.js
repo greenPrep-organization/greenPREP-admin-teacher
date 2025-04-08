@@ -1,23 +1,40 @@
 import axiosInstance from '@shared/config/axios'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { message } from 'antd'
 
-const createTeacher = async teacherData => {
+export const fetchTeachers = async (params = {}) => {
   try {
-    const { data } = await axiosInstance.post('/users/register', teacherData)
+    const { page = 1, limit = 10, search = '' } = params
+    const { data } = await axiosInstance.post('/users/teachers', {
+      params: {
+        page,
+        limit,
+        search
+      }
+    })
     return data
   } catch (error) {
-    console.error('Error creating teacher:', error)
+    message.error('Error fetching teachers')
     throw error
   }
 }
 
-const fetchTeacherProfile = async userId => {
+export const createTeacher = async teacherData => {
+  try {
+    const { data } = await axiosInstance.post('/users/register', teacherData)
+    return data
+  } catch (error) {
+    message.error('Error creating teacher')
+    throw error
+  }
+}
+
+export const fetchTeacherProfile = async userId => {
   try {
     const { data } = await axiosInstance.get(`/users/${userId}`)
     return data
   } catch (error) {
-    console.error('Error fetching user profile:', error)
+    message.error('Error fetching teacher profile')
+    console.error('Error fetching teacher profile:', error)
     throw error
   }
 }
@@ -25,46 +42,21 @@ const fetchTeacherProfile = async userId => {
 export const updateTeacherProfile = async ({ userId, userData }) => {
   try {
     const { data } = await axiosInstance.put(`/users/${userId}`, userData)
-    console.log(data)
     return data
   } catch (error) {
-    console.error('Error updating user profile:', error)
+    message.error('Error updating teacher profile')
     throw error
   }
 }
 
-const resetPassword = async ({ email }) => {
+export const resetPassword = async ({ email }) => {
   try {
-    const { data } = await axiosInstance.post('/users/forgot-password', {
-      email
-    })
+    const { data } = await axiosInstance.post('/users/forgot-password', { email })
     return data
   } catch (error) {
-    message.error('Error sending forgot password email:', error)
+    message.error('Error sending reset password email')
     throw error
   }
-}
-
-export const useTeacherProfile = userId => {
-  return useQuery({
-    queryKey: ['userProfile', userId],
-    queryFn: async () => await fetchTeacherProfile(userId),
-    enabled: !!userId
-  })
-}
-
-export const useCreateTeacher = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: createTeacher,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teachers'] })
-    },
-    onError: error => {
-      console.error('Error creating teacher:', error)
-    }
-  })
 }
 
 export const fetchTeachersList = async payload => {
@@ -75,10 +67,4 @@ export const fetchTeachersList = async payload => {
     console.error('Error fetching teachers list:', error)
     throw error
   }
-}
-
-export const useResetPassword = () => {
-  return useMutation({
-    mutationFn: resetPassword
-  })
 }

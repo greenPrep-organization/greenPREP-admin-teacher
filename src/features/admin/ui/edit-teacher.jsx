@@ -1,5 +1,4 @@
-import { useTeacherProfile } from '@features/admin/api'
-import { useUpdateTeacherProfile } from '@features/admin/hooks'
+import { useTeacherProfile, useUpdateTeacherProfile } from '@features/admin/hooks/useAdmin'
 import ResetPasswordModal from '@features/admin/ui/reset-password-teacher'
 import { EMAIL_REG, PHONE_REG } from '@shared/lib/constants/reg'
 import { Button, Form, Input, message, Modal, Select } from 'antd'
