@@ -215,7 +215,12 @@ const SessionsList = ({ classId }) => {
     <div className="rounded-lg bg-white p-6 shadow">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Sessions List</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setIsModalVisible(true)}
+          style={{ backgroundColor: '#013088' }}
+        >
           Create Session
         </Button>
       </div>
