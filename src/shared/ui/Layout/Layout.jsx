@@ -110,7 +110,7 @@ const Layout = ({ children }) => {
           setCollapsed={setCollapsed}
           onLogoutClick={() => setIsLogoutModalOpen(true)}
         />
-        <Content className="m-4 rounded-lg bg-white p-6 shadow-sm">{children}</Content>
+        <Content className="">{children}</Content>
       </AntdLayout>
       <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} />
     </AntdLayout>

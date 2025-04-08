@@ -11,10 +11,10 @@ const ResetPasswordModal = ({ email, isVisible, onCancel, onResetSuccess }) => {
 
     try {
       await resetPasswordMutation.mutateAsync({ email })
-      message.success('Password reset successfully!')
+      message.success('Password reset email sent successfully!')
       onResetSuccess()
     } catch {
-      message.error('Failed to reset password')
+      message.error('Failed to send password reset email')
     } finally {
       setLoading(false)
     }
