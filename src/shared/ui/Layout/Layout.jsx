@@ -4,11 +4,11 @@ import TeamOutlined from '@ant-design/icons/lib/icons/TeamOutlined'
 import UserOutlined from '@ant-design/icons/lib/icons/UserOutlined'
 import { Logo } from '@assets/images'
 import LogoutModal from '@pages/LogoutModal'
+import SharedHeader from '@shared/ui/Header/SharedHeader'
 import { Layout as AntdLayout, Menu } from 'antd'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link, useLocation } from 'react-router-dom'
-import SharedHeader from '../Header/SharedHeader'
 
 const { Sider, Content } = AntdLayout
 

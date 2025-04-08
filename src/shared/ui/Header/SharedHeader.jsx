@@ -1,19 +1,12 @@
 import { DownOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons'
-import { logout } from '@app/providers/reducer/auth/authSlice'
 import { Avatar, Button, Dropdown, Layout, Menu } from 'antd'
-import { useDispatch, useSelector } from 'react-redux'
-import { Link, useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
+
 const { Header } = Layout
 
-const SharedHeader = ({ collapsed, setCollapsed }) => {
+const SharedHeader = ({ collapsed, setCollapsed, onLogoutClick }) => {
   const { user } = useSelector(state => state.auth)
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const handleLogout = () => {
-    dispatch(logout())
-    localStorage.removeItem('access_token')
-    navigate('/login')
-  }
   const menu = (
     <Menu>
       <Menu.Item key="0">
