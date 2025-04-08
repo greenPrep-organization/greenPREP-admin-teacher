@@ -5,6 +5,7 @@ import UserOutlined from '@ant-design/icons/lib/icons/UserOutlined'
 import { Logo } from '@assets/images'
 import LogoutModal from '@pages/LogoutModal'
 import SharedHeader from '@shared/ui/Header/SharedHeader'
+
 import { Layout as AntdLayout, Menu } from 'antd'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -28,7 +29,7 @@ const Layout = ({ children }) => {
       case '/classes-management':
         setSelectedKey('2')
         break
-      case '/admin':
+      case '/account-management':
         setSelectedKey('3')
         break
       default:
@@ -65,7 +66,7 @@ const Layout = ({ children }) => {
       key: '3',
       icon: <TeamOutlined className="text-lg" />,
       label: (
-        <Link to="/admin" className="text-white hover:text-white">
+        <Link to="/account-management" className="text-white hover:text-white">
           Management Teacher Account
         </Link>
       ),

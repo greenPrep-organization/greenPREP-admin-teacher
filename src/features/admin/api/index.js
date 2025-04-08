@@ -22,7 +22,7 @@ const fetchTeacherProfile = async userId => {
   }
 }
 
-const updateTeacherProfile = async ({ userId, userData }) => {
+export const updateTeacherProfile = async ({ userId, userData }) => {
   try {
     const { data } = await axiosInstance.put(`/users/${userId}`, userData)
     console.log(data)
@@ -67,18 +67,14 @@ export const useCreateTeacher = () => {
   })
 }
 
-export const useUpdateTeacherProfile = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: updateTeacherProfile,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teachers'] })
-    },
-    onError: error => {
-      console.error('Error updating profile:', error)
-    }
-  })
+export const fetchTeachersList = async payload => {
+  try {
+    const { data } = await axiosInstance.post('/users/teachers', payload)
+    return data
+  } catch (error) {
+    console.error('Error fetching teachers list:', error)
+    throw error
+  }
 }
 
 export const useResetPassword = () => {
