@@ -143,6 +143,7 @@ const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
         </Form>
       </Modal>
       <ResetPasswordModal
+        email={form.getFieldValue('email')}
         isVisible={resetPasswordModalVisible}
         onCancel={() => setResetPasswordModalVisible(false)}
         onResetSuccess={() => setResetPasswordModalVisible(false)}

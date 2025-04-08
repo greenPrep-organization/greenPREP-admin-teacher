@@ -2,7 +2,7 @@ import { useResetPassword } from '@features/admin/api'
 import { message, Modal } from 'antd'
 import { useState } from 'react'
 
-const ResetPasswordModal = ({ isVisible, onCancel, onResetSuccess }) => {
+const ResetPasswordModal = ({ email, isVisible, onCancel, onResetSuccess }) => {
   const [loading, setLoading] = useState(false)
   const resetPasswordMutation = useResetPassword()
 
@@ -18,10 +18,9 @@ const ResetPasswordModal = ({ isVisible, onCancel, onResetSuccess }) => {
 
   const handleResetPassword = async () => {
     setLoading(true)
-    const newPassword = '123456789'
 
     try {
-      await resetPasswordMutation.mutateAsync({ newPassword })
+      await resetPasswordMutation.mutateAsync({ email })
       message.success('Password reset successfully!')
       onResetSuccess()
     } catch {
