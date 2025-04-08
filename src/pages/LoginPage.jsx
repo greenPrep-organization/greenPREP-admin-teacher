@@ -1,14 +1,14 @@
 // @ts-nocheck
-import { useState } from 'react'
-import { EyeInvisibleOutlined, EyeOutlined, ExclamationCircleOutlined, CheckCircleOutlined } from '@ant-design/icons'
-import { Link, useNavigate } from 'react-router-dom'
-import { Form, Input, Button, Typography, Space, Row, Col } from 'antd'
+import { CheckCircleOutlined, ExclamationCircleOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons'
+import { login } from '@app/providers/reducer/auth/authSlice'
 import { LoginImg } from '@assets/images'
 import axiosInstance from '@shared/config/axios'
 import { ACCESS_TOKEN } from '@shared/lib/constants/auth'
-import { useDispatch } from 'react-redux'
-import { login } from '@app/providers/reducer/auth/authSlice'
+import { Button, Col, Form, Input, Row, Space, Typography } from 'antd'
 import { jwtDecode } from 'jwt-decode'
+import { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { Link, useNavigate } from 'react-router-dom'
 
 const { Title, Text } = Typography
 
@@ -57,6 +57,7 @@ const LoginPage = () => {
       } else {
         setLoginError('Login failed. Please try again.')
       }
+      window.location.reload()
     } catch (error) {
       console.error('Login error:', error)
       setLoginError('Invalid email or password')

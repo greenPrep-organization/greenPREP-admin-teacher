@@ -1,47 +1,26 @@
-import { useState, useMemo } from 'react'
-import { Table, Input, Space, Button, Card, message, Typography, Breadcrumb, Spin } from 'antd'
+import { useState, useMemo, useEffect } from 'react'
+import { Table, Input, Space, Button, Card, Typography, Breadcrumb, Spin } from 'antd'
 import { EditOutlined, EyeOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchClasses, deleteClass, fetchClassDetails } from '@features/class-management/api'
+import { useFetchClasses, useFetchClassDetails } from '@features/class-management/hooks/fetch-class'
 import { CreateClassModal, EditClassModal } from '@features/class-management/ui/class-modal'
-import DeleteConfirmModal from '@features/class-management/ui/delete-class'
+import DeleteClassModal from '@features/class-management/ui/delete-modal'
 
 const { Title, Text } = Typography
 
 const ClassList = () => {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState('')
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
   const [editingClass, setEditingClass] = useState(null)
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
   const [classToDelete, setClassToDelete] = useState(null)
 
-  const {
-    data: response = {},
-    isLoading,
-    isError
-  } = useQuery({
-    queryKey: ['classes'],
-    queryFn: fetchClasses,
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false
-  })
+  const { data: response = {}, isFetching, isLoading, isError, refetch } = useFetchClasses()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const classes = response?.data || []
-
-  const { data: classDetails } = useQuery({
-    queryKey: ['classDetails', classes.map(cls => cls.ID)],
-    queryFn: async () => {
-      const data = await Promise.all(classes.map(cls => fetchClassDetails(cls.ID)))
-      return data
-    },
-    staleTime: 60 * 1000,
-    refetchOnWindowFocus: false,
-    enabled: classes.length > 0
-  })
+  const { data: classDetails } = useFetchClassDetails(classes)
 
   const enrichedClasses = useMemo(() => {
     if (!classDetails) return []
@@ -60,46 +39,22 @@ const ClassList = () => {
     return enrichedClasses.filter(cls => cls.className?.toLowerCase().includes(searchTerm.toLowerCase()))
   }, [searchTerm, enrichedClasses])
 
-  const deleteClassMutation = useMutation({
-    mutationFn: deleteClass,
-    onSuccess: () => {
-      // @ts-ignore
-      queryClient.invalidateQueries(['classes'])
-      message.success('Class deleted successfully!')
-      setDeleteModalVisible(false)
-    },
-    onError: () => {
-      message.error('Failed to delete class')
+  const [cachedData, setCachedData] = useState([])
+  const [isDataReady, setIsDataReady] = useState(false)
+
+  useEffect(() => {
+    if (!isFetching && !isLoading) {
+      const timer = setTimeout(() => {
+        setCachedData(filteredClasses)
+        setIsDataReady(true)
+      }, 1000)
+      return () => clearTimeout(timer)
     }
-  })
+  }, [isFetching, isLoading, filteredClasses])
 
-  const handleCreateClass = () => {
-    setIsModalVisible(true)
-  }
+  const displayData = isFetching ? cachedData : filteredClasses
 
-  const handleEdit = cls => {
-    setEditingClass(cls)
-    setIsEditModalVisible(true)
-  }
-
-  const handleView = cls => {
-    navigate(`/classes-management/${cls.ID}`, {
-      state: { classInfo: cls }
-    })
-  }
-
-  const showDeleteModal = clsID => {
-    setClassToDelete(clsID)
-    setDeleteModalVisible(true)
-  }
-
-  const handleConfirmDelete = () => {
-    if (classToDelete) {
-      deleteClassMutation.mutate(classToDelete)
-    }
-  }
-
-  if (isLoading) {
+  if (!isDataReady) {
     return <Spin className="flex h-screen items-center justify-center" />
   }
 
@@ -107,6 +62,17 @@ const ClassList = () => {
     return (
       <Text className="text-center text-red-500">Cannot fetch data from server. Please wait and refresh page!</Text>
     )
+  }
+
+  const handleCreateClass = () => setIsModalVisible(true)
+  const handleEdit = cls => {
+    setEditingClass(cls)
+    setIsEditModalVisible(true)
+  }
+  const handleView = cls => navigate(`/classes-management/${cls.ID}`, { state: { classInfo: cls } })
+  const showDeleteModal = clsID => {
+    setClassToDelete(clsID)
+    setIsDeleteModalVisible(true)
   }
 
   const columns = [
@@ -155,7 +121,6 @@ const ClassList = () => {
           onChange={e => setSearchTerm(e.target.value)}
           style={{ width: '50%' }}
         />
-
         <Button type="primary" onClick={handleCreateClass} style={{ backgroundColor: '#013088', border: 'none' }}>
           Create Class
         </Button>
@@ -165,32 +130,29 @@ const ClassList = () => {
         <Table
           // @ts-ignore
           columns={columns}
-          dataSource={filteredClasses.map(cls => ({ ...cls, key: cls.ID }))}
+          dataSource={displayData.map(cls => ({ ...cls, key: cls.ID }))}
           pagination={{ pageSize: 5 }}
-          loading={isLoading}
+          loading={isFetching}
         />
       </Card>
 
-      <DeleteConfirmModal
-        visible={deleteModalVisible}
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setDeleteModalVisible(false)}
-      />
-      <CreateClassModal
-        visible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-        // @ts-ignore
-        onSuccess={() => queryClient.invalidateQueries(['classes'])}
-      />
+      <CreateClassModal visible={isModalVisible} onClose={() => setIsModalVisible(false)} onSuccess={() => refetch()} />
+
       {editingClass && (
         <EditClassModal
           visible={isEditModalVisible}
           onClose={() => setIsEditModalVisible(false)}
-          // @ts-ignore
-          onSuccess={() => queryClient.invalidateQueries(['classes'])}
+          onSuccess={() => refetch()}
           initialData={editingClass}
         />
       )}
+
+      <DeleteClassModal
+        visible={isDeleteModalVisible}
+        classId={classToDelete}
+        onClose={() => setIsDeleteModalVisible(false)}
+        onSuccess={() => refetch()}
+      />
     </div>
   )
 }
