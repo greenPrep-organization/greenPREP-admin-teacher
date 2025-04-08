@@ -32,10 +32,9 @@ const updateTeacherProfile = async ({ userId, userData }) => {
   }
 }
 
-const resetPassword = async ({ token, newPassword }) => {
+const resetPassword = async ({ newPassword }) => {
   try {
     const { data } = await axiosInstance.post('/users/reset-password', {
-      token,
       newPassword
     })
     return data

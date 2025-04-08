@@ -1,5 +1,4 @@
 import { useResetPassword } from '@features/admin/api'
-import { ACCESS_TOKEN_KEY, getStorageData } from '@shared/lib/storage'
 import { message, Modal } from 'antd'
 import { useState } from 'react'
 
@@ -19,11 +18,10 @@ const ResetPasswordModal = ({ isVisible, onCancel, onResetSuccess }) => {
 
   const handleResetPassword = async () => {
     setLoading(true)
-    const token = getStorageData(ACCESS_TOKEN_KEY)
-    const newPassword = '123456789' // generateRandomPassword()
+    const newPassword = '123456789'
 
     try {
-      await resetPasswordMutation.mutateAsync({ token, newPassword })
+      await resetPasswordMutation.mutateAsync({ newPassword })
       message.success('Password reset successfully!')
       onResetSuccess()
     } catch {

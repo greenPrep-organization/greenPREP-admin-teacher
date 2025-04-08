@@ -1,7 +1,7 @@
-import { useCreateTeacher } from '@/features/admin/api/index'
+import { useCreateTeacher } from '@/features/admin/api'
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons'
 import { EMAIL_REG, PASSWORD_REG, PHONE_REG } from '@shared/lib/constants/reg'
-import { Button, Form, Input, Modal } from 'antd'
+import { Button, Form, Input, message, Modal } from 'antd'
 import * as Yup from 'yup'
 
 const teacherValidationSchema = Yup.object().shape({
@@ -36,9 +36,11 @@ export const CreateTeacher = ({ open, onClose, onSave }) => {
       onClose()
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
-        console.error('Schema Validation Error:', error.errors)
+        error.inner.forEach(err => {
+          message.error(err.message)
+        })
       } else {
-        console.error('Error in submitting form:', error)
+        message.error(`Error in submitting form: ${error.message || 'Unknown error'}`)
       }
     }
   }
