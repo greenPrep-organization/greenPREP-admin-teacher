@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import StudentCard from '@features/grading/ui/student-information'
 import Speaking from '@features/grading/ui/speaking-grading'
 import Writing from '@features/grading/ui/writing-grading'
-import NavigationBar from '@features/grading/ui/navigation-bar'
+import GradingScoringPanel from '@features/grading/ui/grading-scoring-panel'
 import { useGetSpeakingTest } from '@features/grading/api'
 import StudentListPopup from '@features/grading/ui/StudentListPopup'
 import studentMockData from '@features/grading/constants/studentMockData.js'
@@ -62,6 +62,10 @@ function GradingPage() {
     setIsPopupVisible(false)
   }
 
+  const handleScoreSubmit = score => {
+    console.log(`Submitting ${activeSection} score:`, score)
+  }
+
   const breadcrumbItems = [
     { title: GRADING_CONFIG.DASHBOARD_PATH },
     { title: GRADING_CONFIG.CLASSES_PATH },
@@ -72,73 +76,101 @@ function GradingPage() {
   ]
 
   const renderBreadcrumb = () => (
-    <div className="mb-4">
-      <Breadcrumb items={breadcrumbItems} className="text-sm text-gray-600" />
-      <h1 className="mt-2 text-2xl font-bold">Grading</h1>
+    <div className="flex flex-col gap-2 px-6 py-3">
+      <Breadcrumb separator="/" items={breadcrumbItems} className="text-sm text-gray-600" />
+      <Button
+        onClick={handleBack}
+        className="flex w-fit items-center justify-center rounded-lg bg-[#003087] py-1 text-white hover:bg-[#002366]"
+      >
+        Back
+      </Button>
     </div>
   )
 
   const renderMainContent = () => (
-    <div>
-      <div className="mb-6">
-        <NavigationBar
-          onBack={handleBack}
-          onPrevious={navigateToPreviousStudent}
-          onNext={navigateToNextStudent}
-          onChangeStudent={handleChangeStudent}
-          currentStudent={currentStudent}
-          totalStudents={studentList.length}
-          disabled={isLoading}
-        />
+    <div className="space-y-6 px-6 pb-6">
+      <div>
+        <div className="mb-2 flex items-center justify-between">
+          <div>
+            <h1 className="mb-1 text-3xl">Student Information: {studentData.name}</h1>
+            <span className="text-sm text-gray-400">View student details</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={navigateToPreviousStudent}
+              className="flex h-11 min-w-[160px] items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 text-base font-medium shadow-sm"
+              icon={<span className="text-[#003087]">←</span>}
+            >
+              Previous Student
+            </Button>
+            <Button
+              onClick={handleChangeStudent}
+              className="flex h-11 min-w-[160px] items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 text-base font-medium shadow-sm"
+              icon={<span className="text-[#003087]">☰</span>}
+            >
+              Change Student
+            </Button>
+            <Button
+              onClick={navigateToNextStudent}
+              className="flex h-11 min-w-[160px] items-center justify-center gap-2 rounded-lg bg-[#003087] px-4 text-base font-medium text-white shadow-sm hover:bg-[#002366]"
+            >
+              Next Student →
+            </Button>
+          </div>
+        </div>
+        <div className="text-right text-sm text-gray-500">of {studentList.length} students</div>
       </div>
 
-      <div className="flex gap-6">
-        <div className="h-fit w-[340px]">
-          <StudentCard student={studentData} />
-        </div>
+      <StudentCard student={studentData} />
 
-        <div className="flex-1">
-          <div className="flex items-center rounded-t-[10px] bg-gray-100 p-3">
-            <Button
-              type={activeSection === 'speaking' ? 'primary' : 'default'}
-              onClick={() => setActiveSection('speaking')}
-              className={`mr-3 h-9 min-w-[120px] rounded-lg ${
-                activeSection === 'speaking'
-                  ? 'bg-[#003087] text-white hover:bg-[#002366]'
-                  : 'border-gray-300 bg-white text-black'
-              }`}
-            >
-              Speaking
-            </Button>
-            <Button
-              type={activeSection === 'writing' ? 'primary' : 'default'}
-              onClick={() => setActiveSection('writing')}
-              className={`h-9 min-w-[120px] rounded-lg ${
-                activeSection === 'writing'
-                  ? 'bg-[#003087] text-white hover:bg-[#002366]'
-                  : 'border-gray-300 bg-white text-black'
-              }`}
-            >
-              Writing
+      <div className="rounded-t-lg bg-transparent">
+        <div className="py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setActiveSection('speaking')}
+                className={`min-w-[120px] rounded-lg px-6 py-5 text-base font-medium ${
+                  activeSection === 'speaking'
+                    ? 'border-none bg-[#003087] text-white'
+                    : 'border border-gray-200 bg-white'
+                }`}
+              >
+                Speaking
+              </Button>
+              <Button
+                onClick={() => setActiveSection('writing')}
+                className={`min-w-[120px] rounded-lg px-6 py-5 text-base font-medium ${
+                  activeSection === 'writing'
+                    ? 'border-none bg-[#003087] text-white'
+                    : 'border border-gray-200 bg-white'
+                }`}
+              >
+                Writing
+              </Button>
+            </div>
+            <Button className="rounded-lg bg-red-400 px-8 py-5 text-base font-medium text-white hover:bg-red-500">
+              Export to PDF
             </Button>
           </div>
-
-          <div className="rounded-b-[10px] border border-gray-200 bg-white p-6 shadow-md">
-            {activeSection === 'speaking' ? (
-              <Speaking testData={speakingTest} isLoading={speakingLoading} />
-            ) : (
-              <Writing studentId={studentData.id} />
-            )}
-          </div>
         </div>
+      </div>
+
+      <div className="rounded-lg bg-white px-6 py-5 shadow-md">
+        <GradingScoringPanel type={activeSection} onSubmit={handleScoreSubmit} />
+      </div>
+
+      <div className="rounded-lg bg-white p-6 shadow-lg">
+        {activeSection === 'speaking' ? (
+          <Speaking testData={speakingTest} isLoading={speakingLoading} />
+        ) : (
+          <Writing studentId={studentData.id} />
+        )}
       </div>
     </div>
   )
 
-  const isLoading = activeSection === 'speaking' ? speakingLoading : false
-
   return (
-    <div className="container mx-auto">
+    <div className="min-h-screen bg-[#F5F6FA]">
       {renderBreadcrumb()}
       {renderMainContent()}
       <StudentListPopup
