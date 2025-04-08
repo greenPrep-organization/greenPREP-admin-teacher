@@ -1,5 +1,6 @@
 import axiosInstance from '@shared/config/axios'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { message } from 'antd'
 
 const createTeacher = async teacherData => {
   try {
@@ -39,7 +40,7 @@ const resetPassword = async ({ email }) => {
     })
     return data
   } catch (error) {
-    console.error('Error sending forgot password email:', error)
+    message.error('Error sending forgot password email:', error)
     throw error
   }
 }

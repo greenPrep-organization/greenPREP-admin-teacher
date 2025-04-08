@@ -13,6 +13,7 @@ import SharedHeader from '../Header/SharedHeader'
 const { Sider, Content } = AntdLayout
 
 const Layout = ({ children }) => {
+  // @ts-ignore
   const auth = useSelector(state => state.auth)
   const [collapsed, setCollapsed] = useState(false)
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
