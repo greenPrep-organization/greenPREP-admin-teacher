@@ -1,5 +1,6 @@
 import axiosInstance from '@shared/config/axios'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { message } from 'antd'
 
 const createTeacher = async teacherData => {
   try {
@@ -32,14 +33,14 @@ const updateTeacherProfile = async ({ userId, userData }) => {
   }
 }
 
-const resetPassword = async ({ newPassword }) => {
+const resetPassword = async ({ email }) => {
   try {
-    const { data } = await axiosInstance.post('/users/reset-password', {
-      newPassword
+    const { data } = await axiosInstance.post('/users/forgot-password', {
+      email
     })
     return data
   } catch (error) {
-    console.error('Error resetting password:', error)
+    message.error('Error sending forgot password email:', error)
     throw error
   }
 }

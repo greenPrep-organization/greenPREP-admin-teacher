@@ -1,7 +1,7 @@
 import { useTeacherProfile, useUpdateTeacherProfile } from '@features/admin/api'
 import ResetPasswordModal from '@features/admin/ui/reset-password-teacher'
 import { EMAIL_REG, PHONE_REG } from '@shared/lib/constants/reg'
-import { Button, Form, Input, message, Modal } from 'antd'
+import { Button, Form, Input, message, Modal, Select } from 'antd'
 import { useEffect, useState } from 'react'
 import * as Yup from 'yup'
 
@@ -16,7 +16,6 @@ const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
   const [form] = Form.useForm()
   const { data: singleTeacherData } = useTeacherProfile(teacherId)
   const updateProfileMutation = useUpdateTeacherProfile()
-
   const [resetPasswordModalVisible, setResetPasswordModalVisible] = useState(false)
 
   useEffect(() => {
@@ -26,7 +25,8 @@ const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
         lastName: singleTeacherData.lastName,
         email: singleTeacherData.email,
         phone: singleTeacherData.phone,
-        teacherCode: singleTeacherData.teacherCode
+        teacherCode: singleTeacherData.teacherCode,
+        roleIDs: singleTeacherData.roleIDs || []
       })
     }
   }, [singleTeacherData, form])
@@ -35,15 +35,16 @@ const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
     try {
       await form.validateFields()
       await profileValidationSchema.validate(form.validateFields, { abortEarly: false })
-
+      const values = form.getFieldsValue()
       await updateProfileMutation.mutateAsync({
         userId: teacherId,
-        userData: form.getFieldsValue()
+        userData: values
       })
 
       message.success('Teacher updated successfully!')
       onSave()
-    } catch {
+    } catch (err) {
+      console.error(err)
       message.error('Failed to update teacher')
     }
   }
@@ -123,6 +124,15 @@ const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
             <Input className="w-full" />
           </Form.Item>
 
+          <Form.Item label="Role" name="roleIDs">
+            <Select
+              className="w-full"
+              mode="multiple"
+              options={[{ label: 'admin', value: 'admin' }]}
+              placeholder="Select roles"
+            />
+          </Form.Item>
+
           <Button
             type="link"
             onClick={handleResetPassword}
@@ -133,6 +143,7 @@ const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
         </Form>
       </Modal>
       <ResetPasswordModal
+        email={form.getFieldValue('email')}
         isVisible={resetPasswordModalVisible}
         onCancel={() => setResetPasswordModalVisible(false)}
         onResetSuccess={() => setResetPasswordModalVisible(false)}
