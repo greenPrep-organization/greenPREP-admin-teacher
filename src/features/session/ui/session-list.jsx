@@ -5,29 +5,9 @@ import CreateSessionModal from '@features/session/ui/create-new-session'
 import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { formatDate, getStatusColor } from '@shared/lib/utils/index'
-import { Button, Empty, Input, Space, Spin, Table, message, Typography } from 'antd'
+import { Button, Empty, Input, message, Space, Spin, Table, Typography } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createSession } from '@features/session/api'
-
-const testSets = [
-  {
-    id: 1,
-    name: 'Test Set 1'
-  },
-  {
-    id: 2,
-    name: 'Test Set 2'
-  },
-  {
-    id: 3,
-    name: 'Test Set 3'
-  },
-  {
-    id: 4,
-    name: 'Test Set 4'
-  }
-]
 
 const SessionsList = ({ classId }) => {
   const { data: sessions = [], isLoading, isError } = useSessions(classId)
@@ -89,41 +69,6 @@ const SessionsList = ({ classId }) => {
       message.success('Session updated successfully')
     },
     [selectedSession, sessions]
-  )
-
-  const handleCreateSession = useCallback(
-    async sessionData => {
-      try {
-        if (!classId) {
-          message.error('Class ID is required')
-          return
-        }
-
-        const formattedSessionData = {
-          sessionName: sessionData.sessionName,
-          sessionKey: sessionData.sessionKey,
-          examSet: String(sessionData.examSet),
-          startTime: sessionData.startTime,
-          endTime: sessionData.endTime,
-          status: 'NOT_STARTED',
-          ClassID: sessionData.ClassID
-        }
-
-        console.log('Creating session with data:', formattedSessionData)
-
-        const newSession = await createSession(formattedSessionData)
-
-        const updatedSessions = [newSession, ...sessions]
-        setFilteredSessions(updatedSessions)
-
-        setIsModalVisible(false)
-        message.success('Session created successfully')
-      } catch (error) {
-        console.error('Failed to create session:', error)
-        message.error(error.message || 'Failed to create session')
-      }
-    },
-    [classId, sessions]
   )
 
   const columns = useMemo(
@@ -307,16 +252,7 @@ const SessionsList = ({ classId }) => {
         </Empty>
       )}
 
-      <CreateSessionModal
-        visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        onSubmit={handleCreateSession}
-        classId={classId}
-        testSets={testSets.map(set => ({
-          ...set,
-          id: String(set.id)
-        }))}
-      />
+      <CreateSessionModal open={isModalVisible} onClose={() => setIsModalVisible(false)} classId={classId} />
 
       {deleteSessionId && (
         <DeleteSessionPopup

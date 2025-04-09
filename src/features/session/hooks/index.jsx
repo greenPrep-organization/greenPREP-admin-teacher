@@ -1,4 +1,4 @@
-import { getSessionsByClassId, createSession } from '@features/session/api'
+import { createSession, getSessionsByClassId } from '@features/session/api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export function useSessions(classId) {
@@ -21,16 +21,15 @@ export function useSessions(classId) {
   })
 }
 
-export const useCreateSession = () => {
+export function useCreateSession(classId) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: createSession,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sessions'] })
+    mutationFn: async data => {
+      return await createSession(data, classId)
     },
-    onError: error => {
-      throw error
+    onSuccess: () => {
+      queryClient.invalidateQueries(['sessions', classId])
     }
   })
 }

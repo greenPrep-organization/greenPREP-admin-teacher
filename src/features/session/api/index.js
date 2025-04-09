@@ -41,34 +41,13 @@ export function getSessionsByClassId(classId) {
   return axiosInstance.get('/sessions', { params: { classId } })
 }
 
-export const createSession = async sessionData => {
+export const createSession = async (data, classId) => {
   try {
-    console.log(' Creating session with data:', sessionData)
-
-    if (!sessionData.ClassID) {
-      throw new Error('ClassID is required')
-    }
-
-    if (!sessionData.examSet) {
-      throw new Error('Exam set is required')
-    }
-
-    const response = await axiosInstance.post('/sessions', {
-      ...sessionData,
-      ClassID: sessionData.ClassID
+    const response = await axiosInstance.post('/sessions', data, {
+      params: { classId }
     })
-
-    if (response.status !== 200) {
-      throw new Error(`Failed to create session: ${response.statusText}`)
-    }
-
     return response.data
   } catch (error) {
-    console.error('Error creating session:', {
-      error: error.message,
-      response: error.response?.data,
-      status: error.response?.status
-    })
-    throw error
+    throw new Error(error.response?.data?.message || 'Failed to create session')
   }
 }
