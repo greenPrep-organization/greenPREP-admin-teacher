@@ -58,3 +58,21 @@ export const approveSessionRequest = async (sessionId, requestId) => {
     throw new Error(error.response?.data?.message || 'Failed to approve session request')
   }
 }
+
+export const rejectSessionRequest = async (sessionId, requestId) => {
+  try {
+    const response = await axiosInstance.request({
+      url: `/session-requests/${sessionId}/reject`,
+      method: 'PATCH',
+      data: {
+        requestId
+      },
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    return response.data
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to reject session request')
+  }
+}
