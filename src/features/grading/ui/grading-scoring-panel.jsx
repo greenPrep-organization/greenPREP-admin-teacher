@@ -7,13 +7,14 @@ const GradingScoringPanel = ({ type = 'writing', onSubmit }) => {
   const [error, setError] = useState('')
 
   const handleScoreChange = value => {
-    // Convert to number, remove non-digits, and handle empty input
     let numericValue = value === '' ? '' : Number(value.replace(/[^0-9]/g, ''))
 
     // Enforce 0-50 range
     if (numericValue !== '') {
+      // @ts-ignore
       if (numericValue < 0) {
         numericValue = 0
+        // @ts-ignore
       } else if (numericValue > 50) {
         numericValue = 50
       }
