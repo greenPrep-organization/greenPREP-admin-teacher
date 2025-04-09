@@ -5,30 +5,24 @@ import { useTeachers, useUpdateTeacherProfile } from '@features/admin/hooks' // 
 import EditTeacherModal from '@features/admin/ui/edit-teacher'
 import { Button, Input, message, Pagination, Select, Space, Spin, Table, Tag } from 'antd'
 import { useEffect, useState } from 'react'
-import StatusConfirmationModal from './status-confirmation-modal' // Update the import path as needed
+import StatusConfirmationModal from './status-confirmation-modal'
+
 const TeacherAdminList = () => {
-  // Local state for search, status filter, and pagination.
   const [searchText, setSearchText] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
   const updateProfileMutation = useUpdateTeacherProfile()
-  // Modal state for status change confirmation.
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [selectedTeacher, setSelectedTeacher] = useState(null)
   const [teachers, setTeachers] = useState([])
   const [editModalVisible, setEditModalVisible] = useState(false)
 
-  // Map our "all"/"active"/"inactive" filter to a boolean value:
-  // - if 'active', we pass true;
-  // - if 'inactive', we pass false;
-  // - for 'all', we pass undefined (meaning no filtering on status).
   const statusValue = statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined
   const handleEditStatusClick = record => {
     setSelectedTeacher(record)
     setEditModalVisible(true)
   }
-  // Fetch teachers using our custom hook.
   const {
     data: { data: teachersResponse } = {},
     isLoading,
@@ -39,7 +33,6 @@ const TeacherAdminList = () => {
     search: searchText,
     status: statusValue
   })
-  // Force teachers to be an array.
   const totalItems = teachersResponse?.total || 0
 
   const handleSearch = e => {
@@ -52,18 +45,14 @@ const TeacherAdminList = () => {
     setCurrentPage(1)
   }
 
-  // When a status cell is clicked, open the confirmation modal.
   const handleStatusClick = record => {
     setSelectedTeacher(record)
     setIsModalVisible(true)
   }
 
-  // Confirm status change (toggle status and refetch data).
   const handleConfirmStatusChange = async () => {
     if (selectedTeacher) {
       try {
-        // For demonstration, we simply toggle the status locally.
-        // In production, you would call an API to update the status.
         await updateProfileMutation.mutateAsync({
           userId: selectedTeacher.ID,
           userData: { status: !selectedTeacher.status }
@@ -234,7 +223,6 @@ const TeacherAdminList = () => {
         )}
       </div>
 
-      {/* Replace the old Modal with the new StatusConfirmationModal */}
       <StatusConfirmationModal
         isVisible={isModalVisible}
         onCancel={handleCancelModal}

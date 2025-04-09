@@ -2,7 +2,6 @@ import { WarningOutlined } from '@ant-design/icons'
 import { Button, Modal } from 'antd'
 
 const StatusConfirmationModal = ({ isVisible, onCancel, onConfirm, teacherName, currentStatus }) => {
-  // Determine if we're activating or deactivating
   const isDeactivating = currentStatus === 'Active' || currentStatus === true
 
   return (
