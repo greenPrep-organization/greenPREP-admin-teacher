@@ -1,15 +1,17 @@
 import SessionDetail from '@/features/session/ui/session-detail'
 import SessionParticipantList from '@features/session/ui/session-participant-list'
-import { Button } from 'antd'
+import { Button, Typography } from 'antd'
 import { LeftOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
+
+const { Title } = Typography
 
 const SessionDetailPage = () => {
   const navigate = useNavigate()
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="mb-4 flex items-center">
+    <div className="space-y-2">
+      <div className="flex items-center">
         <Button
           onClick={() => navigate('/classes-management')}
           type="primary"
@@ -18,10 +20,19 @@ const SessionDetailPage = () => {
           <LeftOutlined /> Back
         </Button>
       </div>
-      <div className="rounded-lg bg-white">
+      <Title
+        level={3}
+        style={{
+          textAlign: 'left',
+          marginBottom: '24px'
+        }}
+      >
+        Session details
+      </Title>
+      <div className="rounded-lg shadow-sm">
         <SessionDetail />
       </div>
-      <div className="rounded-lg bg-white">
+      <div className="rounded-lg shadow-sm">
         <SessionParticipantList />
       </div>
     </div>

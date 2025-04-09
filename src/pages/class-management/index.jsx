@@ -129,7 +129,7 @@ const ClassList = () => {
         </Button>
       </div>
 
-      <Card className="rounded-lg shadow-md">
+      <Card className="rounded-lg shadow-sm">
         <Table
           // @ts-ignore
           columns={columns}

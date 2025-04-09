@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Tag, Spin, Alert } from 'antd'
+import { Tag, Spin, Alert, Typography } from 'antd'
 import { formatDateTime, getStatusColor } from '@shared/lib/utils/index'
 import { getSessionDetail, getSessionParticipants } from '../api'
 import { useParams } from 'react-router-dom'
+
+const { Title } = Typography
 
 const SessionDetail = () => {
   const [loading, setLoading] = useState(true)
@@ -49,9 +51,20 @@ const SessionDetail = () => {
   const statusColors = getStatusColor(sessionData?.status || 'Pending')
 
   return (
-    <div className="rounded-lg bg-white p-4">
-      <div className="mb-6 flex items-center justify-between border-b pb-4">
-        <h2 className="text-lg font-medium">Session Information</h2>
+    <div className="rounded-lg bg-white p-6">
+      <div className="mb-4 flex items-center justify-between border-b">
+        <Title
+          level={5}
+          style={{
+            fontSize: '16px',
+            fontWeight: '500',
+            marginBottom: '8px',
+            paddingBottom: '8px',
+            borderBottom: '1px solid #f0f0f0'
+          }}
+        >
+          Session Information
+        </Title>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
