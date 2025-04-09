@@ -1,30 +1,8 @@
 import { CheckOutlined, FileDoneOutlined, UserOutlined, WarningOutlined } from '@ant-design/icons'
+import { useSessionData } from '@features/dashboard/hooks'
 import CalendarCard from '@features/dashboard/ui/calendar'
-import axiosInstance from '@shared/config/axios'
-import { useQuery } from '@tanstack/react-query'
-import { Card, message } from 'antd'
+import { Card } from 'antd'
 import Chart from 'react-apexcharts'
-
-const fetchSessions = async () => {
-  const response = await axiosInstance.get(`/sessions/all`)
-  return response.data
-}
-const fetchUser = async (params = {}) => {
-  try {
-    const { page = 1, limit = 10, search = '' } = params
-    const { data } = await axiosInstance.post('/users/teachers', {
-      params: {
-        page,
-        limit,
-        search
-      }
-    })
-    return data
-  } catch (error) {
-    message.error('Error fetching teachers')
-    throw error
-  }
-}
 
 // Mock data
 const studentCountData = {
@@ -59,34 +37,11 @@ const skillComparisonData = {
 }
 
 const DashboardPage = () => {
-  const {
-    data: sessionData,
-    error,
-    isLoading
-  } = useQuery({
-    queryKey: ['sessions'],
-    queryFn: fetchSessions
-  })
+  const { data: sessionData, isLoading, isError } = useSessionData()
 
-  const {
-    data: userData,
-    isLoading: isLoadingUsers,
-    error: userError
-  } = useQuery({
-    queryKey: ['teachers'],
-    queryFn: () => fetchUser({ page: 1, limit: 100 }),
-    retry: 1
-  })
-
-  if (isLoading || isLoadingUsers) return <p>Loading...</p>
-  if (error) return <p>Error fetching sessions: {error.message}</p>
-  if (userError) return <p>Error fetching users: {userError.message}</p>
-
+  if (isLoading) return <p>Loading...</p>
+  if (isError) return <p>Error fetching sessions: {isError}</p>
   const sessionsArray = Array.isArray(sessionData?.data) ? sessionData.data : []
-  const usersArray = Array.isArray(userData?.data) ? userData.data : []
-  // eslint-disable-next-line no-unused-vars
-  const totalUsers = usersArray.length
-
   const notStartedCount = sessionsArray.filter(session => session.status?.toUpperCase() === 'NOT_STARTED').length
   const startedCount = sessionsArray.filter(session => session.status?.toUpperCase() === 'STARTED').length
 
