@@ -4,7 +4,7 @@ import StudentSessionInformation from '@features/student-profile/ui/student-sess
 import { getDefaultAvatar } from '@shared/lib/utils/avatarUtils'
 import { Avatar, Breadcrumb, Spin, message } from 'antd'
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 export default function StudentProfilePage() {
   const { studentId } = useParams()
@@ -12,6 +12,7 @@ export default function StudentProfilePage() {
 
   const [student, setStudent] = useState(null)
   const { data: userData, isLoading, isError } = useStudentProfile(studentId)
+  console.log(userData)
 
   useEffect(() => {
     if (userData) {
@@ -37,11 +38,21 @@ export default function StudentProfilePage() {
           <div className="mb-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Breadcrumb separator="/">
-                <Breadcrumb.Item>Dashboard</Breadcrumb.Item>
-                <Breadcrumb.Item>Classes</Breadcrumb.Item>
-                <Breadcrumb.Item>CLASS01</Breadcrumb.Item>
-                <Breadcrumb.Item>Feb_2025</Breadcrumb.Item>
-                <Breadcrumb.Item>{student?.lastName || 'Student'}</Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link to="/dashboard">Dashboard</Link>
+                </Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link to="/classes">Classes</Link>
+                </Breadcrumb.Item>
+                {/* <Breadcrumb.Item>
+                  <Link to={`/classes/${classId}`}>{classId}</Link>
+                </Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link to={`/classes/${classId}/${sessionId}`}>{sessionId}</Link>
+                </Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link to={`/classes/${classId}/${sessionId}/students/${studentId}`}>{lastName}</Link>
+                </Breadcrumb.Item> */}
               </Breadcrumb>
             </div>
           </div>
@@ -65,12 +76,6 @@ export default function StudentProfilePage() {
                 <Avatar size={215} className="bg-gray-500 text-white">
                   <div className="text-4xl">{getDefaultAvatar(student?.lastName)}</div>
                 </Avatar>
-              </div>
-              <div className="mt-4 text-center">
-                <p className="text-lg font-semibold">
-                  {student?.firstName} {student?.lastName}
-                </p>
-                <p className="text-gray-600">{student?.email}</p>
               </div>
             </div>
           </div>

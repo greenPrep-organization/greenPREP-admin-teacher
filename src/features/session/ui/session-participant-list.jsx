@@ -67,7 +67,6 @@ const SessionParticipantList = () => {
         <span
           className="cursor-pointer text-blue-600 hover:underline"
           onClick={() => {
-            console.log('Record:', record)
             navigate(`/student/${record.User?.ID}`)
           }}
         >
