@@ -6,12 +6,10 @@ import { Card, Progress, Tooltip } from 'antd'
 import { useState } from 'react'
 
 const fetchSessions = async () => {
-  const API_BASE = import.meta.env.VITE_BASE_URL
-  const response = await axiosInstance.get(`${API_BASE}/sessions/all`)
+  const response = await axiosInstance.get(`/sessions/all`)
   return response.data
 }
 
-// Mock data cho số học sinh mỗi level
 const studentCountData = {
   A1: { passed: 30, total: 50 },
   A2: { passed: 35, total: 50 },
@@ -54,7 +52,7 @@ const DashboardPage = () => {
       {/* Stats Cards */}
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         {statsConfig.map(({ title, value, subtitle }) => (
-          <Card key={title} className="shadow-md hover:shadow-lg">
+          <Card key={title} className="shadow-sm hover:shadow-lg">
             <div className="flex flex-col">
               <span className="text-sm font-medium text-gray-500">{title}</span>
               <div className="mt-2 flex items-end justify-between">
@@ -66,11 +64,9 @@ const DashboardPage = () => {
         ))}
       </div>
 
-      {/* Main Content Area */}
       <div className="mb-8 flex flex-col gap-6 lg:flex-row">
-        {/* Student Performance - Chiếm 2/3 width */}
         <div className="w-full lg:w-2/3">
-          <Card title="Student Performance" className="h-full shadow-md">
+          <Card title="Student Performance" className="h-full shadow-sm">
             <div className="flex flex-col space-y-4">
               {performanceData.map(item => (
                 <div
