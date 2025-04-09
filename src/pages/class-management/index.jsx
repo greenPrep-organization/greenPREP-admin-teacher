@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Table, Input, Space, Button, Card, Typography, Breadcrumb, Spin } from 'antd'
-import { EditOutlined, EyeOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons'
+import { Table, Input, Space, Button, Card, Typography, Spin } from 'antd'
+import { EditOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useFetchClasses, useFetchClassDetails } from '@features/class-management/hooks/fetch-class'
 import { CreateClassModal, EditClassModal } from '@features/class-management/ui/class-modal'
 import DeleteClassModal from '@features/class-management/ui/delete-modal'
+import AppBreadcrumb from '@shared/ui/Breadcrumb'
 
 const { Title, Text } = Typography
 
@@ -70,8 +71,6 @@ const ClassList = () => {
     setIsEditModalVisible(true)
   }
   const handleView = cls => {
-    localStorage.setItem('currentClassId', cls.ID)
-    localStorage.setItem('currentClassName', cls.className)
     navigate(`/classes-management/${cls.ID}`, { state: { classInfo: cls } })
   }
   const showDeleteModal = clsID => {
@@ -111,12 +110,7 @@ const ClassList = () => {
 
   return (
     <div>
-      <Breadcrumb className="mb-4" style={{ cursor: 'pointer' }}>
-        <Breadcrumb.Item onClick={() => navigate('/dashboard')}>
-          <HomeOutlined /> <span>Dashboard</span>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>Classes</Breadcrumb.Item>
-      </Breadcrumb>
+      <AppBreadcrumb items={[{ label: 'Classes' }]} />
       <Title level={3} style={{ textAlign: 'left', marginBottom: '16px' }}>
         Classes
       </Title>
