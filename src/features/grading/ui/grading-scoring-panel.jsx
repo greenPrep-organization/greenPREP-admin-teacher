@@ -7,9 +7,11 @@ const GradingScoringPanel = ({ type = 'writing', onSubmit }) => {
   const [error, setError] = useState('')
 
   const handleScoreChange = value => {
-    let numericValue = value === '' || value === null || value === undefined ? '' : Number(value)
+    // Convert to number, remove non-digits, and handle empty input
+    let numericValue = value === '' ? '' : Number(value.replace(/[^0-9]/g, ''))
 
-    if (numericValue !== '' && typeof numericValue === 'number') {
+    // Enforce 0-50 range
+    if (numericValue !== '') {
       if (numericValue < 0) {
         numericValue = 0
       } else if (numericValue > 50) {
@@ -17,7 +19,7 @@ const GradingScoringPanel = ({ type = 'writing', onSubmit }) => {
       }
     }
 
-    setTotalScore(value)
+    setTotalScore(numericValue.toString()) // Convert back to string for input
     setError('')
   }
 
@@ -25,7 +27,7 @@ const GradingScoringPanel = ({ type = 'writing', onSubmit }) => {
     if (totalScore === '') {
       setError('Please enter a score before submitting.')
     } else {
-      onSubmit(totalScore)
+      onSubmit(Number(totalScore)) // Pass numeric value to onSubmit
       setError('')
     }
   }
@@ -54,10 +56,7 @@ const GradingScoringPanel = ({ type = 'writing', onSubmit }) => {
               min={0}
               max={50}
               value={totalScore}
-              onChange={e => {
-                const value = e.target.value === '' ? '' : e.target.value.replace(/[^0-9]/g, '')
-                handleScoreChange(value)
-              }}
+              onChange={e => handleScoreChange(e.target.value)}
               onKeyDown={e => {
                 if (
                   !/[0-9]/.test(e.key) &&
@@ -76,7 +75,7 @@ const GradingScoringPanel = ({ type = 'writing', onSubmit }) => {
         </div>
 
         <Button
-          onClick={() => onSubmit(totalScore)}
+          onClick={() => onSubmit(Number(totalScore))}
           className="h-11 rounded-lg border border-gray-200 px-6 text-base font-medium hover:bg-gray-50"
         >
           Save As Draft
