@@ -1,12 +1,42 @@
+import { Avatar, Breadcrumb, message, Spin } from 'antd'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+
 import SessionHistory from '@features/session/ui/session-history'
 import SessionInformation from '@features/session/ui/session-information'
+import { fetchStudentProfile } from '@features/student-profile/api'
 import { getDefaultAvatar } from '@shared/lib/utils/avatarUtils'
-import { Avatar, Breadcrumb } from 'antd'
-import { useNavigate, useParams } from 'react-router-dom'
 
 export default function StudentProfilePage() {
   const { studentId } = useParams()
   const navigate = useNavigate()
+
+  const [student, setStudent] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (studentId) {
+      setLoading(true)
+      fetchStudentProfile(studentId)
+        .then(data => {
+          setStudent(data)
+        })
+        .catch(() => {
+          message.error('Failed to load student profile')
+        })
+        .finally(() => {
+          setLoading(false)
+        })
+    }
+  }, [studentId])
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Spin size="large" />
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
@@ -19,7 +49,7 @@ export default function StudentProfilePage() {
                 <Breadcrumb.Item>Classes</Breadcrumb.Item>
                 <Breadcrumb.Item>CLASS01</Breadcrumb.Item>
                 <Breadcrumb.Item>Feb_2025</Breadcrumb.Item>
-                <Breadcrumb.Item>A Nguyen</Breadcrumb.Item>
+                <Breadcrumb.Item>{student?.name || 'Student'}</Breadcrumb.Item>
               </Breadcrumb>
             </div>
           </div>
@@ -35,26 +65,24 @@ export default function StudentProfilePage() {
 
           <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <SessionInformation
-                // @ts-ignore
-                studentId={studentId}
-              />
+              <SessionInformation userId={studentId} />
             </div>
 
             <div className="lg:col-span-1">
               <div className="flex items-center justify-center overflow-hidden rounded-lg bg-white p-4 shadow-md">
-                <Avatar size={215} className="bg-gray-500 text-white">
-                  {getDefaultAvatar('A Nguyen')} {/* Tạm thời hardcode tên, sau này sẽ lấy từ API */}
+                <Avatar size={215} src={student?.avatarUrl} className="bg-gray-500 text-white">
+                  {getDefaultAvatar(student?.name)}
                 </Avatar>
+              </div>
+              <div className="mt-4 text-center">
+                <p className="text-lg font-semibold">{student?.name}</p>
+                <p className="text-gray-600">{student?.email}</p>
               </div>
             </div>
           </div>
 
           <div className="mt-6">
-            <SessionHistory
-              // @ts-ignore
-              studentId={studentId}
-            />
+            <SessionHistory userId={studentId} />
           </div>
         </main>
       </div>
