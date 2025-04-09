@@ -1,7 +1,14 @@
-import { Modal } from 'antd'
+import { Modal, Typography, Button, Space, message } from 'antd'
 import { ExclamationCircleFilled } from '@ant-design/icons'
 
+const { Text, Title } = Typography
+
 const DeleteTeacherModal = ({ isOpen, onClose, onConfirm }) => {
+  const handleConfirm = () => {
+    onConfirm()
+    message.success('Account deleted successfully')
+  }
+
   return (
     <Modal
       open={isOpen}
@@ -17,29 +24,30 @@ const DeleteTeacherModal = ({ isOpen, onClose, onConfirm }) => {
           <ExclamationCircleFilled className="text-[24px] text-[#EF4444]" />
         </div>
 
-        <h3 className="mb-2 text-center text-[16px] font-medium leading-6 text-[#111827]">
+        <Title level={4} className="!m-0 !mb-2 !text-center !text-[16px] !font-medium !text-[#111827]">
           Are you sure you want to <br /> Delete Account?
-        </h3>
+        </Title>
 
-        <p className="mb-4 text-center text-[12px] leading-4 text-[#6B7280]">
+        <Text className="mb-4 block text-center text-[12px] leading-4 text-[#6B7280]">
           After you delete this account, this account will no longer available in this list.
-        </p>
+        </Text>
 
-        <div className="flex w-full gap-3">
-          <button
+        <Space size={12} className="flex w-[320px] justify-center">
+          <Button
             onClick={onClose}
-            className="flex-1 rounded-[7px] border border-[#E5E7EB] bg-white py-2 text-[14px] font-normal text-[#374151] transition-colors hover:bg-gray-50"
+            className="!h-[35px] !w-[155px] !rounded-[8px] !border-[#E5E7EB] !bg-white !px-0 !text-[14px] !font-normal !text-[#374151] hover:!bg-gray-50"
           >
             Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            style={{ border: 'none', outline: 'none' }}
-            className="flex-1 rounded-[7px] bg-[#F87171] py-2 text-[14px] font-normal text-white transition-colors hover:bg-[#F87171]/90 focus:outline-none focus:ring-0"
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            type="primary"
+            danger
+            className="!h-[35px] !w-[155px] !rounded-[8px] !border-none !bg-[#F87171] !px-0 !text-[14px] !font-normal hover:!bg-[#F87171]/90"
           >
             Yes
-          </button>
-        </div>
+          </Button>
+        </Space>
       </div>
     </Modal>
   )
