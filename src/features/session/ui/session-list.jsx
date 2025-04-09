@@ -5,7 +5,7 @@ import CreateSessionModal from '@features/session/ui/create-new-session'
 import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { formatDate, getStatusColor } from '@shared/lib/utils/index'
-import { Button, Empty, Input, Space, Spin, Table, message } from 'antd'
+import { Button, Empty, Input, Space, Spin, Table, message, Typography } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -37,6 +37,7 @@ const SessionsList = ({ classId }) => {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [deleteSessionId, setDeleteSessionId] = useState(null)
   const navigate = useNavigate()
+  const { Text, Title } = Typography
 
   useEffect(() => {
     console.log(sessions)
@@ -120,7 +121,7 @@ const SessionsList = ({ classId }) => {
         key: 'name',
         align: 'center',
         render: (text, record) => (
-          <a onClick={() => handleViewSession(record.id)} className="text-blue-600 hover:text-blue-800">
+          <a onClick={() => handleViewSession(record.id)} className="text-blue-800 hover:text-blue-800">
             {text}
           </a>
         )
@@ -214,15 +215,30 @@ const SessionsList = ({ classId }) => {
   return (
     <div className="rounded-lg bg-white p-6 shadow">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Sessions List</h1>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setIsModalVisible(true)}
-          style={{ backgroundColor: '#013088' }}
-        >
-          Create Session
-        </Button>
+        <div>
+          <Title
+            level={5}
+            style={{
+              fontSize: '16px',
+              fontWeight: '500',
+              marginBottom: '8px',
+              paddingBottom: '8px',
+              borderBottom: '1px solid #f0f0f0'
+            }}
+          >
+            Sessions List
+          </Title>
+        </div>
+        <div>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setIsModalVisible(true)}
+            className="bg-[#013088] hover:bg-[#003087]/90"
+          >
+            Create Session
+          </Button>
+        </div>
       </div>
 
       <div className="mb-4">
@@ -252,7 +268,18 @@ const SessionsList = ({ classId }) => {
           rowKey="id"
           pagination={{
             ...DEFAULT_PAGINATION,
-            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total}`
+            showTotal: (total, range) => (
+              <Text
+                type="secondary"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  fontSize: '14px'
+                }}
+              >
+                Showing {range[0]}-{range[1]} of {total}
+              </Text>
+            )
           }}
           className="overflow-x-auto"
         />
