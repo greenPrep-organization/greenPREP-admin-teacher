@@ -1,33 +1,49 @@
 import SessionDetail from '@/features/session/ui/session-detail'
-import { LeftOutlined } from '@ant-design/icons'
 import SessionParticipantList from '@features/session/ui/session-participant-list'
-import { Breadcrumb, Button } from 'antd'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import AppBreadcrumb from '@/shared/ui/Breadcrumb'
+import { LeftOutlined } from '@ant-design/icons'
+import { Button, Skeleton, Typography } from 'antd'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import axiosInstance from '@shared/config/axios'
+
+const { Title } = Typography
+
+const fetchSessionDetail = async sessionId => {
+  const res = await axiosInstance.get(`/sessions/${sessionId}`)
+  return res.data.data
+}
 
 const SessionDetailPage = () => {
   const navigate = useNavigate()
-  const { classId, sessionId } = useParams()
+  const { id, sessionId } = useParams()
+
+  const { data: sessionDetail, isLoading } = useQuery({
+    queryKey: ['session-detail', sessionId],
+    queryFn: () => fetchSessionDetail(sessionId),
+    enabled: !!sessionId
+  })
+
+  const className = sessionDetail?.Classes?.className ?? 'Loading...'
+  const sessionName = sessionDetail?.sessionName ?? 'Loading...'
+
+  const breadcrumbItems = [
+    { label: 'Classes', path: '/classes-management' },
+    {
+      label: isLoading ? <Skeleton.Input active size="small" style={{ width: 100 }} /> : className,
+      path: `/classes-management/${id}`,
+      state: {
+        classInfo: sessionDetail?.Classes
+      }
+    },
+    {
+      label: isLoading ? <Skeleton.Input active size="small" style={{ width: 120 }} /> : sessionName
+    }
+  ]
 
   return (
     <div className="space-y-6 p-6">
-      <div className="mb-4">
-        <Breadcrumb separator="/">
-          <Breadcrumb.Item>
-            <Link to="/dashboard">Dashboard</Link>
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>
-            <Link to="/classes-management">Classes</Link>
-          </Breadcrumb.Item>
-          <Breadcrumb.Item>
-            <Link to={`/classes-management/${classId}`}>{classId}</Link>
-          </Breadcrumb.Item>
-          {sessionId && (
-            <Breadcrumb.Item>
-              <Link to={`/classes-management/${classId}/${sessionId}`}>{sessionId}</Link>
-            </Breadcrumb.Item>
-          )}
-        </Breadcrumb>
-      </div>
+      <AppBreadcrumb items={breadcrumbItems} />
 
       <div className="mb-4 flex items-center">
         <Button
@@ -38,10 +54,15 @@ const SessionDetailPage = () => {
           <LeftOutlined /> Back
         </Button>
       </div>
-      <div className="rounded-lg bg-white">
+
+      <Title level={3} style={{ textAlign: 'left', marginBottom: '24px' }}>
+        Session details
+      </Title>
+
+      <div className="rounded-lg shadow-sm">
         <SessionDetail />
       </div>
-      <div className="rounded-lg bg-white">
+      <div className="rounded-lg shadow-sm">
         <SessionParticipantList />
       </div>
     </div>

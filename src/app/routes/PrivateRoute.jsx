@@ -26,7 +26,7 @@ const PrivateRoute = [
         element: <ClassDetailsPage />
       },
       {
-        path: '/classes-management/:Id/:sessionId/students/:studentId',
+        path: '/classes-management/:id/:sessionId/students/:studentId',
         element: <StudentProfilePage />
       },
       {
