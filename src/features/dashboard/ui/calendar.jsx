@@ -14,7 +14,7 @@ const CalendarCard = () => {
     <Card
       title="Calendar"
       className="mx-auto w-full max-w-2xl rounded-lg border border-red-500 bg-red-100 shadow-lg"
-      headStyle={{ backgroundColor: '#ef4444', color: 'white' }} // Tailwind red-500
+      headStyle={{ backgroundColor: '#ef4444', color: 'white' }}
     >
       <Calendar
         fullscreen={false}
