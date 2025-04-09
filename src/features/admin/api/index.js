@@ -58,3 +58,13 @@ export const resetPassword = async ({ email }) => {
     throw error
   }
 }
+
+export const fetchTeachersList = async payload => {
+  try {
+    const { data } = await axiosInstance.post('/users/teachers', payload)
+    return data
+  } catch (error) {
+    console.error('Error fetching teachers list:', error)
+    throw error
+  }
+}
