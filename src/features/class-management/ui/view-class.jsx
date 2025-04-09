@@ -56,26 +56,25 @@ const ClassDetails = () => {
         level={3}
         style={{
           textAlign: 'left',
-          marginBottom: '24px',
-          fontSize: '24px',
-          fontWeight: '600',
-          color: '#1A1A1A'
+          marginBottom: '24px'
         }}
       >
         Class details
       </Title>
 
-      <Card className="shadow-md" style={{ marginTop: '16px' }}>
-        <div
+      <Card className="mb-2 mt-4 shadow-sm">
+        <Title
+          level={5}
           style={{
-            borderBottom: '1px solid #f0f0f0',
-            paddingBottom: '8px',
             fontSize: '16px',
-            fontWeight: '500'
+            fontWeight: '500',
+            marginBottom: '8px',
+            paddingBottom: '8px',
+            borderBottom: '1px solid #f0f0f0'
           }}
         >
-          Class information
-        </div>
+          Class Information
+        </Title>
 
         <Row style={{ marginTop: '16px' }} justify="space-between">
           <Col>
