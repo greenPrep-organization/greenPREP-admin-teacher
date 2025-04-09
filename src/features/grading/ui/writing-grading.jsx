@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Card, Button } from 'antd'
+import { Button, Card, Input } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import mockData from '@features/grading/constants/writingmockdata'
 import PropTypes from 'prop-types'
+
+const { TextArea } = Input
 
 const STORAGE_KEY = 'writing_grading_draft'
 const FEEDBACK_STORAGE_KEY = 'writing_grading_feedback'
@@ -64,14 +66,10 @@ function WritingGrade({ studentId }) {
   }
 
   const handleFeedbackChange = (part, questionIndex, value) => {
-    setFeedbacks(prevFeedbacks => {
-      const updatedFeedbacks = { ...prevFeedbacks }
-      if (!updatedFeedbacks[part]) {
-        updatedFeedbacks[part] = []
-      }
-      updatedFeedbacks[part][questionIndex] = value
-      return updatedFeedbacks
-    })
+    setFeedbacks(prevFeedbacks => ({
+      ...prevFeedbacks,
+      [part]: { ...prevFeedbacks[part], [questionIndex]: value }
+    }))
   }
 
   const currentPart = studentData?.[activePart] || { questions: [], answers: [], instructions: '' }
@@ -87,63 +85,68 @@ function WritingGrade({ studentId }) {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4">
-      <div className="mb-2">
-        <div className="flex flex-nowrap gap-1">
-          {['part1', 'part2', 'part3', 'part4'].map(part => (
-            <Button
-              key={part}
-              onClick={() => handlePartChange(part)}
-              className={`rounded border border-gray-300 px-2 py-1 transition-colors ${
-                activePart === part ? 'bg-blue-500 text-white' : 'bg-white text-black'
-              }`}
-            >
-              {`Part ${part.slice(-1)}`}
-            </Button>
-          ))}
-        </div>
+    <div>
+      {/* Nút chọn Part */}
+      <div className="mb-6 flex gap-1">
+        {['part1', 'part2', 'part3', 'part4'].map(part => (
+          <Button
+            key={part}
+            onClick={() => handlePartChange(part)}
+            className={`min-w-[80px] rounded-lg border-none px-4 py-1 ${
+              activePart === part ? 'bg-[#003087] text-white' : 'bg-white text-black hover:bg-gray-50'
+            }`}
+          >
+            {`PART ${part.slice(-1)}`}
+          </Button>
+        ))}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex-1">
-          <Card className="mb-2 max-w-[640px] flex-1 rounded border-blue-500" bodyStyle={{ padding: '12px' }}>
-            <div className="text-sm">
-              <p className="mb-0 whitespace-pre-wrap">{instructions}</p>
-            </div>
-          </Card>
+      <div className="space-y-6">
+        {/* Instructions */}
+        <div>
+          <h3 className="mb-2 text-lg font-medium text-[#003087]">{`PART ${activePart.slice(-1)}`}</h3>
+          <div className="rounded-lg border border-solid border-[#003087] p-4">
+            <p className="m-0 whitespace-pre-wrap text-base">{instructions}</p>
+          </div>
+        </div>
 
+        {/* Questions and Feedback */}
+        <div className="space-y-6">
           {questions.length === 0 ? (
-            <Card className="rounded border-gray-300" bodyStyle={{ padding: '12px' }}>
+            <Card className="rounded-lg border-gray-300 shadow-md">
               <p className="m-0 italic text-gray-500">No questions available</p>
             </Card>
           ) : (
             questions.map((question, index) => (
-              <div key={index} className="mb-2 flex flex-row gap-2">
-                <Card className="flex-1 rounded-xl border-gray-300" bodyStyle={{ padding: 0 }}>
-                  <div>
-                    <p className="m-0 rounded-t-xl bg-gray-300 p-3 text-lg font-medium">
-                      {`Question ${index + 1}: ${question}`}
+              <div key={index} className="grid grid-cols-[1fr,1fr] gap-6">
+                {/* Question and Answer */}
+                <div className="overflow-hidden rounded-lg border border-gray-300 shadow-md">
+                  <div className="bg-[#E5E7EB] px-4 py-3">
+                    <p className="m-0 text-base">
+                      Question {index + 1}: {question}
                     </p>
-                    <div className="item-center p-5">
-                      <p className="mb-2 font-medium text-gray-800">Student Answer:</p>
-                      <div className="text-black">{renderAnswer(answers[index])}</div>
-                    </div>
                   </div>
-                </Card>
+                  <div className="space-y-4 p-4">
+                    <p className="mb-2 text-base">Student Answer:</p>
+                    <div className="text-black">{renderAnswer(answers[index])}</div>
+                  </div>
+                </div>
 
-                <Card className="w-[40%] rounded-xl border-gray-300" bodyStyle={{ padding: 0 }}>
-                  <div>
-                    <p className="m-0 rounded-t-xl bg-gray-300 p-3 text-lg font-medium">Comment</p>
-                    <div className="p-3">
-                      <textarea
-                        className="h-20 w-full resize-none rounded border border-gray-300 p-2 outline-none focus:border-blue-500"
-                        placeholder="Enter your comment here..."
-                        value={feedbacks[activePart]?.[index] || ''}
-                        onChange={e => handleFeedbackChange(activePart, index, e.target.value)}
-                      />
-                    </div>
+                {/* Feedback */}
+                <div className="overflow-hidden rounded-lg border border-gray-300 shadow-md">
+                  <div className="bg-[#E5E7EB] px-4 py-3">
+                    <p className="m-0 text-base">Comment</p>
                   </div>
-                </Card>
+                  <div className="p-4">
+                    <TextArea
+                      value={feedbacks[activePart]?.[index] || ''}
+                      onChange={e => handleFeedbackChange(activePart, index, e.target.value)}
+                      placeholder="Enter your feedback here..."
+                      autoSize={{ minRows: 3, maxRows: 6 }}
+                      className="w-full rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"
+                    />
+                  </div>
+                </div>
               </div>
             ))
           )}
