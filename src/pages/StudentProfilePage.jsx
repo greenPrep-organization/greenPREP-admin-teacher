@@ -1,12 +1,34 @@
-import SessionHistory from '@features/session/ui/session-history'
-import SessionInformation from '@features/session/ui/session-information'
+import { useStudentProfile } from '@features/student-profile/hooks'
+import StudentSessionHistory from '@features/student-profile/ui/student-session-history'
+import StudentSessionInformation from '@features/student-profile/ui/student-session-information'
 import { getDefaultAvatar } from '@shared/lib/utils/avatarUtils'
-import { Avatar, Breadcrumb } from 'antd'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Avatar, Breadcrumb, Spin, message } from 'antd'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 export default function StudentProfilePage() {
-  const { studentId } = useParams()
+  const { classId, sessionId, studentId } = useParams()
   const navigate = useNavigate()
+
+  const [student, setStudent] = useState(null)
+  const { data: userData, isLoading, isError } = useStudentProfile(studentId)
+
+  useEffect(() => {
+    if (userData) {
+      setStudent(userData)
+    }
+    if (isError) {
+      message.error('Error when fetch data student')
+    }
+  }, [userData, isError])
+
+  if (isLoading || !student) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Spin size="large" />
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
@@ -15,11 +37,23 @@ export default function StudentProfilePage() {
           <div className="mb-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Breadcrumb separator="/">
-                <Breadcrumb.Item>Dashboard</Breadcrumb.Item>
-                <Breadcrumb.Item>Classes</Breadcrumb.Item>
-                <Breadcrumb.Item>CLASS01</Breadcrumb.Item>
-                <Breadcrumb.Item>Feb_2025</Breadcrumb.Item>
-                <Breadcrumb.Item>A Nguyen</Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link to="/dashboard">Dashboard</Link>
+                </Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link to="/classes-management">Classes</Link>
+                </Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link to={`/classes-management/${classId}`}>{classId}</Link>
+                </Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link to={`/classes-management/${classId}/${sessionId}`}>{sessionId}</Link>
+                </Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link to={`/classes-management/${classId}/${sessionId}/students/${studentId}`}>
+                    {student?.lastName || 'Student'}
+                  </Link>
+                </Breadcrumb.Item>
               </Breadcrumb>
             </div>
           </div>
@@ -35,26 +69,20 @@ export default function StudentProfilePage() {
 
           <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <SessionInformation
-                // @ts-ignore
-                studentId={studentId}
-              />
+              <StudentSessionInformation userId={studentId} />
             </div>
 
             <div className="lg:col-span-1">
               <div className="flex items-center justify-center overflow-hidden rounded-lg bg-white p-4 shadow-md">
                 <Avatar size={215} className="bg-gray-500 text-white">
-                  {getDefaultAvatar('A Nguyen')} {/* Tạm thời hardcode tên, sau này sẽ lấy từ API */}
+                  <div className="text-4xl">{getDefaultAvatar(student?.lastName)}</div>
                 </Avatar>
               </div>
             </div>
           </div>
 
           <div className="mt-6">
-            <SessionHistory
-              // @ts-ignore
-              studentId={studentId}
-            />
+            <StudentSessionHistory userId={studentId} />
           </div>
         </main>
       </div>

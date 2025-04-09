@@ -39,7 +39,6 @@ const SessionsList = ({ classId }) => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    console.log(sessions)
     setFilteredSessions(sessions)
   }, [sessions])
 
@@ -66,8 +65,8 @@ const SessionsList = ({ classId }) => {
   }
 
   const handleViewSession = useCallback(
-    id => {
-      navigate(`/session/${id}`, { replace: true })
+    sessionId => {
+      navigate(`/classes-management/${classId}/session/${sessionId}`)
     },
     [navigate]
   )
