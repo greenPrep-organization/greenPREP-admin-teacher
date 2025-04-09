@@ -6,7 +6,7 @@ import { CalendarOutlined } from '@ant-design/icons'
 import { useCreateSession } from '@features/session/hooks'
 import { useEffect } from 'react'
 
-const CreateSessionModal = ({ visible, onCancel, classId, testSets, onSubmit }) => {
+const CreateSessionModal = ({ visible, onCancel, classId, testSets }) => {
   const [form] = Form.useForm()
   const mutation = useCreateSession()
 
@@ -31,6 +31,10 @@ const CreateSessionModal = ({ visible, onCancel, classId, testSets, onSubmit }) 
 
       const values = await form.validateFields()
 
+      if (!values.examSet) {
+        throw new Error('Please select an exam set')
+      }
+
       const startTime = dayjs(values.startDate).format('YYYY-MM-DDTHH:mm:ss')
       const endTime = dayjs(values.endDate).format('YYYY-MM-DDTHH:mm:ss')
 
@@ -44,13 +48,7 @@ const CreateSessionModal = ({ visible, onCancel, classId, testSets, onSubmit }) 
         status: 'NOT_STARTED'
       }
 
-      console.log('Creating session with data:', sessionData)
-
-      if (onSubmit) {
-        await onSubmit(sessionData)
-      } else {
-        await mutation.mutateAsync(sessionData)
-      }
+      await mutation.mutateAsync(sessionData)
 
       notification.success({
         message: 'Session Created',
@@ -65,7 +63,6 @@ const CreateSessionModal = ({ visible, onCancel, classId, testSets, onSubmit }) 
       console.error('Failed to create session:', {
         error,
         classId,
-        formValues: form.getFieldsValue(),
         errorDetails: {
           message: error.message,
           response: error.response?.data,

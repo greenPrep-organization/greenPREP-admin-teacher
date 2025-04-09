@@ -1,140 +1,101 @@
-import { Input, Divider } from 'antd'
-import { useState, useEffect, useCallback } from 'react'
+import { Input, Button } from 'antd'
+import { useState } from 'react'
 import PropTypes from 'prop-types'
-import SaveAsDraftButton from '@features/grading/ui/save-as-draft-button'
-import { sharedScores } from '@features/grading/constants/shared-state'
-import ExportToPdfButton from '@features/grading/ui/export-to-pdf.jsx'
 
-const GradingScoringPanel = ({ activePart, questions, scores, setScores, type = 'writing', onSubmit, studentId }) => {
-  const [totalScore, setTotalScore] = useState(0)
+const GradingScoringPanel = ({ type = 'writing', onSubmit }) => {
+  const [totalScore, setTotalScore] = useState('')
+  const [error, setError] = useState('')
 
-  const getQuestionId = useCallback(
-    (question, index) => {
-      if (type === 'writing') {
-        return `${activePart}_question_${index}`
-      } else {
-        return `${activePart}-${question.ID}`
-      }
-    },
-    [activePart, type]
-  )
+  const handleScoreChange = value => {
+    let numericValue = value === '' ? '' : Number(value.replace(/[^0-9]/g, ''))
 
-  useEffect(() => {
-    if (scores && Object.keys(scores).length > 0) {
-      sharedScores[type] = { ...sharedScores[type], ...scores }
-    }
-
-    if (!scores || Object.keys(scores).length === 0) {
-      setScores(sharedScores[type])
-    }
-  }, [type, scores, setScores])
-
-  useEffect(() => {
-    if (questions && questions.length > 0) {
-      let total = 0
-      questions.forEach((_, index) => {
-        const questionId = getQuestionId(questions[index], index)
-        const score = scores[questionId] || 0
-        total += Number(score)
-      })
-      setTotalScore(total)
-    }
-  }, [activePart, scores, questions, getQuestionId])
-
-  const handleScoreChange = (questionId, value) => {
-    let numericValue = value === '' || value === null || value === undefined ? '' : Number(value)
-
-    if (numericValue !== '' && typeof numericValue === 'number') {
+    // Enforce 0-50 range
+    if (numericValue !== '') {
+      // @ts-ignore
       if (numericValue < 0) {
         numericValue = 0
-      } else if (numericValue > 100) {
-        numericValue = 100
+        // @ts-ignore
+      } else if (numericValue > 50) {
+        numericValue = 50
       }
     }
 
-    const newScores = {
-      ...scores,
-      [questionId]: numericValue
-    }
-
-    setScores(newScores)
-    sharedScores[type] = newScores
+    setTotalScore(numericValue.toString()) // Convert back to string for input
+    setError('')
   }
+
+  const handleSubmit = () => {
+    if (totalScore === '') {
+      setError('Please enter a score before submitting.')
+    } else {
+      onSubmit(Number(totalScore)) // Pass numeric value to onSubmit
+      setError('')
+    }
+  }
+
   return (
-    <div className="w-72">
-      <div className="sticky top-6 space-y-4 rounded-md border border-gray-800 p-6 shadow-2xl">
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <h4 className="mb-4 font-bold text-[#003087]">
-            {type === 'writing' ? `PART ${activePart.slice(-1)} Scoring` : `${activePart} Scoring`}
-          </h4>
-          <div className="space-y-4">
-            {questions.map((question, index) => {
-              const questionId = getQuestionId(question, index)
+    <div className="flex items-center justify-between">
+      <div>
+        <h2 className="mb-2 text-2xl font-semibold text-gray-900">
+          {type === 'writing' ? 'Writing Assessment Part' : 'Speaking Assessment Part'}
+        </h2>
+        <span className="text-sm text-gray-400">
+          {type === 'writing'
+            ? 'Detailed breakdown in the writing assessment'
+            : 'Detailed breakdown in the speaking assessment'}
+        </span>
+      </div>
 
-              return (
-                <div key={type === 'writing' ? index : question.ID} className="flex items-center justify-between gap-3">
-                  <span className="text-sm text-[#003087]">Question {index + 1}:</span>
-                  <Input
-                    type="number"
-                    className="h-9 w-24 rounded-lg bg-white text-center focus:border-[#003087]"
-                    placeholder="Score"
-                    min={0}
-                    max={100}
-                    value={scores[questionId] === 0 ? 0 : scores[questionId] || ''}
-                    onChange={e => {
-                      const value = e.target.value === '' ? '' : e.target.value.replace(/[^0-9]/g, '')
-                      handleScoreChange(questionId, value)
-                    }}
-                    onKeyDown={e => {
-                      if (
-                        !/[0-9]/.test(e.key) &&
-                        e.key !== 'Backspace' &&
-                        e.key !== 'Delete' &&
-                        e.key !== 'ArrowLeft' &&
-                        e.key !== 'ArrowRight' &&
-                        e.key !== 'Tab'
-                      ) {
-                        e.preventDefault()
-                      }
-                    }}
-                  />
-                </div>
-              )
-            })}
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <span className="text-base font-medium">Total Score:</span>
+            <Input
+              type="number"
+              className="h-11 w-28 rounded-lg border-gray-200 text-center text-base focus:border-[#003087]"
+              placeholder="Score"
+              min={0}
+              max={50}
+              value={totalScore}
+              onChange={e => handleScoreChange(e.target.value)}
+              onKeyDown={e => {
+                if (
+                  !/[0-9]/.test(e.key) &&
+                  e.key !== 'Backspace' &&
+                  e.key !== 'Delete' &&
+                  e.key !== 'ArrowLeft' &&
+                  e.key !== 'ArrowRight' &&
+                  e.key !== 'Tab'
+                ) {
+                  e.preventDefault()
+                }
+              }}
+            />
           </div>
-
-          <Divider className="my-4 border-black" />
-
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-bold text-[#003087]">Total:</span>
-            <Input type="number" className="h-9 w-24 rounded-lg bg-gray-50 text-center" value={totalScore} disabled />
-          </div>
+          {error && <span className="text-sm text-red-500">{error}</span>}
         </div>
 
-        <div className="mt-4 space-y-3">
-          <button
-            type="button"
-            onClick={onSubmit}
-            className="h-10 w-full rounded-lg bg-[#003087] text-white hover:bg-[#002366]"
-          >
-            Submit
-          </button>
-          <SaveAsDraftButton />
-          <ExportToPdfButton studentId={studentId} activePart={activePart} />
-        </div>
+        <Button
+          onClick={() => onSubmit(Number(totalScore))}
+          className="h-11 rounded-lg border border-gray-200 px-6 text-base font-medium hover:bg-gray-50"
+        >
+          Save As Draft
+        </Button>
+
+        <Button
+          onClick={handleSubmit}
+          className="h-11 rounded-lg bg-[#003087] px-6 text-base font-medium text-white hover:bg-[#002366]"
+        >
+          Submit
+        </Button>
       </div>
     </div>
   )
 }
 
 GradingScoringPanel.propTypes = {
-  activePart: PropTypes.string.isRequired,
-  questions: PropTypes.array.isRequired,
-  scores: PropTypes.object.isRequired,
-  setScores: PropTypes.func.isRequired,
   type: PropTypes.oneOf(['writing', 'speaking']),
-  onSubmit: PropTypes.func.isRequired,
-  studentId: PropTypes.string.isRequired
+  onSubmit: PropTypes.func.isRequired
 }
 
 export default GradingScoringPanel

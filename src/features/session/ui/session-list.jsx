@@ -40,7 +40,6 @@ const SessionsList = ({ classId }) => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    console.log(sessions)
     setFilteredSessions(sessions)
   }, [sessions])
 
@@ -67,8 +66,8 @@ const SessionsList = ({ classId }) => {
   }
 
   const handleViewSession = useCallback(
-    id => {
-      navigate(`/session/${id}`, { replace: true })
+    sessionId => {
+      navigate(`/classes-management/${classId}/session/${sessionId}`)
     },
     [navigate]
   )
@@ -106,7 +105,7 @@ const SessionsList = ({ classId }) => {
           startTime: sessionData.startTime,
           endTime: sessionData.endTime,
           status: 'NOT_STARTED',
-          ClassID: classId
+          ClassID: sessionData.ClassID
         }
 
         console.log('Creating session with data:', formattedSessionData)

@@ -5,6 +5,7 @@ import DashboardPage from '@pages/DashboardPage'
 import GradingPage from '@pages/GradingPage'
 import SessionDetailPage from '@pages/SessionDetailPage'
 import StudentProfilePage from '@pages/StudentProfilePage'
+import TeacherAdminList from '../../features/admin/ui/teacher-admin-list'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 
 const PrivateRoute = [
@@ -21,20 +22,24 @@ const PrivateRoute = [
         element: <ClassListPage />
       },
       {
-        path: 'classes-management/:id',
+        path: '/classes-management/:id',
         element: <ClassDetailsPage />
       },
       {
-        path: 'student/:userId',
+        path: '/classes-management/:Id/:sessionId/students/:studentId',
         element: <StudentProfilePage />
       },
       {
-        path: 'session/:sessionId',
+        path: '/classes-management/:id/session/:sessionId',
         element: <SessionDetailPage />
       },
       {
         path: 'profile/:userId',
         element: <Profile />
+      },
+      {
+        path: '/account-management',
+        element: <TeacherAdminList />
       },
       {
         path: 'grading',

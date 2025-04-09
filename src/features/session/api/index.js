@@ -41,56 +41,34 @@ export function getSessionsByClassId(classId) {
   return axiosInstance.get('/sessions', { params: { classId } })
 }
 
-export const getUserInfo = async userId => {
-  try {
-    const response = await axiosInstance.get(`/users/${userId}`)
-    return response.data
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch user information')
-  }
-}
-
-export const getUserSessionHistory = async userId => {
-  try {
-    const response = await axiosInstance.get(`/session-participants/user/${userId}`)
-    return response.data
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch session history')
-  }
-}
-
 export const createSession = async sessionData => {
   try {
+    console.log(' Creating session with data:', sessionData)
+
     if (!sessionData.ClassID) {
       throw new Error('ClassID is required')
     }
-    if (!sessionData.startTime || !sessionData.endTime) {
-      throw new Error('Start time and end time are required')
+
+    if (!sessionData.examSet) {
+      throw new Error('Exam set is required')
     }
 
-    const payload = {
-      sessionName: sessionData.sessionName,
-      sessionKey: sessionData.sessionKey,
-      examSet: sessionData.examSet,
-      startTime: sessionData.startTime,
-      endTime: sessionData.endTime,
-      status: sessionData.status || 'NOT_STARTED',
-      ClassId: sessionData.ClassID
-    }
-
-    const response = await axiosInstance.post('/sessions/', payload)
-    return response.data
-  } catch (error) {
-    console.error('❌ API Error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message,
-      originalPayload: sessionData
+    const response = await axiosInstance.post('/sessions', {
+      ...sessionData,
+      ClassID: sessionData.ClassID
     })
 
-    if (error.response?.data?.message) {
-      throw new Error(error.response.data.message)
+    if (response.status !== 200) {
+      throw new Error(`Failed to create session: ${response.statusText}`)
     }
+
+    return response.data
+  } catch (error) {
+    console.error('Error creating session:', {
+      error: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    })
     throw error
   }
 }
