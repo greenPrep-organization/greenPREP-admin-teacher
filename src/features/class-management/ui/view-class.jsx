@@ -1,9 +1,10 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Card, Col, Row, Typography, Spin, Alert, Breadcrumb, Button } from 'antd'
+import { Card, Col, Row, Typography, Spin, Alert, Button } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import { fetchClassDetails } from '@features/class-management/api'
 import SessionsList from '@features/session/ui/session-list'
-import { HomeOutlined, LeftOutlined } from '@ant-design/icons'
+import { LeftOutlined } from '@ant-design/icons'
+import AppBreadcrumb from '@shared/ui/Breadcrumb'
 
 const { Title } = Typography
 
@@ -12,6 +13,7 @@ const ClassDetails = () => {
   const { id } = useParams()
   const location = useLocation()
   const { classInfo: classInfoFromState } = location.state || {}
+
   const {
     data: classInfo,
     isLoading,
@@ -31,6 +33,7 @@ const ClassDetails = () => {
   })
 
   const classDetails = classInfoFromState || classInfo
+  const className = classDetails?.className || 'N/A'
 
   if (!id) {
     return <Alert message="Class ID is required" type="error" showIcon className="text-center" />
@@ -46,13 +49,8 @@ const ClassDetails = () => {
 
   return (
     <div>
-      <Breadcrumb className="mb-4" style={{ cursor: 'pointer' }}>
-        <Breadcrumb.Item onClick={() => navigate('/dashboard')}>
-          <HomeOutlined /> <span>Dashboard</span>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item onClick={() => navigate('/classes-management')}>Classes</Breadcrumb.Item>
-        <Breadcrumb.Item>{classDetails?.className ?? 'N/A'}</Breadcrumb.Item>
-      </Breadcrumb>
+      <AppBreadcrumb items={[{ label: 'Classes', path: '/classes-management' }, { label: className }]} />
+
       <Button
         onClick={() => navigate('/classes-management')}
         type="primary"
@@ -60,24 +58,34 @@ const ClassDetails = () => {
       >
         <LeftOutlined /> Back
       </Button>
-      <Title level={3} style={{ textAlign: 'left', marginBottom: '16px' }}>
-        Class Details
+
+      <Title level={3} style={{ textAlign: 'left', marginBottom: '24px' }}>
+        Class details
       </Title>
 
-      <Card className="shadow-md" style={{ marginTop: '16px' }}>
-        <div style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: '8px', fontSize: '18px', fontWeight: '600' }}>
+      <Card className="mb-2 mt-4 shadow-sm">
+        <Title
+          level={5}
+          style={{
+            fontSize: '16px',
+            fontWeight: '500',
+            marginBottom: '8px',
+            paddingBottom: '8px',
+            borderBottom: '1px solid #f0f0f0'
+          }}
+        >
           Class Information
-        </div>
+        </Title>
 
         <Row style={{ marginTop: '16px' }} justify="space-between">
           <Col>
-            <div style={{ fontSize: '16px' }}>
-              Class Name:{' '}
-              <span style={{ fontWeight: '600', marginLeft: '50px' }}>{classDetails?.className ?? 'N/A'}</span>
+            <div style={{ fontSize: '14px' }}>
+              Class Name: <span style={{ fontWeight: '500', marginLeft: '50px' }}>{className}</span>
             </div>
           </Col>
         </Row>
       </Card>
+
       <SessionsList classId={id} />
     </div>
   )

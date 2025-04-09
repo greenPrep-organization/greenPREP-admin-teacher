@@ -48,7 +48,7 @@ const PublishPopup = ({ sessionId, disabled, onPublishSuccess }) => {
 
   return (
     <>
-      <Button type="primary" disabled={disabled} onClick={showModal}>
+      <Button type="primary" disabled={disabled} onClick={showModal} className="bg-[#013088] hover:bg-[#013088]/90">
         Ready to Publish
       </Button>
       <Modal title="Confirm Publication" visible={isModalVisible} onOk={handleConfirm} onCancel={handleCancel}>

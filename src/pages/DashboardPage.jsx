@@ -52,7 +52,6 @@ const DashboardPage = () => {
     { level: 'B2', percentage: 50 },
     { level: 'C', percentage: 40 }
   ]
-
   const statsConfig = [
     {
       title: 'Total Student',
@@ -91,7 +90,6 @@ const DashboardPage = () => {
       isIncrease: true
     }
   ]
-
   return (
     <div className="p-4">
       <div className="grid grid-cols-1 gap-6 pb-5 md:grid-cols-2 lg:grid-cols-4">
@@ -114,7 +112,6 @@ const DashboardPage = () => {
           </Card>
         ))}
       </div>
-
       <div className="mb-8 flex flex-col gap-6 lg:flex-row">
         <div className="w-full space-y-6 lg:w-2/3">
           <Card title="Student Performance by Level" className="min-h-[300px] shadow-md">
@@ -223,5 +220,4 @@ const DashboardPage = () => {
     </div>
   )
 }
-
 export default DashboardPage
