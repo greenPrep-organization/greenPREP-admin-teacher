@@ -68,3 +68,13 @@ export const fetchTeachersList = async payload => {
     throw error
   }
 }
+
+export const deleteTeacher = async userId => {
+  try {
+    const { data } = await axiosInstance.delete(`/users/delete/${userId}`)
+    return data
+  } catch (error) {
+    message.error('Error deleting teacher:', error)
+    throw error
+  }
+}
