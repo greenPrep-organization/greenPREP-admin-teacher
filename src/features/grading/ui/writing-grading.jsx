@@ -55,10 +55,10 @@ function WritingGrade({ studentId }) {
 
   const processApiData = () => {
     const emptyParts = {
-      part1: { questions: [], answers: [], instructions: '' },
-      part2: { questions: [], answers: [], instructions: '' },
-      part3: { questions: [], answers: [], instructions: '' },
-      part4: { questions: [], answers: [], instructions: '' }
+      part1: { questions: [], answers: [], instructions: '', subInstructions: '' },
+      part2: { questions: [], answers: [], instructions: '', subInstructions: '' },
+      part3: { questions: [], answers: [], instructions: '', subInstructions: '' },
+      part4: { questions: [], answers: [], instructions: '', subInstructions: '' }
     }
 
     if (!apiData?.data || apiData.data.length === 0) {
@@ -82,6 +82,10 @@ function WritingGrade({ studentId }) {
         parts[partKey].instructions = item.Question.Part.Content
       }
 
+      if (!parts[partKey].subInstructions && item.Question?.Part?.SubContent) {
+        parts[partKey].subInstructions = item.Question.Part.SubContent
+      }
+
       parts[partKey].questions.push(item.Question?.Content || '')
       parts[partKey].answers.push(item.AnswerText || '')
     })
@@ -90,10 +94,11 @@ function WritingGrade({ studentId }) {
   }
 
   const processedData = processApiData()
-  const currentPart = processedData[activePart] || { questions: [], answers: [], instructions: '' }
+  const currentPart = processedData[activePart] || { questions: [], answers: [], instructions: '', subInstructions: '' }
   const questions = currentPart.questions || []
   const answers = currentPart.answers || []
   const instructions = currentPart.instructions || ''
+  const subInstructions = currentPart.subInstructions || ''
 
   const renderAnswer = answer => {
     if (!answer || answer.trim() === '') {
@@ -137,7 +142,28 @@ function WritingGrade({ studentId }) {
             <div>
               <h3 className="mb-2 text-lg font-medium text-[#003087]">{`PART ${activePart.slice(-1)}`}</h3>
               <div className="rounded-lg border border-solid border-[#003087] p-4">
-                <p className="m-0 whitespace-pre-wrap text-base">{instructions}</p>
+                <p className="m-0 whitespace-pre-wrap text-base">
+                  {instructions.match(/^Part \d+:/) ? (
+                    <>
+                      <span className="font-bold">{instructions.match(/^Part \d+:/)[0]}</span>
+                      {instructions.replace(/^Part \d+:/, '')}
+                    </>
+                  ) : (
+                    instructions
+                  )}
+                </p>
+                {subInstructions && (
+                  <p className="mt-2 whitespace-pre-wrap text-base italic text-gray-600">
+                    {subInstructions.match(/^Part \d+:/) ? (
+                      <>
+                        <span className="font-bold not-italic">{subInstructions.match(/^Part \d+:/)[0]}</span>
+                        <span className="italic">{subInstructions.replace(/^Part \d+:/, '')}</span>
+                      </>
+                    ) : (
+                      subInstructions
+                    )}
+                  </p>
+                )}
               </div>
             </div>
 
