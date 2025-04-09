@@ -1,21 +1,19 @@
-import { useState, useEffect } from 'react'
+import { fetchStudentProfile } from '@features/student-profile/api'
 import { Spin } from 'antd'
-import PropTypes from 'prop-types'
-import { getUserInfo } from '@features/session/api'
+import { useEffect, useState } from 'react'
 
-const SessionInformation = ({ userId }) => {
+const StudentSessionInformation = ({ userId }) => {
   const [loading, setLoading] = useState(false)
   const [userInfo, setUserInfo] = useState(null)
   const [error, setError] = useState(null)
-
   useEffect(() => {
     const fetchInfo = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        const response = await getUserInfo(userId)
-        setUserInfo(response.data)
+        const response = await fetchStudentProfile(userId)
+        setUserInfo(response)
       } catch (err) {
         setError('Failed to fetch student information')
         console.error('Error fetching info:', err)
@@ -93,8 +91,4 @@ const SessionInformation = ({ userId }) => {
   )
 }
 
-SessionInformation.propTypes = {
-  userId: PropTypes.string.isRequired
-}
-
-export default SessionInformation
+export default StudentSessionInformation

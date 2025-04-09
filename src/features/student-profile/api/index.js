@@ -11,3 +11,14 @@ export const fetchStudentProfile = async userId => {
     throw error
   }
 }
+
+export const fetchStudentSessionHistory = async userId => {
+  try {
+    const { data } = await axiosInstance.get(`/session-participants/user/${userId}`)
+    return data
+  } catch (error) {
+    message.error('Error fetching session history')
+    console.error('Error fetching session history:', error)
+    throw error
+  }
+}

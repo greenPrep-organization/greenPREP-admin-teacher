@@ -1,36 +1,28 @@
-import { Avatar, Breadcrumb, message, Spin } from 'antd'
+import { useStudentProfile } from '@features/student-profile/hooks'
+import StudentSessionHistory from '@features/student-profile/ui/student-session-history'
+import StudentSessionInformation from '@features/student-profile/ui/student-session-information'
+import { getDefaultAvatar } from '@shared/lib/utils/avatarUtils'
+import { Avatar, Breadcrumb, Spin, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-
-import SessionHistory from '@features/session/ui/session-history'
-import SessionInformation from '@features/session/ui/session-information'
-import { fetchStudentProfile } from '@features/student-profile/api'
-import { getDefaultAvatar } from '@shared/lib/utils/avatarUtils'
 
 export default function StudentProfilePage() {
   const { studentId } = useParams()
   const navigate = useNavigate()
 
   const [student, setStudent] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { data: userData, isLoading, isError } = useStudentProfile(studentId)
 
   useEffect(() => {
-    if (studentId) {
-      setLoading(true)
-      fetchStudentProfile(studentId)
-        .then(data => {
-          setStudent(data)
-        })
-        .catch(() => {
-          message.error('Failed to load student profile')
-        })
-        .finally(() => {
-          setLoading(false)
-        })
+    if (userData) {
+      setStudent(userData)
     }
-  }, [studentId])
+    if (isError) {
+      message.error('Không thể tải thông tin học sinh.')
+    }
+  }, [userData, isError])
 
-  if (loading) {
+  if (isLoading || !student) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Spin size="large" />
@@ -49,7 +41,7 @@ export default function StudentProfilePage() {
                 <Breadcrumb.Item>Classes</Breadcrumb.Item>
                 <Breadcrumb.Item>CLASS01</Breadcrumb.Item>
                 <Breadcrumb.Item>Feb_2025</Breadcrumb.Item>
-                <Breadcrumb.Item>{student?.name || 'Student'}</Breadcrumb.Item>
+                <Breadcrumb.Item>{student?.lastName || 'Student'}</Breadcrumb.Item>
               </Breadcrumb>
             </div>
           </div>
@@ -65,24 +57,26 @@ export default function StudentProfilePage() {
 
           <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <SessionInformation userId={studentId} />
+              <StudentSessionInformation userId={studentId} />
             </div>
 
             <div className="lg:col-span-1">
               <div className="flex items-center justify-center overflow-hidden rounded-lg bg-white p-4 shadow-md">
-                <Avatar size={215} src={student?.avatarUrl} className="bg-gray-500 text-white">
-                  {getDefaultAvatar(student?.name)}
+                <Avatar size={215} className="bg-gray-500 text-white">
+                  <div className="text-4xl">{getDefaultAvatar(student?.lastName)}</div>
                 </Avatar>
               </div>
               <div className="mt-4 text-center">
-                <p className="text-lg font-semibold">{student?.name}</p>
+                <p className="text-lg font-semibold">
+                  {student?.firstName} {student?.lastName}
+                </p>
                 <p className="text-gray-600">{student?.email}</p>
               </div>
             </div>
           </div>
 
           <div className="mt-6">
-            <SessionHistory userId={studentId} />
+            <StudentSessionHistory userId={studentId} />
           </div>
         </main>
       </div>

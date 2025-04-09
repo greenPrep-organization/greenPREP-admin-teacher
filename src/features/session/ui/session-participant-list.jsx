@@ -3,7 +3,7 @@ import { SearchOutlined } from '@ant-design/icons'
 import { getSessionParticipants, updateParticipantLevel } from '@features/session/api'
 import { Input, Select, Table, Tabs, message } from 'antd'
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import PendingList from '../../student/ui/student-pending-list'
 import PublishPopup from './publish-popup'
 
@@ -19,6 +19,7 @@ const SessionParticipantList = () => {
   const [readyToPublish, setReadyToPublish] = useState(false)
   const { sessionId } = useParams()
   const [originalData, setOriginalData] = useState([])
+  const navigate = useNavigate()
 
   const levelOptions = [
     { value: 'A1', label: 'A1' },
@@ -62,7 +63,17 @@ const SessionParticipantList = () => {
       dataIndex: ['User', 'fullName'],
       key: 'studentName',
       width: '20%',
-      render: text => text || 'N/A'
+      render: (text, record) => (
+        <span
+          className="cursor-pointer text-blue-600 hover:underline"
+          onClick={() => {
+            console.log('Record:', record)
+            navigate(`/student/${record.User?.ID}`)
+          }}
+        >
+          {text || 'N/A'}
+        </span>
+      )
     },
     {
       title: 'Grammar & Vocab',

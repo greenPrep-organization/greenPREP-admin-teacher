@@ -40,21 +40,3 @@ export const publishSessionResults = async sessionId => {
 export function getSessionsByClassId(classId) {
   return axiosInstance.get('/sessions', { params: { classId } })
 }
-
-export const getUserInfo = async userId => {
-  try {
-    const response = await axiosInstance.get(`/users/${userId}`)
-    return response.data
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch user information')
-  }
-}
-
-export const getUserSessionHistory = async userId => {
-  try {
-    const response = await axiosInstance.get(`/session-participants/user/${userId}`)
-    return response.data
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch session history')
-  }
-}
