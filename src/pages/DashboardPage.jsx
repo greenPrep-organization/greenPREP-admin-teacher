@@ -4,12 +4,12 @@ import axiosInstance from '@shared/config/axios'
 import { useQuery } from '@tanstack/react-query'
 import { Card, message } from 'antd'
 import Chart from 'react-apexcharts'
-// API call
+
 const fetchSessions = async () => {
   const response = await axiosInstance.get(`/sessions/all`)
   return response.data
 }
-export const fetchUser = async (params = {}) => {
+const fetchUser = async (params = {}) => {
   try {
     const { page = 1, limit = 10, search = '' } = params
     const { data } = await axiosInstance.post('/users/teachers', {
@@ -74,7 +74,7 @@ const DashboardPage = () => {
     error: userError
   } = useQuery({
     queryKey: ['teachers'],
-    queryFn: fetchUser,
+    queryFn: () => fetchUser({ page: 1, limit: 100 }),
     retry: 1
   })
 
@@ -84,8 +84,9 @@ const DashboardPage = () => {
 
   const sessionsArray = Array.isArray(sessionData?.data) ? sessionData.data : []
   const usersArray = Array.isArray(userData?.data) ? userData.data : []
-
+  // eslint-disable-next-line no-unused-vars
   const totalUsers = usersArray.length
+
   const notStartedCount = sessionsArray.filter(session => session.status?.toUpperCase() === 'NOT_STARTED').length
   const startedCount = sessionsArray.filter(session => session.status?.toUpperCase() === 'STARTED').length
 
@@ -100,7 +101,7 @@ const DashboardPage = () => {
   const statsConfig = [
     {
       title: 'Total Student',
-      value: totalUsers,
+      value: '200',
       subtitle: 'students',
       icon: <UserOutlined className="text-2xl text-blue-500" />,
       bgColor: 'bg-blue-100',
@@ -118,7 +119,7 @@ const DashboardPage = () => {
     },
     {
       title: 'Total Session Completed',
-      value: '1.72m',
+      value: '50',
       subtitle: 'Session Completed',
       icon: <CheckOutlined className="text-2xl text-yellow-500" />,
       bgColor: 'bg-yellow-100',
