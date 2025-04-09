@@ -4,13 +4,12 @@ import axiosInstance from '@shared/config/axios'
 import { useQuery } from '@tanstack/react-query'
 import { Card, Progress, Tooltip } from 'antd'
 import { useState } from 'react'
-
 const fetchSessions = async () => {
+  // @ts-ignore
   const API_BASE = import.meta.env.VITE_BASE_URL
   const response = await axiosInstance.get(`${API_BASE}/sessions/all`)
   return response.data
 }
-
 // Mock data cho số học sinh mỗi level
 const studentCountData = {
   A1: { passed: 30, total: 50 },
@@ -19,21 +18,16 @@ const studentCountData = {
   B2: { passed: 25, total: 50 },
   C: { passed: 20, total: 50 }
 }
-
 const DashboardPage = () => {
   const { data, error, isLoading } = useQuery({
     queryKey: ['sessions'],
     queryFn: fetchSessions
   })
-
   const [hoveredLevel, setHoveredLevel] = useState(null)
-
   if (isLoading) return <p>Loading sessions...</p>
   if (error) return <p>Error fetching sessions: {error.message}</p>
-
   const sessionsArray = Array.isArray(data?.data) ? data.data : []
   const notStartedCount = sessionsArray.filter(session => session.status?.toUpperCase() === 'NOT_STARTED').length
-
   const performanceData = [
     { level: 'A1', percentage: 60 },
     { level: 'A2', percentage: 70 },
@@ -41,14 +35,12 @@ const DashboardPage = () => {
     { level: 'B2', percentage: 50 },
     { level: 'C', percentage: 40 }
   ]
-
   const statsConfig = [
     { title: 'Total Student', value: '50', subtitle: 'Student' },
     { title: 'Total Session Started', value: '50', subtitle: 'Session Started' },
     { title: 'Total Session Completed', value: '120', subtitle: 'Session Completed' },
     { title: 'Total Ungrade', value: notStartedCount, subtitle: 'Test not graded' }
   ]
-
   return (
     <div className="p-4">
       {/* Stats Cards */}
@@ -65,7 +57,6 @@ const DashboardPage = () => {
           </Card>
         ))}
       </div>
-
       {/* Main Content Area */}
       <div className="mb-8 flex flex-col gap-6 lg:flex-row">
         {/* Student Performance - Chiếm 2/3 width */}
@@ -105,10 +96,8 @@ const DashboardPage = () => {
           <CalendarCard />
         </div>
       </div>
-
       <PieChart />
     </div>
   )
 }
-
 export default DashboardPage
