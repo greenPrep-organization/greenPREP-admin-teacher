@@ -22,15 +22,15 @@ const PrivateRoute = [
         element: <ClassListPage />
       },
       {
-        path: 'classes-management/:id',
+        path: '/classes-management/:id',
         element: <ClassDetailsPage />
       },
       {
-        path: '/student/:studentId',
+        path: '/classes-management/:Id/:sessionId/students/:studentId',
         element: <StudentProfilePage />
       },
       {
-        path: 'session/:sessionId',
+        path: '/classes-management/:id/session/:sessionId',
         element: <SessionDetailPage />
       },
       {

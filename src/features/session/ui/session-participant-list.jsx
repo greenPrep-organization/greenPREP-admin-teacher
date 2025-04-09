@@ -9,6 +9,7 @@ import PublishPopup from './publish-popup'
 
 const SessionParticipantList = () => {
   const [loading, setLoading] = useState(false)
+  const { id } = useParams()
   const [data, setData] = useState([])
   const [pagination, setPagination] = useState({
     current: 1,
@@ -67,7 +68,7 @@ const SessionParticipantList = () => {
         <span
           className="cursor-pointer text-blue-600 hover:underline"
           onClick={() => {
-            navigate(`/student/${record.User?.ID}`)
+            navigate(`/classes-management/${id}/${sessionId}/students/${record.User?.ID}`)
           }}
         >
           {text || 'N/A'}

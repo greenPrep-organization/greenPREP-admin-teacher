@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 export default function StudentProfilePage() {
-  const { studentId } = useParams()
+  const { classId, sessionId, studentId } = useParams()
   const navigate = useNavigate()
 
   const [student, setStudent] = useState(null)
@@ -18,7 +18,7 @@ export default function StudentProfilePage() {
       setStudent(userData)
     }
     if (isError) {
-      message.error('Không thể tải thông tin học sinh.')
+      message.error('Error when fetch data student')
     }
   }, [userData, isError])
 
@@ -41,17 +41,19 @@ export default function StudentProfilePage() {
                   <Link to="/dashboard">Dashboard</Link>
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>
-                  <Link to="/classes">Classes</Link>
-                </Breadcrumb.Item>
-                {/* <Breadcrumb.Item>
-                  <Link to={`/classes/${classId}`}>{classId}</Link>
+                  <Link to="/classes-management">Classes</Link>
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>
-                  <Link to={`/classes/${classId}/${sessionId}`}>{sessionId}</Link>
+                  <Link to={`/classes-management/${classId}`}>{classId}</Link>
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>
-                  <Link to={`/classes/${classId}/${sessionId}/students/${studentId}`}>{lastName}</Link>
-                </Breadcrumb.Item> */}
+                  <Link to={`/classes-management/${classId}/${sessionId}`}>{sessionId}</Link>
+                </Breadcrumb.Item>
+                <Breadcrumb.Item>
+                  <Link to={`/classes-management/${classId}/${sessionId}/students/${studentId}`}>
+                    {student?.lastName || 'Student'}
+                  </Link>
+                </Breadcrumb.Item>
               </Breadcrumb>
             </div>
           </div>
