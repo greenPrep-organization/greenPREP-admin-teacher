@@ -5,6 +5,7 @@ import DashboardPage from '@pages/DashboardPage'
 import GradingPage from '@pages/GradingPage'
 import SessionDetailPage from '@pages/SessionDetailPage'
 import StudentProfilePage from '@pages/StudentProfilePage'
+import TeacherAdminList from '../../features/admin/ui/teacher-admin-list'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 
 const PrivateRoute = [
@@ -35,6 +36,10 @@ const PrivateRoute = [
       {
         path: 'profile/:userId',
         element: <Profile />
+      },
+      {
+        path: '/account-management',
+        element: <TeacherAdminList />
       },
       {
         path: 'grading',
