@@ -8,6 +8,7 @@ import { HomeOutlined, LeftOutlined } from '@ant-design/icons'
 const { Title } = Typography
 
 const ClassDetails = () => {
+  const className = localStorage.getItem('currentClassName')
   const navigate = useNavigate()
   const { id } = useParams()
   const location = useLocation()
@@ -43,10 +44,12 @@ const ClassDetails = () => {
           <HomeOutlined /> <span>Dashboard</span>
         </Breadcrumb.Item>
         <Breadcrumb.Item onClick={() => navigate('/classes-management')}>Classes</Breadcrumb.Item>
-        <Breadcrumb.Item>{classDetails?.className ?? 'N/A'}</Breadcrumb.Item>
+        <Breadcrumb.Item>{className || 'Class'}</Breadcrumb.Item>
       </Breadcrumb>
       <Button
-        onClick={() => navigate('/classes-management')}
+        onClick={() => {
+          navigate('/classes-management')
+        }}
         type="primary"
         style={{ backgroundColor: '#013088', border: 'none', marginBottom: '16px' }}
       >
@@ -90,7 +93,7 @@ const ClassDetails = () => {
                   marginLeft: '50px'
                 }}
               >
-                {classDetails?.className ?? 'N/A'}
+                {className || 'Class'}
               </span>
             </div>
           </Col>

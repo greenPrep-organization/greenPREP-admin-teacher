@@ -66,7 +66,7 @@ const DashboardPage = () => {
 
       <div className="mb-8 flex flex-col gap-6 lg:flex-row">
         <div className="w-full lg:w-2/3">
-          <Card title="Student Performance" className="h-full shadow-sm">
+          <Card title="Student Performance" className="h-full shadow-sm hover:shadow-lg">
             <div className="flex flex-col space-y-4">
               {performanceData.map(item => (
                 <div

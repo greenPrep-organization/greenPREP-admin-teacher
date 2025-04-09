@@ -8,7 +8,7 @@ export const PieChart = () => {
   ]
 
   return (
-    <Card title="Statistics" className="w-full shadow-sm">
+    <Card title="Statistics" className="w-full shadow-sm hover:shadow-lg">
       <div className="flex flex-col items-center md:flex-row">
         <div className="relative mb-4 h-48 w-48 md:mb-0 md:mr-6">
           <svg viewBox="0 0 100 100" className="h-full w-full">

@@ -69,7 +69,11 @@ const ClassList = () => {
     setEditingClass(cls)
     setIsEditModalVisible(true)
   }
-  const handleView = cls => navigate(`/classes-management/${cls.ID}`, { state: { classInfo: cls } })
+  const handleView = cls => {
+    localStorage.setItem('currentClassId', cls.ID)
+    localStorage.setItem('currentClassName', cls.className)
+    navigate(`/classes-management/${cls.ID}`, { state: { classInfo: cls } })
+  }
   const showDeleteModal = clsID => {
     setClassToDelete(clsID)
     setIsDeleteModalVisible(true)

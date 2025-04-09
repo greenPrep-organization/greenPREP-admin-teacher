@@ -11,7 +11,7 @@ const CalendarCard = () => {
   }
 
   return (
-    <Card title="Calendar" className="mx-auto w-full max-w-2xl rounded-lg shadow-sm">
+    <Card title="Calendar" className="mx-auto w-full max-w-2xl rounded-lg shadow-sm hover:shadow-lg">
       <Calendar fullscreen={false} value={selectedDate} onSelect={handleDateSelect} />
     </Card>
   )

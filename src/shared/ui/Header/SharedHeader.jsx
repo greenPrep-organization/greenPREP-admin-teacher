@@ -20,22 +20,22 @@ const SharedHeader = ({ collapsed, setCollapsed, onLogoutClick }) => {
   )
 
   return (
-    <Header className="flex h-[80px] items-center justify-between bg-blue-900 p-4">
+    <Header className="bg-primary-color flex h-[80px] items-center justify-between p-4">
       <div>
         <Button
           type="text"
           icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           onClick={() => setCollapsed(!collapsed)}
-          className="text-white transition hover:text-gray-300"
+          className="text-white transition hover:text-white/80"
         />
       </div>
       <div className="flex items-center">
         <Dropdown overlay={menu} trigger={['click']} overlayClassName="border-none shadow-none">
           <a
-            className="flex h-12 w-auto min-w-[150px] max-w-[220px] cursor-pointer items-center gap-3 rounded-md bg-blue-900 px-3 text-white transition hover:bg-blue-900"
+            className="bg-primary-color hover:bg-primary-color/80 flex h-12 w-auto min-w-[150px] max-w-[220px] cursor-pointer items-center gap-3 rounded-md px-3 text-white transition"
             onClick={e => e.preventDefault()}
           >
-            <Avatar className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-blue-900 text-lg font-semibold text-white">
+            <Avatar className="bg-primary-color flex h-10 w-10 items-center justify-center rounded-full border-2 border-white text-lg font-semibold text-white">
               {user?.lastName?.charAt(0)}
             </Avatar>
             <span className="flex items-center space-x-1 text-base">
