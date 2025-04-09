@@ -45,7 +45,6 @@ export const updateTeacherProfile = async ({ userId, userData }) => {
   }
 }
 export const resetPassword = async payload => {
-  console.log('Reset password payload:', payload)
   try {
     const { data } = await axiosInstance.post('/users/forgot-password', payload)
     return data
@@ -60,6 +59,16 @@ export const fetchTeachersList = async payload => {
     return data
   } catch (error) {
     console.error('Error fetching teachers list:', error)
+    throw error
+  }
+}
+
+export const deleteTeacher = async userId => {
+  try {
+    const { data } = await axiosInstance.delete(`/users/delete/${userId}`)
+    return data
+  } catch (error) {
+    message.error('Error deleting teacher:', error)
     throw error
   }
 }

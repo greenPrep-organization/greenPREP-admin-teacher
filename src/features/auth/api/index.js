@@ -33,6 +33,17 @@ const resetPasswordAPI = async ({ token, newPassword }) => {
   )
   return response.data
 }
+
+const logoutAPI = async userId => {
+  const token = localStorage.getItem(ACCESS_TOKEN)
+
+  if (!userId || !token) {
+    throw new Error('User ID or token not found')
+  }
+
+  const response = await axiosInstance.post(`/users/logout/${userId}`)
+  return response.data
+}
 // Custom hooks sử dụng React Query
 export const useLogin = () => {
   return useMutation({
@@ -56,5 +67,11 @@ export const useForgotPassword = () => {
 export const useResetPassword = () => {
   return useMutation({
     mutationFn: resetPasswordAPI
+  })
+}
+
+export const useLogout = () => {
+  return useMutation({
+    mutationFn: logoutAPI
   })
 }

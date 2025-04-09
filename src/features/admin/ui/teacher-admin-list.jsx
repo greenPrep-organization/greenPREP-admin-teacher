@@ -6,6 +6,8 @@ import EditTeacherModal from '@features/admin/ui/edit-teacher'
 import { Button, Input, message, Pagination, Select, Space, Spin, Table, Tag } from 'antd'
 import { useEffect, useState } from 'react'
 import StatusConfirmationModal from './status-confirmation-modal'
+import DeleteTeacherModal from './delete-teacher'
+import { useDeleteTeacher } from '@features/admin/hooks/useAdmin'
 
 const TeacherAdminList = () => {
   const [searchText, setSearchText] = useState('')
@@ -17,11 +19,23 @@ const TeacherAdminList = () => {
   const [selectedTeacher, setSelectedTeacher] = useState(null)
   const [teachers, setTeachers] = useState([])
   const [editModalVisible, setEditModalVisible] = useState(false)
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+  const deleteTeacherMutation = useDeleteTeacher()
 
   const statusValue = statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined
   const handleEditStatusClick = record => {
     setSelectedTeacher(record)
     setEditModalVisible(true)
+  }
+  const handleDeleteStatusClick = record => {
+    setSelectedTeacher(record)
+    setDeleteModalVisible(true)
+  }
+  const handleDeleteStatusConfirm = async record => {
+    console.log(record.ID)
+    await deleteTeacherMutation.mutate(record.ID)
+    setDeleteModalVisible(false)
+    refetch()
   }
   const {
     data: { data: teachersResponse } = {},
@@ -126,7 +140,11 @@ const TeacherAdminList = () => {
             type="text"
             icon={<EditOutlined className="text-green-500" />}
           />
-          <Button type="text" icon={<DeleteOutlined className="text-red-500" />} />
+          <Button
+            type="text"
+            onClick={() => handleDeleteStatusClick(record)}
+            icon={<DeleteOutlined className="text-red-500" />}
+          />
         </Space>
       )
     }
@@ -239,6 +257,13 @@ const TeacherAdminList = () => {
         onCancel={handleCancelModal}
         onSave={() => setEditModalVisible(false)}
         teacherId={selectedTeacher?.ID}
+      />
+      <DeleteTeacherModal
+        isOpen={deleteModalVisible}
+        onClose={() => {
+          setDeleteModalVisible(false)
+        }}
+        onConfirm={() => handleDeleteStatusConfirm(selectedTeacher)}
       />
     </div>
   )
