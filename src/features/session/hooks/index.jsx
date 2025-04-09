@@ -50,9 +50,9 @@ export function useCreateSession() {
       }
 
       const formattedData = {
-        sessionName: sessionData.name,
-        sessionKey: sessionData.key,
-        examSet: sessionData.testSetId,
+        sessionName: sessionData.sessionName,
+        sessionKey: sessionData.sessionKey,
+        examSet: sessionData.examSet,
         startTime: sessionData.startTime,
         endTime: sessionData.endTime,
         status: 'NOT_STARTED',

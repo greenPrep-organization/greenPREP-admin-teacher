@@ -35,33 +35,21 @@ const CreateSessionModal = ({ visible, onCancel, classId, testSets, onSubmit }) 
       const endTime = dayjs(values.endDate).format('YYYY-MM-DDTHH:mm:ss')
 
       const sessionData = {
-        name: values.name.trim(),
-        key: values.key.trim(),
-        testSetId: String(values.testSetId),
+        sessionName: values.sessionName.trim(),
+        sessionKey: values.sessionKey.trim(),
+        examSet: values.examSet,
         startTime,
         endTime,
-        ClassID: classId
+        ClassID: classId,
+        status: 'NOT_STARTED'
       }
 
-      console.log('📝 Creating session:', {
-        classId,
-        formValues: values,
-        sessionData
-      })
+      console.log('Creating session with data:', sessionData)
 
       if (onSubmit) {
         await onSubmit(sessionData)
       } else {
-        const formattedData = {
-          sessionName: sessionData.name,
-          sessionKey: sessionData.key,
-          examSet: sessionData.testSetId,
-          startTime: sessionData.startTime,
-          endTime: sessionData.endTime,
-          ClassID: sessionData.ClassID,
-          status: 'NOT_STARTED'
-        }
-        await mutation.mutateAsync(formattedData)
+        await mutation.mutateAsync(sessionData)
       }
 
       notification.success({
@@ -74,7 +62,7 @@ const CreateSessionModal = ({ visible, onCancel, classId, testSets, onSubmit }) 
       form.resetFields()
       onCancel()
     } catch (error) {
-      console.error('❌ Failed to create session:', {
+      console.error('Failed to create session:', {
         error,
         classId,
         formValues: form.getFieldsValue(),
@@ -121,7 +109,7 @@ const CreateSessionModal = ({ visible, onCancel, classId, testSets, onSubmit }) 
     >
       <Form form={form} layout="vertical" className="px-4">
         <Form.Item
-          name="name"
+          name="sessionName"
           label={<span>Session name</span>}
           rules={[
             { required: true, message: 'Please input session name' },
@@ -132,7 +120,7 @@ const CreateSessionModal = ({ visible, onCancel, classId, testSets, onSubmit }) 
         </Form.Item>
 
         <Form.Item
-          name="key"
+          name="sessionKey"
           label={<span>Session key</span>}
           rules={[
             { required: true, message: 'Please input session key' },
@@ -142,12 +130,8 @@ const CreateSessionModal = ({ visible, onCancel, classId, testSets, onSubmit }) 
           <Input placeholder="Enter session key" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
         </Form.Item>
 
-        <Form.Item
-          name="testSetId"
-          label={<span>Test set</span>}
-          rules={[{ required: true, message: 'Please select a test set' }]}
-        >
-          <Select placeholder="Choose the test set" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB]">
+        <Form.Item label="Exam Set" name="examSet" rules={[{ required: true, message: 'Please select exam set!' }]}>
+          <Select placeholder="Select exam set">
             {testSets?.map(testSet => (
               <Select.Option key={testSet.id} value={testSet.id}>
                 {testSet.name}
