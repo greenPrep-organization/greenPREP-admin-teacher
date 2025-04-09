@@ -23,3 +23,19 @@ export const useGetSpeakingTest = (topicId, skillName = 'SPEAKING') => {
     enabled: !!topicId
   })
 }
+
+export const useGetWritingData = () => {
+  const SessionId = '26fc28e3-a9d8-45f5-ac7b-88086075e82e'
+  const StudentId = '7a5cb071-5ba0-4ecf-a4cf-b1b62e5f9798'
+  const SkillName = 'writing'
+
+  return useQuery({
+    queryKey: ['writingData', SessionId, StudentId, SkillName],
+    queryFn: async () => {
+      const url = `/grades/participants?sessionId=${SessionId}&studentId=${StudentId}&skillName=${SkillName}`
+      const response = await axiosInstance.get(url)
+      return response.data
+    },
+    enabled: !!SessionId && !!StudentId && !!SkillName
+  })
+}
