@@ -19,14 +19,22 @@ const ClassDetails = () => {
   } = useQuery({
     queryKey: ['class', id],
     queryFn: async () => {
+      if (!id) {
+        throw new Error('Class ID is required')
+      }
       const res = await fetchClassDetails(id)
       return res?.data || res
     },
     staleTime: 60 * 1000,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    enabled: !!id
   })
 
   const classDetails = classInfoFromState || classInfo
+
+  if (!id) {
+    return <Alert message="Class ID is required" type="error" showIcon className="text-center" />
+  }
 
   if (isLoading) {
     return <Spin size="large" className="flex h-screen items-center justify-center" />

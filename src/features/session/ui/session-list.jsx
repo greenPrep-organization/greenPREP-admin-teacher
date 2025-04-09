@@ -8,6 +8,7 @@ import { formatDate, getStatusColor } from '@shared/lib/utils/index'
 import { Button, Empty, Input, Space, Spin, Table, message } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { createSession } from '@features/session/api'
 
 const testSets = [
   {
@@ -93,23 +94,36 @@ const SessionsList = ({ classId }) => {
   const handleCreateSession = useCallback(
     async sessionData => {
       try {
-        const newSession = {
-          id: `session-${sessions.length + 1}`,
-          name: sessionData.name,
-          key: sessionData.key,
+        if (!classId) {
+          message.error('Class ID is required')
+          return
+        }
+
+        const formattedSessionData = {
+          sessionName: sessionData.name,
+          sessionKey: sessionData.key,
+          examSet: sessionData.testSetId,
           startTime: sessionData.startTime,
           endTime: sessionData.endTime,
-          participants: 0,
-          status: 'Pending'
+          status: 'NOT_STARTED',
+          ClassID: classId
         }
+
+        console.log('Creating session with data:', formattedSessionData)
+
+        const newSession = await createSession(formattedSessionData)
+
         const updatedSessions = [newSession, ...sessions]
         setFilteredSessions(updatedSessions)
-      } catch (err) {
-        message.error('Failed to create session')
-        console.error(err)
+
+        setIsModalVisible(false)
+        message.success('Session created successfully')
+      } catch (error) {
+        console.error('Failed to create session:', error)
+        message.error(error.message || 'Failed to create session')
       }
     },
-    [sessions]
+    [classId, sessions]
   )
 
   const columns = useMemo(
@@ -266,7 +280,11 @@ const SessionsList = ({ classId }) => {
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onSubmit={handleCreateSession}
-        testSets={testSets}
+        classId={classId}
+        testSets={testSets.map(set => ({
+          ...set,
+          id: String(set.id)
+        }))}
       />
 
       {deleteSessionId && (

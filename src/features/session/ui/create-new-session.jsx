@@ -4,11 +4,24 @@ import dayjs from 'dayjs'
 import PropTypes from 'prop-types'
 import { CalendarOutlined } from '@ant-design/icons'
 import { useCreateSession } from '@features/session/hooks'
+import { useEffect } from 'react'
 
-const CreateSessionModal = ({ visible, onCancel, classId, testSets }) => {
+const CreateSessionModal = ({ visible, onCancel, classId, testSets, onSubmit }) => {
   const [form] = Form.useForm()
-  const mutation = useCreateSession(classId)
-  const isLoading = mutation.isPending
+  const mutation = useCreateSession()
+
+  useEffect(() => {
+    if (!classId) {
+      console.error('ClassID is missing:', { classId })
+      notification.error({
+        message: 'Error',
+        description: 'Class ID is required',
+        placement: 'topRight',
+        duration: 3
+      })
+      onCancel()
+    }
+  }, [classId, onCancel])
 
   const handleSubmit = async () => {
     try {
@@ -18,41 +31,65 @@ const CreateSessionModal = ({ visible, onCancel, classId, testSets }) => {
 
       const values = await form.validateFields()
 
-      // Format dữ liệu theo đúng yêu cầu
+      const startTime = dayjs(values.startDate).format('YYYY-MM-DDTHH:mm:ss')
+      const endTime = dayjs(values.endDate).format('YYYY-MM-DDTHH:mm:ss')
+
       const sessionData = {
         name: values.name.trim(),
         key: values.key.trim(),
-        testSetId: values.testSetId,
-        startTime: values.startDate.toDate(),
-        endTime: values.endDate.toDate(),
+        testSetId: String(values.testSetId),
+        startTime,
+        endTime,
         ClassID: classId
       }
 
-      // Log dữ liệu để debug
-      console.log('📝 Form data:', {
-        values,
+      console.log('📝 Creating session:', {
+        classId,
+        formValues: values,
         sessionData
       })
 
-      await mutation.mutateAsync(sessionData)
+      if (onSubmit) {
+        await onSubmit(sessionData)
+      } else {
+        const formattedData = {
+          sessionName: sessionData.name,
+          sessionKey: sessionData.key,
+          examSet: sessionData.testSetId,
+          startTime: sessionData.startTime,
+          endTime: sessionData.endTime,
+          ClassID: sessionData.ClassID,
+          status: 'NOT_STARTED'
+        }
+        await mutation.mutateAsync(formattedData)
+      }
+
       notification.success({
-        message: 'Create Session Successfully',
-        description: 'Your session has been created',
+        message: 'Session Created',
+        description: 'Your session has been created successfully',
         placement: 'topRight',
-        duration: 3,
-        className: 'custom-notification-success'
+        duration: 3
       })
 
       form.resetFields()
       onCancel()
     } catch (error) {
-      console.error('❌ Form error:', error)
+      console.error('❌ Failed to create session:', {
+        error,
+        classId,
+        formValues: form.getFieldsValue(),
+        errorDetails: {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        }
+      })
+
       notification.error({
-        message: 'Failed to create session',
-        description: error.message || 'Please check your input and try again',
+        message: 'Failed to Create Session',
+        description: error.response?.data?.message || error.message || 'Please check your input and try again',
         placement: 'topRight',
-        duration: 3,
-        className: 'custom-notification-error'
+        duration: 3
       })
     }
   }
@@ -74,7 +111,7 @@ const CreateSessionModal = ({ visible, onCancel, classId, testSets }) => {
             key="submit"
             type="primary"
             onClick={handleSubmit}
-            loading={isLoading}
+            loading={mutation.isPending}
             className="h-10 w-24 bg-[#003087] hover:bg-[#003087]/90"
           >
             Create
@@ -180,7 +217,8 @@ CreateSessionModal.propTypes = {
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired
     })
-  )
+  ),
+  onSubmit: PropTypes.func
 }
 
 export default CreateSessionModal

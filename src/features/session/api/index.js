@@ -61,17 +61,22 @@ export const getUserSessionHistory = async userId => {
 
 export const createSession = async sessionData => {
   try {
-    const payload = {
-      sessionName: sessionData.name,
-      sessionKey: sessionData.key,
-      examSet: sessionData.testSetId,
-      startTime: sessionData.startTime,
-      endTime: sessionData.endTime,
-      status: 'NOT_STARTED',
-      ClassID: sessionData.ClassID
+    if (!sessionData.ClassID) {
+      throw new Error('ClassID is required')
+    }
+    if (!sessionData.startTime || !sessionData.endTime) {
+      throw new Error('Start time and end time are required')
     }
 
-    console.log('📤 Sending payload:', JSON.stringify(payload, null, 2))
+    const payload = {
+      sessionName: sessionData.sessionName,
+      sessionKey: sessionData.sessionKey,
+      examSet: sessionData.examSet,
+      startTime: sessionData.startTime,
+      endTime: sessionData.endTime,
+      status: sessionData.status || 'NOT_STARTED',
+      ClassId: sessionData.ClassID
+    }
 
     const response = await axiosInstance.post('/sessions/', payload)
     return response.data
@@ -79,8 +84,13 @@ export const createSession = async sessionData => {
     console.error('❌ API Error:', {
       status: error.response?.status,
       data: error.response?.data,
-      message: error.message
+      message: error.message,
+      originalPayload: sessionData
     })
+
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message)
+    }
     throw error
   }
 }
