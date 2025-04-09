@@ -179,7 +179,6 @@ const StudentSessionHistory = ({ userId }) => {
     >
       <h2 style={{ marginBottom: '24px', fontSize: '24px', fontWeight: 'bold' }}>Session History</h2>
 
-      {/* Filters - Responsive wrap */}
       <div
         style={{
           marginBottom: 24,

@@ -12,7 +12,6 @@ export default function StudentProfilePage() {
 
   const [student, setStudent] = useState(null)
   const { data: userData, isLoading, isError } = useStudentProfile(studentId)
-  console.log(userData)
 
   useEffect(() => {
     if (userData) {
