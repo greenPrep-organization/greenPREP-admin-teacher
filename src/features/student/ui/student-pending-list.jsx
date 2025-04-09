@@ -1,9 +1,14 @@
 import { SearchOutlined } from '@ant-design/icons'
-import { usePendingSessionRequests, useApproveSessionRequest } from '@features/student/hooks/index'
+import {
+  usePendingSessionRequests,
+  useApproveSessionRequest,
+  useRejectSessionRequest
+} from '@features/student/hooks/index'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { Button, Input, Table, message } from 'antd'
 import { useEffect, useState } from 'react'
 import ApproveSessionPopup from '@features/student/ui/approve-session-request'
+import RejectSessionPopup from '@features/student/ui/reject-session-request'
 
 const PendingList = ({ sessionId, onStudentApproved }) => {
   const { data: pendingDataRaw = [], isLoading, isError } = usePendingSessionRequests(sessionId)
@@ -15,7 +20,9 @@ const PendingList = ({ sessionId, onStudentApproved }) => {
   const [pendingSearchText, setPendingSearchText] = useState('')
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false)
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false)
   const { mutate: approveRequest, isPending: isApproving } = useApproveSessionRequest(sessionId)
+  const { mutate: rejectRequest, isPending: isRejecting } = useRejectSessionRequest(sessionId)
 
   useEffect(() => {
     console.log(pendingDataRaw)
@@ -37,13 +44,8 @@ const PendingList = ({ sessionId, onStudentApproved }) => {
   }, [pendingDataRaw, pendingSearchText, pendingPagination.pageSize])
 
   const handleRejectStudent = async record => {
-    try {
-      const newData = pendingData.filter(item => item.key !== record.key)
-      setPendingData(newData)
-      message.success(`${record.studentName}'s request has been rejected`)
-    } catch {
-      message.error('Failed to reject student')
-    }
+    setSelectedRequest(record)
+    setIsRejectModalOpen(true)
   }
 
   const handleApproveStudent = async record => {
@@ -66,6 +68,24 @@ const PendingList = ({ sessionId, onStudentApproved }) => {
       message.error(error.message || 'Failed to approve student')
     } finally {
       setIsApproveModalOpen(false)
+      setSelectedRequest(null)
+    }
+  }
+
+  const handleConfirmReject = async () => {
+    try {
+      await rejectRequest(selectedRequest.key)
+      const newData = pendingData.filter(item => item.key !== selectedRequest.key)
+      setPendingData(newData)
+      setPendingPagination(prev => ({
+        ...prev,
+        total: prev.total - 1
+      }))
+      message.success(`${selectedRequest.studentName}'s request has been rejected`)
+    } catch (error) {
+      message.error(error.message || 'Failed to reject student')
+    } finally {
+      setIsRejectModalOpen(false)
       setSelectedRequest(null)
     }
   }
@@ -175,6 +195,16 @@ const PendingList = ({ sessionId, onStudentApproved }) => {
         onApprove={handleConfirmApprove}
         studentName={selectedRequest?.studentName}
         loading={isApproving}
+      />
+      <RejectSessionPopup
+        isOpen={isRejectModalOpen}
+        onClose={() => {
+          setIsRejectModalOpen(false)
+          setSelectedRequest(null)
+        }}
+        onReject={handleConfirmReject}
+        studentName={selectedRequest?.studentName}
+        loading={isRejecting}
       />
     </div>
   )
