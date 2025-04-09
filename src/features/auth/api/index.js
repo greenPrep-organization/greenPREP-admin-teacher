@@ -1,12 +1,10 @@
-import axios from 'axios'
+import axiosInstance from '@shared/config/axios'
 import { ACCESS_TOKEN } from '@shared/lib/constants/auth'
 import { useMutation } from '@tanstack/react-query'
 
-const API_BASE_URL = 'https://dev-api-greenprep.onrender.com/api'
-
-// Hàm gọi API cơ bản
+// API functions
 const loginAPI = async ({ email, password }) => {
-  const response = await axios.post(`${API_BASE_URL}/users/login`, {
+  const response = await axiosInstance.post('/users/login', {
     email,
     password
   })
@@ -19,37 +17,30 @@ const loginAPI = async ({ email, password }) => {
 }
 
 const forgotPasswordAPI = async email => {
-  const response = await axios.post(
-    `${API_BASE_URL}/users/forgot-password`,
-    { email },
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
-      }
-    }
-  )
+  const response = await axiosInstance.post('/users/forgot-password', { email })
   return response.data
 }
 
 const resetPasswordAPI = async ({ token, newPassword }) => {
-  const response = await axios.post(
-    `${API_BASE_URL}/users/reset-password`,
-    {
-      token,
-      newPassword
-    },
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
-      }
-    }
-  )
+  const response = await axiosInstance.post('/users/reset-password', {
+    token,
+    newPassword
+  })
   return response.data
 }
 
-// Custom hooks sử dụng React Query
+const logoutAPI = async userId => {
+  const token = localStorage.getItem(ACCESS_TOKEN)
+
+  if (!userId || !token) {
+    throw new Error('User ID or token not found')
+  }
+
+  const response = await axiosInstance.post(`/users/logout/${userId}`)
+  return response.data
+}
+
+// React Query hooks
 export const useLogin = () => {
   return useMutation({
     mutationFn: loginAPI
@@ -65,5 +56,11 @@ export const useForgotPassword = () => {
 export const useResetPassword = () => {
   return useMutation({
     mutationFn: resetPasswordAPI
+  })
+}
+
+export const useLogout = () => {
+  return useMutation({
+    mutationFn: logoutAPI
   })
 }
