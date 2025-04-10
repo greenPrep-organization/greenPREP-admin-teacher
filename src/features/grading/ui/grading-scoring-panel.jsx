@@ -1,35 +1,71 @@
-import { Input, Button } from 'antd'
+import { Input, Button, message } from 'antd'
 import { useState } from 'react'
 import PropTypes from 'prop-types'
 
-const GradingScoringPanel = ({ type = 'writing', onSubmit }) => {
-  const [totalScore, setTotalScore] = useState('')
+const GradingScoringPanel = ({
+  type,
+  onSubmit,
+  onSectionChange,
+  isSpeakingGraded,
+  isWritingGraded,
+  isFirstCompletionNotice,
+  score,
+  onScoreChange,
+  previousScore // Thêm prop để biết điểm đã lưu trước đó
+}) => {
   const [error, setError] = useState('')
 
   const handleScoreChange = value => {
     let numericValue = value === '' ? '' : Number(value.replace(/[^0-9]/g, ''))
-
-    // Enforce 0-50 range
     if (numericValue !== '') {
       // @ts-ignore
-      if (numericValue < 0) {
-        numericValue = 0
-        // @ts-ignore
-      } else if (numericValue > 50) {
-        numericValue = 50
-      }
+      if (numericValue < 0) numericValue = 0
+      // @ts-ignore
+      else if (numericValue > 50) numericValue = 50
     }
-
-    setTotalScore(numericValue.toString()) // Convert back to string for input
+    onScoreChange(numericValue.toString())
     setError('')
   }
 
   const handleSubmit = () => {
-    if (totalScore === '') {
-      setError('Please enter a score before submitting.')
+    if (score === '') {
+      setError("Can't be empty.")
+      return
+    }
+
+    const numericScore = Number(score)
+    const hasScoreChanged = score !== previousScore // Kiểm tra xem điểm có thay đổi không
+
+    // Nếu section đã được chấm điểm
+    if ((type === 'speaking' && isSpeakingGraded) || (type === 'writing' && isWritingGraded)) {
+      if (hasScoreChanged) {
+        // Nếu điểm thay đổi, cập nhật điểm mới
+        onSubmit(numericScore, type)
+        message.success(`${type === 'speaking' ? 'Speaking' : 'Writing'} score updated successfully!`)
+      } else {
+        // Nếu không thay đổi điểm, giữ nguyên thông báo cũ
+        message.info('This section has already been graded.')
+        if (type === 'speaking' && !isWritingGraded) onSectionChange('writing')
+        else if (type === 'writing' && !isSpeakingGraded) onSectionChange('speaking')
+      }
+      return
+    }
+
+    // Nếu section chưa được chấm điểm, xử lý như cũ
+    onSubmit(numericScore, type)
+    setError('')
+
+    const willBeFullyGraded = (type === 'speaking' && isWritingGraded) || (type === 'writing' && isSpeakingGraded)
+    if (willBeFullyGraded && isFirstCompletionNotice) {
+      message.success('This student has been graded.')
     } else {
-      onSubmit(Number(totalScore)) // Pass numeric value to onSubmit
-      setError('')
+      if (type === 'speaking') {
+        message.success('Speaking grading completed!')
+        onSectionChange('writing')
+      } else if (type === 'writing') {
+        message.success('Writing grading completed!')
+        onSectionChange('speaking')
+      }
     }
   }
 
@@ -45,7 +81,6 @@ const GradingScoringPanel = ({ type = 'writing', onSubmit }) => {
             : 'Detailed breakdown in the speaking assessment'}
         </span>
       </div>
-
       <div className="flex items-center gap-3">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
@@ -56,7 +91,7 @@ const GradingScoringPanel = ({ type = 'writing', onSubmit }) => {
               placeholder="Score"
               min={0}
               max={50}
-              value={totalScore}
+              value={score}
               onChange={e => handleScoreChange(e.target.value)}
               onKeyDown={e => {
                 if (
@@ -72,16 +107,14 @@ const GradingScoringPanel = ({ type = 'writing', onSubmit }) => {
               }}
             />
           </div>
-          {error && <span className="text-sm text-red-500">{error}</span>}
+          {error && <span className="ml-auto text-sm text-red-500">{error}</span>}
         </div>
-
         <Button
-          onClick={() => onSubmit(Number(totalScore))}
+          onClick={() => onSubmit(Number(score), type)}
           className="h-11 rounded-lg border border-gray-200 px-6 text-base font-medium hover:bg-gray-50"
         >
           Save As Draft
         </Button>
-
         <Button
           onClick={handleSubmit}
           className="h-11 rounded-lg bg-[#003087] px-6 text-base font-medium text-white hover:bg-[#002366]"
@@ -94,8 +127,15 @@ const GradingScoringPanel = ({ type = 'writing', onSubmit }) => {
 }
 
 GradingScoringPanel.propTypes = {
-  type: PropTypes.oneOf(['writing', 'speaking']),
-  onSubmit: PropTypes.func.isRequired
+  type: PropTypes.oneOf(['writing', 'speaking']).isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  onSectionChange: PropTypes.func.isRequired,
+  isSpeakingGraded: PropTypes.bool.isRequired,
+  isWritingGraded: PropTypes.bool.isRequired,
+  isFirstCompletionNotice: PropTypes.bool.isRequired,
+  score: PropTypes.string.isRequired,
+  onScoreChange: PropTypes.func.isRequired,
+  previousScore: PropTypes.string // Thêm propTypes cho previousScore
 }
 
 export default GradingScoringPanel
