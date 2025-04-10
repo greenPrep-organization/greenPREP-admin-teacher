@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable react-hooks/exhaustive-deps */
 import { SearchOutlined } from '@ant-design/icons'
 import { getSessionParticipants, updateParticipantLevelById } from '@features/session/api'
@@ -74,49 +75,61 @@ const SessionParticipantList = () => {
         >
           {text || 'N/A'}
         </span>
-      )
+      ),
+      align: 'center'
     },
     {
       title: 'Grammar & Vocab',
       dataIndex: 'GrammarVocab',
       key: 'grammar',
       width: '12%',
-      render: text => text || 'N/A'
+      responsive: ['md'],
+      render: text => text || '-',
+      align: 'center'
     },
     {
       title: 'Listening',
       dataIndex: 'Listening',
       key: 'listening',
       width: '12%',
-      render: text => text || 'N/A'
+      responsive: ['md'],
+      render: text => text || '-',
+      align: 'center'
     },
     {
       title: 'Reading',
       dataIndex: 'Reading',
       key: 'reading',
       width: '12%',
-      render: text => text || 'N/A'
+      responsive: ['md'],
+      render: text => text || '-',
+      align: 'center'
     },
     {
       title: 'Speaking',
       dataIndex: 'Speaking',
       key: 'speaking',
       width: '12%',
-      render: text => text || 'N/A'
+      responsive: ['md'],
+      render: text => text || 'Ungrade',
+      align: 'center'
     },
     {
       title: 'Writing',
       dataIndex: 'Writing',
       key: 'writing',
       width: '12%',
-      render: text => text || 'N/A'
+      responsive: ['md'],
+      render: text => text || 'Ungrade',
+      align: 'center'
     },
     {
       title: 'Total',
       dataIndex: 'Total',
       key: 'total',
       width: '10%',
-      render: text => text || 'N/A'
+      render: text => text || '-',
+      align: 'center'
     },
     {
       title: 'Level',
@@ -129,10 +142,11 @@ const SessionParticipantList = () => {
           options={levelOptions}
           disabled={!canSelectLevel(record)}
           onChange={value => handleLevelChange(record, value)}
-          style={{ width: '100%' }}
+          style={{ width: '100%', minWidth: 80 }}
           placeholder="Select level"
         />
-      )
+      ),
+      align: 'center'
     }
   ]
 
@@ -201,6 +215,7 @@ const SessionParticipantList = () => {
   const handleSearch = value => {
     setSearchText(value)
   }
+
   const handleStudentApproved = () => {
     fetchData(pagination)
   }
@@ -217,35 +232,39 @@ const SessionParticipantList = () => {
         </div>
       ),
       children: (
-        <div className="participant-list">
-          <div className="mb-4 mt-8 flex justify-between">
-            <div className="relative">
+        <div className="participant-list px-2 sm:px-0">
+          <div className="mb-4 mt-8 flex flex-col gap-4 sm:flex-row sm:justify-between">
+            <div className="relative w-full sm:w-auto">
               <Input
                 key="search-input"
                 placeholder="Search by student name"
                 prefix={<SearchOutlined key="search-icon" className="text-text-secondary" />}
                 value={searchText}
                 onChange={e => handleSearch(e.target.value)}
-                className="w-64"
+                className="w-full sm:w-64"
               />
             </div>
-            <PublishPopup
-              sessionId={sessionId}
-              disabled={readyToPublish}
-              onPublishSuccess={() => setReadyToPublish(false)}
-            />
+            <div className="flex justify-end sm:justify-start">
+              <PublishPopup
+                sessionId={sessionId}
+                disabled={readyToPublish}
+                onPublishSuccess={() => setReadyToPublish(false)}
+              />
+            </div>
           </div>
 
-          <Table
-            key="participants-table"
-            columns={columns}
-            dataSource={data}
-            pagination={pagination}
-            onChange={handleTableChange}
-            loading={loading}
-            scroll={{ x: 1200 }}
-            rowKey="ID"
-          />
+          <div className="overflow-x-auto">
+            <Table
+              key="participants-table"
+              columns={columns}
+              dataSource={data}
+              pagination={pagination}
+              onChange={handleTableChange}
+              loading={loading}
+              scroll={{ x: 120 }}
+              rowKey="ID"
+            />
+          </div>
         </div>
       )
     },
@@ -270,7 +289,7 @@ const SessionParticipantList = () => {
         key="session-tabs"
         defaultActiveKey="1"
         items={items}
-        className="px-6 pt-4"
+        className="px-4 pt-4 sm:px-6"
         tabBarStyle={{
           margin: 0,
           borderBottom: 'none'

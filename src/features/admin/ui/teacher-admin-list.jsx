@@ -1,12 +1,13 @@
+// @ts-nocheck
 import { DeleteOutlined, EditOutlined, LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 import { useTeachers, useUpdateTeacherProfile } from '@features/admin/hooks'
-import EditTeacherModal from '@features/admin/ui/edit-teacher'
+import { useDeleteTeacher } from '@features/admin/hooks/useAdmin'
 import { CreateTeacher } from '@features/admin/ui/create-teacher'
+import EditTeacherModal from '@features/admin/ui/edit-teacher'
 import { Button, Input, message, Pagination, Select, Space, Spin, Table, Tag } from 'antd'
 import { useEffect, useState } from 'react'
-import StatusConfirmationModal from './status-confirmation-modal'
 import DeleteTeacherModal from './delete-teacher'
-import { useDeleteTeacher } from '@features/admin/hooks/useAdmin'
+import StatusConfirmationModal from './status-confirmation-modal'
 
 const TeacherAdminList = () => {
   const [searchText, setSearchText] = useState('')
@@ -21,7 +22,6 @@ const TeacherAdminList = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const deleteTeacherMutation = useDeleteTeacher()
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
-  console.log(teachers)
 
   const statusValue = statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined
   const handleEditStatusClick = record => {
@@ -33,7 +33,6 @@ const TeacherAdminList = () => {
     setDeleteModalVisible(true)
   }
   const handleDeleteStatusConfirm = async record => {
-    console.log(record.ID)
     await deleteTeacherMutation.mutate(record.ID)
     setDeleteModalVisible(false)
     refetch()
@@ -78,7 +77,6 @@ const TeacherAdminList = () => {
           `Teacher ${selectedTeacher.firstName + ' ' + selectedTeacher.lastName} status updated successfully!`
         )
       } catch (error) {
-        console.error('Failed to update teacher status:', error)
         message.error('Failed to update teacher', error)
       }
     }
@@ -110,11 +108,12 @@ const TeacherAdminList = () => {
     {
       title: 'Teacher Name',
       key: 'name',
-      render: (_, record) => `${record.firstName} ${record.lastName}`
+      render: (_, record) => `${record.firstName} ${record.lastName}`,
+      align: 'center'
     },
-    { title: 'Teacher ID', dataIndex: 'ID', key: 'id' },
-    { title: 'Email', dataIndex: 'email', key: 'email' },
-    { title: 'Phone Number', dataIndex: 'phone', key: 'phone' },
+    { title: 'Teacher ID', dataIndex: 'teacherCode', key: 'id', align: 'center' },
+    { title: 'Email', dataIndex: 'email', key: 'email', align: 'center' },
+    { title: 'Phone Number', dataIndex: 'phone', key: 'phone', align: 'center' },
     {
       title: 'Roles',
       dataIndex: 'roleIDs',
@@ -130,7 +129,8 @@ const TeacherAdminList = () => {
             )
           })}
         </>
-      )
+      ),
+      align: 'center'
     },
     {
       title: 'Status',
@@ -143,7 +143,8 @@ const TeacherAdminList = () => {
         >
           {status ? 'Active' : 'Inactive'}
         </div>
-      )
+      ),
+      align: 'center'
     },
     {
       title: 'Action',
@@ -161,7 +162,8 @@ const TeacherAdminList = () => {
             icon={<DeleteOutlined className="text-red-500" />}
           />
         </Space>
-      )
+      ),
+      align: 'center'
     }
   ]
 
@@ -174,7 +176,6 @@ const TeacherAdminList = () => {
   useEffect(() => {
     if (Array.isArray(teachersResponse?.teachers)) {
       setTeachers(teachersResponse.teachers)
-      console.log(teachersResponse)
     }
   }, [teachersResponse])
 

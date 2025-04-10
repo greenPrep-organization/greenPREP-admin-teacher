@@ -2,7 +2,7 @@
 import { CalendarOutlined } from '@ant-design/icons'
 import { getTestSets } from '@features/session/api'
 import { useCreateSession } from '@features/session/hooks'
-import { Button, DatePicker, Form, Input, Modal, Select } from 'antd'
+import { Button, DatePicker, Form, Input, message, Modal, Select } from 'antd'
 import { useEffect, useState } from 'react'
 
 export default function CreateSessionModal({ open, onClose, classId }) {
@@ -36,10 +36,11 @@ export default function CreateSessionModal({ open, onClose, classId }) {
         Status: 'NOT_STARTED'
       }
       await mutateAsync(payload)
+      message.success('Session created successfully!')
       onClose()
       form.resetFields()
     } catch (err) {
-      console.error(err)
+      message.error('Failed to create session', err)
     }
   }
 

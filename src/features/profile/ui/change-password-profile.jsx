@@ -42,10 +42,11 @@ const ChangePasswordModal = ({ open, onCancel, onSubmit, userId }) => {
         form
           .validateFields()
           .then(values => {
+            // @ts-ignore
             handleSubmit(values)
           })
           .catch(info => {
-            console.log('Validation Failed:', info)
+            message.info('Validation Failed:', info)
           })
       }}
       onCancel={() => {
