@@ -29,6 +29,10 @@ const LoginPage = () => {
       return null
     }
   }
+  const isRoleAllowed = (roles = []) => {
+    const disallowedRoles = ['student']
+    return !roles.some(role => disallowedRoles.includes(role.toLowerCase()))
+  }
 
   const onFinish = async values => {
     setLoading(true)
@@ -43,11 +47,18 @@ const LoginPage = () => {
 
       if (response.data?.data?.access_token) {
         const token = response.data.data.access_token
-
         localStorage.setItem(ACCESS_TOKEN, token)
+
         const userData = getUserData(token)
 
         if (userData) {
+          const userRoles = userData?.role || []
+
+          if (!isRoleAllowed(userRoles)) {
+            setLoginError('Access denied: Your account is not permitted to login.')
+            localStorage.removeItem(ACCESS_TOKEN)
+            return
+          }
           dispatch(login(userData))
           setLoginSuccess('Login successful!')
           navigate('/dashboard')
@@ -57,7 +68,6 @@ const LoginPage = () => {
       } else {
         setLoginError('Login failed. Please try again.')
       }
-      window.location.reload()
     } catch (error) {
       console.error('Login error:', error)
       setLoginError('Invalid email or password')
