@@ -28,7 +28,7 @@ export const CreateTeacher = ({ open, onClose, onSave }) => {
         teacherCode: formData.teacherId,
         roleIDs: ['teacher'],
         class: '',
-        phone: ''
+        phone: formData.phone
       }
       await createTeacher(teacherData)
       form.resetFields()

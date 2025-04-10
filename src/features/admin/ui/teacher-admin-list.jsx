@@ -21,6 +21,7 @@ const TeacherAdminList = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const deleteTeacherMutation = useDeleteTeacher()
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
+  console.log(teachers)
 
   const statusValue = statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined
   const handleEditStatusClick = record => {

@@ -13,7 +13,7 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
 
   const testSets = [
     {
-      id: 1,
+      id: '280e1fd9-df60-40a1-ac18-d456fe8d2bf9',
       name: 'Test Set 1'
     },
     {
