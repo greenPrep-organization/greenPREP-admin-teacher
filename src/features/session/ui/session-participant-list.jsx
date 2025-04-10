@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { SearchOutlined } from '@ant-design/icons'
-import { getSessionParticipants, updateParticipantLevel } from '@features/session/api'
+import { getSessionParticipants, updateParticipantLevelById } from '@features/session/api'
 import { Input, Select, Table, Tabs, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -27,17 +27,18 @@ const SessionParticipantList = () => {
     { value: 'A2', label: 'A2' },
     { value: 'B1', label: 'B1' },
     { value: 'B2', label: 'B2' },
-    { value: 'C', label: 'C' }
+    { value: 'C', label: 'C' },
+    { value: 'X', label: 'X' }
   ]
 
   const canSelectLevel = record => {
     return record.Total > 0
   }
 
-  const handleLevelChange = async (value, record) => {
+  const handleLevelChange = async (record, value) => {
     try {
       setLoading(true)
-      await updateParticipantLevel(sessionId, record.ID, value)
+      await updateParticipantLevelById(record.ID, value)
 
       const newData = data.map(item => {
         if (item.ID === record.ID) {
@@ -127,7 +128,7 @@ const SessionParticipantList = () => {
           value={level}
           options={levelOptions}
           disabled={!canSelectLevel(record)}
-          onChange={value => handleLevelChange(value, record)}
+          onChange={value => handleLevelChange(record, value)}
           style={{ width: '100%' }}
           placeholder="Select level"
         />
@@ -138,13 +139,11 @@ const SessionParticipantList = () => {
   const fetchData = async (params = {}) => {
     try {
       setLoading(true)
-      console.log('Fetching participants for session:', sessionId)
       const response = await getSessionParticipants(sessionId, {
         page: params.current,
         limit: params.pageSize,
         search: searchText
       })
-      console.log('Participants data received:', response.data)
 
       const responseData = response.data || []
       setOriginalData(responseData)
