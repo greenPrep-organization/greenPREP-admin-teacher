@@ -22,3 +22,7 @@ export const fetchStudentSessionHistory = async userId => {
     throw error
   }
 }
+export const fetchSessionDetail = async sessionId => {
+  const res = await axiosInstance.get(`/sessions/${sessionId}`)
+  return res.data.data
+}

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchStudentProfile, fetchStudentSessionHistory } from '../api'
+import { fetchSessionDetail, fetchStudentProfile, fetchStudentSessionHistory } from '../api'
 
 export const useStudentProfile = userId => {
   return useQuery({
@@ -14,5 +14,13 @@ export const useStudentSessionHistory = userId => {
     queryKey: ['studentSessionHistory', userId],
     queryFn: () => fetchStudentSessionHistory(userId),
     enabled: !!userId
+  })
+}
+
+export const useSessionDetail = sessionId => {
+  return useQuery({
+    queryKey: ['session-detail', sessionId],
+    queryFn: () => fetchSessionDetail(sessionId),
+    enabled: !!sessionId
   })
 }
