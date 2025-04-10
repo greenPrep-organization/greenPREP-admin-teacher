@@ -1,8 +1,9 @@
 // @ts-nocheck
 import { CalendarOutlined } from '@ant-design/icons'
 import { useCreateSession } from '@features/session/hooks'
-import { Button, DatePicker, Form, Input, Modal, Select } from 'antd'
+import { Button, DatePicker, Form, Input, Modal, Select, notification } from 'antd'
 import { useState } from 'react'
+import dayjs from 'dayjs'
 
 export default function CreateSessionModal1({ open, onClose, classId }) {
   const { mutateAsync, isLoading } = useCreateSession(classId)
@@ -40,10 +41,29 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
         Status: 'NOT_STARTED'
       }
       await mutateAsync(payload)
+      notification.success({
+        message: (
+          <div className="flex items-center gap-3">
+            <div>
+              <div className="font-medium text-[#1D1C20]">Create Session Successfully</div>
+              <div className="text-[13px] text-[#00000073]">Your session has been created</div>
+            </div>
+          </div>
+        ),
+        placement: 'topRight',
+        duration: 3,
+        className: 'custom-notification-success'
+      })
       onClose()
       form.resetFields()
     } catch (err) {
       console.error(err)
+      notification.error({
+        message: 'Failed to create session',
+        description: err.response?.data?.message || err.message || 'Please check your input and try again',
+        placement: 'topRight',
+        duration: 3
+      })
     }
   }
 
@@ -63,8 +83,11 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
         onClose()
         form.resetFields()
       }}
-      footer={[
-        <>
+      width={500}
+      maskClosable={false}
+      className="create-session-modal"
+      footer={
+        <div className="flex justify-end space-x-4">
           <Button key="cancel" onClick={onClose} className="h-10 w-24 border border-[#D1D5DB] text-[#374151]">
             Cancel
           </Button>
@@ -77,20 +100,24 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
           >
             Create
           </Button>
-        </>
-      ]}
+        </div>
+      }
     >
       <Form form={form} layout="vertical" className="px-4">
         <Form.Item
           name="sessionName"
-          label="Session Name"
-          rules={[{ required: true, message: 'Please enter session name' }]}
+          label={<span>Session name</span>}
+          rules={[
+            { required: true, message: 'Please input session name' },
+            { max: 100, message: 'Name must be less than 100 characters' }
+          ]}
         >
           <Input placeholder="Enter session name" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
         </Form.Item>
+
         <Form.Item
           name="sessionKey"
-          label="Session Key"
+          label={<span>Session key</span>}
           rules={[
             { required: true, message: 'Please input session key' },
             { pattern: /^[a-zA-Z0-9_-]+$/, message: 'Only letters, numbers, underscores and hyphens allowed' }
@@ -98,27 +125,43 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
         >
           <Input placeholder="Enter session key" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
         </Form.Item>
+
+        <Form.Item
+          name="examSet"
+          label={<span>Test set</span>}
+          rules={[{ required: true, message: 'Please select a test set' }]}
+        >
+          <Select placeholder="Choose the test set" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB]">
+            {testSets?.map(testSet => (
+              <Select.Option key={testSet.id} value={testSet.id}>
+                {testSet.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
-            label="Start Date"
             name="startDate"
-            rules={[{ required: true, message: 'Please select start time!' }]}
+            label={<span>Start date</span>}
+            rules={[{ required: true, message: 'Please select start date' }]}
           >
             <DatePicker
               showTime
-              format="YYYY-MM-DD HH:mm"
+              format="DD/MM/YYYY HH:mm"
               onChange={date => setStartDate(date)}
               placeholder="Select start date"
-              suffixIcon={<CalendarOutlined className="text-gray-400" />}
               className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
+              suffixIcon={<CalendarOutlined className="text-gray-400" />}
+              disabledDate={current => current && current < dayjs().startOf('day')}
             />
           </Form.Item>
 
           <Form.Item
-            label="End Date"
             name="endDate"
+            label={<span>End date</span>}
             rules={[
-              { required: true, message: 'Please select end time!' },
+              { required: true, message: 'Please select end date' },
               {
                 validator: (_, value) => {
                   if (value && startDate && value.isBefore(startDate)) {
@@ -131,24 +174,15 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
           >
             <DatePicker
               showTime
-              format="YYYY-MM-DD HH:mm"
+              format="DD/MM/YYYY HH:mm"
               placeholder="Select end date"
               onChange={handleEndDateChange}
-              suffixIcon={<CalendarOutlined className="text-gray-400" />}
               className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
+              suffixIcon={<CalendarOutlined className="text-gray-400" />}
+              disabledDate={current => current && current < dayjs().startOf('day')}
             />
           </Form.Item>
         </div>
-
-        <Form.Item label="Exam Set" name="examSet" rules={[{ required: true, message: 'Please select exam set!' }]}>
-          <Select placeholder="Select exam set">
-            {testSets?.map(testSet => (
-              <Select.Option key={testSet.id} value={testSet.id}>
-                {testSet.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
       </Form>
     </Modal>
   )
