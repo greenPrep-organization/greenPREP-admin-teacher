@@ -1,6 +1,5 @@
 import axiosInstance from '@shared/config/axios'
 import { message } from 'antd'
-
 export const fetchTeachers = async (params = {}) => {
   try {
     const { page = 1, limit = 10, search = '' } = params
@@ -17,7 +16,6 @@ export const fetchTeachers = async (params = {}) => {
     throw error
   }
 }
-
 export const createTeacher = async teacherData => {
   try {
     const { data } = await axiosInstance.post('/users/register', teacherData)
@@ -27,7 +25,6 @@ export const createTeacher = async teacherData => {
     throw error
   }
 }
-
 export const fetchTeacherProfile = async userId => {
   try {
     const { data } = await axiosInstance.get(`/users/${userId}`)
@@ -38,7 +35,6 @@ export const fetchTeacherProfile = async userId => {
     throw error
   }
 }
-
 export const updateTeacherProfile = async ({ userId, userData }) => {
   try {
     const { data } = await axiosInstance.put(`/users/${userId}`, userData)
@@ -48,13 +44,31 @@ export const updateTeacherProfile = async ({ userId, userData }) => {
     throw error
   }
 }
-
-export const resetPassword = async ({ email }) => {
+export const resetPassword = async payload => {
   try {
-    const { data } = await axiosInstance.post('/users/forgot-password', { email })
+    const { data } = await axiosInstance.post('/users/forgot-password', payload)
     return data
   } catch (error) {
     message.error('Error sending reset password email')
+    throw error
+  }
+}
+export const fetchTeachersList = async payload => {
+  try {
+    const { data } = await axiosInstance.post('/users/teachers', payload)
+    return data
+  } catch (error) {
+    console.error('Error fetching teachers list:', error)
+    throw error
+  }
+}
+
+export const deleteTeacher = async userId => {
+  try {
+    const { data } = await axiosInstance.delete(`/users/delete/${userId}`)
+    return data
+  } catch (error) {
+    message.error('Error deleting teacher:', error)
     throw error
   }
 }

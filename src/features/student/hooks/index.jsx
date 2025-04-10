@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getPendingSessionRequests, approveSessionRequest } from '@features/student/api'
+import { getPendingSessionRequests, approveSessionRequest, rejectSessionRequest } from '@features/student/api'
 
 export function usePendingSessionRequests(sessionId) {
   return useQuery({
@@ -23,6 +23,17 @@ export function useApproveSessionRequest(sessionId) {
 
   return useMutation({
     mutationFn: requestId => approveSessionRequest(sessionId, requestId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingSessionRequests'] })
+    }
+  })
+}
+
+export function useRejectSessionRequest(sessionId) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: requestId => rejectSessionRequest(sessionId, requestId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingSessionRequests'] })
     }

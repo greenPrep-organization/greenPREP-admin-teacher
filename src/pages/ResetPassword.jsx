@@ -5,9 +5,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useResetPassword } from '@features/auth/api'
 import ResetPasswordSuccess from './ResetPasswordSuccess'
-
 const { Title, Paragraph } = Typography
-
 const ResetPassword = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -16,12 +14,10 @@ const ResetPassword = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false)
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false)
-
   const validatePasswordComplexity = (_, value) => {
     if (!value) {
       return Promise.reject('New password is required.')
     }
-
     const hasUpperCase = /[A-Z]/.test(value)
     const hasLowerCase = /[a-z]/.test(value)
     const hasNumber = /\d/.test(value)
@@ -33,10 +29,8 @@ const ResetPassword = () => {
         'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.'
       )
     }
-
     return Promise.resolve()
   }
-
   const handleSubmit = async values => {
     try {
       const token = searchParams.get('token')
@@ -45,7 +39,6 @@ const ResetPassword = () => {
         message.error('Invalid or missing reset token')
         return
       }
-
       resetPasswordMutation.mutate(
         { token, newPassword: values.newPassword },
         {
@@ -69,14 +62,12 @@ const ResetPassword = () => {
       })
     }
   }
-
   const preventCopyPaste = (e, isVisible) => {
     if (!isVisible) {
       e.preventDefault()
       message.warning('Cannot copy hidden password. Show password to copy.')
     }
   }
-
   return (
     <ConfigProvider
       theme={{
@@ -214,5 +205,4 @@ const ResetPassword = () => {
     </ConfigProvider>
   )
 }
-
 export default ResetPassword

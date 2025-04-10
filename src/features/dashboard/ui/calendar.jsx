@@ -11,8 +11,18 @@ const CalendarCard = () => {
   }
 
   return (
-    <Card title="Calendar" className="mx-auto w-full max-w-2xl rounded-lg shadow-lg">
-      <Calendar fullscreen={false} value={selectedDate} onSelect={handleDateSelect} />
+    <Card
+      title="Calendar"
+      className="mx-auto w-full max-w-2xl rounded-lg border border-red-500 bg-red-100 shadow-sm hover:shadow-lg"
+      headStyle={{ backgroundColor: '#ef4444', color: 'white' }}
+    >
+      <Calendar
+        fullscreen={false}
+        mode="month"
+        value={selectedDate}
+        onSelect={handleDateSelect}
+        className="rounded-md bg-white"
+      />
     </Card>
   )
 }

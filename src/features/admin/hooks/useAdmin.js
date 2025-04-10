@@ -3,7 +3,8 @@ import {
   fetchTeacherProfile,
   fetchTeachers,
   resetPassword,
-  updateTeacherProfile
+  updateTeacherProfile,
+  deleteTeacher
 } from '@features/admin/api'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -49,5 +50,19 @@ export const useUpdateTeacherProfile = () => {
 export const useResetPassword = () => {
   return useMutation({
     mutationFn: resetPassword
+  })
+}
+
+export const useDeleteTeacher = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteTeacher,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teachers'] })
+    },
+    onError: error => {
+      console.error('Error deleting teacher:', error)
+    }
   })
 }

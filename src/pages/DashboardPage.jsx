@@ -1,17 +1,10 @@
+import { CheckOutlined, FileDoneOutlined, UserOutlined, WarningOutlined } from '@ant-design/icons'
+import { useSessionData } from '@features/dashboard/hooks'
 import CalendarCard from '@features/dashboard/ui/calendar'
-import { PieChart } from '@features/dashboard/ui/piechart'
-import axiosInstance from '@shared/config/axios'
-import { useQuery } from '@tanstack/react-query'
-import { Card, Progress, Tooltip } from 'antd'
-import { useState } from 'react'
+import { Card } from 'antd'
+import Chart from 'react-apexcharts'
 
-const fetchSessions = async () => {
-  const API_BASE = import.meta.env.VITE_BASE_URL
-  const response = await axiosInstance.get(`${API_BASE}/sessions/all`)
-  return response.data
-}
-
-// Mock data cho số học sinh mỗi level
+// Mock data
 const studentCountData = {
   A1: { passed: 30, total: 50 },
   A2: { passed: 35, total: 50 },
@@ -19,20 +12,38 @@ const studentCountData = {
   B2: { passed: 25, total: 50 },
   C: { passed: 20, total: 50 }
 }
+const skillComparisonData = {
+  'Class 1A': {
+    Listening: 80,
+    Speaking: 40,
+    Reading: 75,
+    Writing: 70,
+    Grammar: 60
+  },
+  'Class 2B': {
+    Listening: 60,
+    Speaking: 85,
+    Reading: 65,
+    Writing: 55,
+    Grammar: 70
+  },
+  'Class 3C': {
+    Listening: 45,
+    Speaking: 55,
+    Reading: 60,
+    Writing: 80,
+    Grammar: 50
+  }
+}
 
 const DashboardPage = () => {
-  const { data, error, isLoading } = useQuery({
-    queryKey: ['sessions'],
-    queryFn: fetchSessions
-  })
+  const { data: sessionData, isLoading, isError } = useSessionData()
 
-  const [hoveredLevel, setHoveredLevel] = useState(null)
-
-  if (isLoading) return <p>Loading sessions...</p>
-  if (error) return <p>Error fetching sessions: {error.message}</p>
-
-  const sessionsArray = Array.isArray(data?.data) ? data.data : []
+  if (isLoading) return <p>Loading...</p>
+  if (isError) return <p>Error fetching sessions: {isError}</p>
+  const sessionsArray = Array.isArray(sessionData?.data) ? sessionData.data : []
   const notStartedCount = sessionsArray.filter(session => session.status?.toUpperCase() === 'NOT_STARTED').length
+  const startedCount = sessionsArray.filter(session => session.status?.toUpperCase() === 'STARTED').length
 
   const performanceData = [
     { level: 'A1', percentage: 60 },
@@ -41,74 +52,172 @@ const DashboardPage = () => {
     { level: 'B2', percentage: 50 },
     { level: 'C', percentage: 40 }
   ]
-
   const statsConfig = [
-    { title: 'Total Student', value: '50', subtitle: 'Student' },
-    { title: 'Total Session Started', value: '50', subtitle: 'Session Started' },
-    { title: 'Total Session Completed', value: '120', subtitle: 'Session Completed' },
-    { title: 'Total Ungrade', value: notStartedCount, subtitle: 'Test not graded' }
+    {
+      title: 'Total Student',
+      value: '200',
+      subtitle: 'students',
+      icon: <UserOutlined className="text-2xl text-blue-500" />,
+      bgColor: 'bg-blue-100',
+      trendColor: 'text-blue-600',
+      isIncrease: true
+    },
+    {
+      title: 'Total Session Started',
+      value: startedCount,
+      subtitle: 'Session Started',
+      icon: <FileDoneOutlined className="text-2xl text-purple-500" />,
+      bgColor: 'bg-purple-100',
+      trendColor: 'text-purple-600',
+      isIncrease: false
+    },
+    {
+      title: 'Total Session Completed',
+      value: '50',
+      subtitle: 'Session Completed',
+      icon: <CheckOutlined className="text-2xl text-yellow-500" />,
+      bgColor: 'bg-yellow-100',
+      trendColor: 'text-yellow-600',
+      isIncrease: true
+    },
+    {
+      title: 'Total Ungrade',
+      value: notStartedCount,
+      subtitle: 'Exam not ungrade',
+      icon: <WarningOutlined className="text-2xl text-red-500" />,
+      bgColor: 'bg-red-100',
+      trendColor: 'text-red-600',
+      isIncrease: true
+    }
   ]
-
   return (
     <div className="p-4">
-      {/* Stats Cards */}
-      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {statsConfig.map(({ title, value, subtitle }) => (
-          <Card key={title} className="shadow-md hover:shadow-lg">
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-500">{title}</span>
-              <div className="mt-2 flex items-end justify-between">
-                <span className="text-2xl font-bold">{value}</span>
+      <div className="grid grid-cols-1 gap-6 pb-5 md:grid-cols-2 lg:grid-cols-4">
+        {statsConfig.map((stat, index) => (
+          <Card
+            key={index}
+            className={`rounded-2xl p-4 shadow-md transition-all duration-300 hover:shadow-xl ${stat.bgColor}`}
+            bodyStyle={{ padding: '1rem' }}
+          >
+            <div className="flex h-full flex-col justify-between">
+              <div className="mb-4 flex items-center justify-between">
+                <div>{stat.icon}</div>
               </div>
-              <span className="mt-1 text-sm text-gray-400">{subtitle}</span>
+              <div>
+                <div className="text-md font-medium text-gray-600">{stat.title}</div>
+                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                <div className="h-8 w-full rounded-md">{stat.subtitle}</div>
+              </div>
             </div>
           </Card>
         ))}
       </div>
-
-      {/* Main Content Area */}
       <div className="mb-8 flex flex-col gap-6 lg:flex-row">
-        {/* Student Performance - Chiếm 2/3 width */}
-        <div className="w-full lg:w-2/3">
-          <Card title="Student Performance" className="h-full shadow-md">
-            <div className="flex flex-col space-y-4">
-              {performanceData.map(item => (
-                <div
-                  key={item.level}
-                  className="flex items-center"
-                  onMouseEnter={() => setHoveredLevel(item.level)}
-                  onMouseLeave={() => setHoveredLevel(null)}
-                >
-                  <span className="w-8 pt-5 font-medium">{item.level}</span>
-                  <Tooltip
-                    title={`${studentCountData[item.level].passed}/${studentCountData[item.level].total} students passed`}
-                    visible={hoveredLevel === item.level}
-                  >
-                    <Progress
-                      percent={item.percentage}
-                      strokeColor={{
-                        '0%': '#1890ff',
-                        '100%': '#52c41a'
-                      }}
-                      showInfo={false}
-                      className="mx-4 flex-1 pt-5"
-                      strokeLinecap="square"
-                    />
-                  </Tooltip>
-                  <span className="w-12 pt-5 text-right">{item.percentage}%</span>
-                </div>
-              ))}
-            </div>
+        <div className="w-full space-y-6 lg:w-2/3">
+          <Card title="Student Performance by Level" className="min-h-[300px] shadow-md">
+            <Chart
+              options={{
+                chart: {
+                  type: 'bar',
+                  animations: { enabled: true, speed: 800 }
+                },
+                plotOptions: {
+                  bar: { horizontal: true, barHeight: '40%' }
+                },
+                xaxis: {
+                  categories: performanceData.map(item => item.level)
+                },
+                dataLabels: {
+                  enabled: true,
+                  formatter: val => `${val}%`
+                },
+                tooltip: {
+                  y: {
+                    formatter: (val, opts) => {
+                      const level = performanceData[opts.dataPointIndex].level
+                      const passed = studentCountData[level].passed
+                      const total = studentCountData[level].total
+                      return `${passed}/${total} students passed (${val}%)`
+                    }
+                  }
+                },
+                colors: ['#1890ff', '#13c2c2', '#fa8c16', '#722ed1', '#f5222d']
+              }}
+              series={[
+                {
+                  name: 'Performance',
+                  data: performanceData.map(item => item.percentage)
+                }
+              ]}
+              type="bar"
+              height={305}
+            />
+          </Card>
+
+          <Card title="Skill Comparison Across Classes" className="min-h-[400px] shadow-md">
+            <Chart
+              options={{
+                chart: {
+                  type: 'radar',
+                  toolbar: { show: false },
+                  animations: { enabled: true, speed: 800 }
+                },
+                xaxis: {
+                  categories: ['Listening', 'Speaking', 'Reading', 'Writing', 'Grammar']
+                },
+                stroke: {
+                  width: 3
+                },
+                fill: {
+                  opacity: 0.2
+                },
+                markers: {
+                  size: 5
+                },
+                legend: {
+                  position: 'top'
+                },
+                colors: ['#f5222d', '#1890ff', '#52c41a', '#722ed1', '#fa8c16']
+              }}
+              series={Object.entries(skillComparisonData).map(([className, skills]) => ({
+                name: className,
+                data: [skills.Listening, skills.Speaking, skills.Reading, skills.Writing, skills.Grammar]
+              }))}
+              type="radar"
+              height={355}
+            />
           </Card>
         </div>
-        <div className="w-1/3">
-          <CalendarCard />
+
+        <div className="flex w-full flex-col justify-between space-y-6 lg:w-1/3">
+          <div className="min-h-[300px]">
+            <CalendarCard />
+          </div>
+          <Card title="Pass vs Fail Student Distribution" className="shadow-md">
+            <Chart
+              options={{
+                labels: ['Pass', 'Fail'],
+                chart: {
+                  type: 'donut',
+                  animations: { enabled: true, speed: 800 }
+                },
+                legend: {
+                  position: 'top'
+                },
+                colors: ['#52c41a', '#f5222d'],
+                dataLabels: { enabled: true }
+              }}
+              series={[
+                Object.values(studentCountData).reduce((acc, cur) => acc + cur.passed, 0),
+                Object.values(studentCountData).reduce((acc, cur) => acc + (cur.total - cur.passed), 0)
+              ]}
+              type="donut"
+              height={600}
+            />
+          </Card>
         </div>
       </div>
-
-      <PieChart />
     </div>
   )
 }
-
 export default DashboardPage

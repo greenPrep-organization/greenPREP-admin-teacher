@@ -3,40 +3,41 @@ import { Form, Input, Button, Typography, Image, message, ConfigProvider, Row, C
 import { MailOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useForgotPassword } from '@features/auth/api'
-
 const { Title, Paragraph } = Typography
-
 const ForgotPassword = () => {
   const navigate = useNavigate()
   const [form] = Form.useForm()
-  const forgotPasswordMutation = useForgotPassword()
-
+  const { mutate } = useForgotPassword()
   const validateMessages = {
     required: 'Please enter your email address',
     types: {
       email: 'Please enter a valid email address'
     }
   }
-
   const handleSubmit = async values => {
     try {
-      forgotPasswordMutation.mutate(values.email, {
-        onSuccess: () => {
-          message.success({
-            content: 'Password reset link sent to your email',
-            duration: 3,
-            icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />
-          })
-          form.resetFields()
-        },
-        onError: error => {
-          console.error('Forgot password error:', error)
-          message.error({
-            content: 'Something went wrong. Please try again.',
-            duration: 3
-          })
+      // @ts-ignore
+      mutate(
+        // @ts-ignore
+        { email: values.email, host: window.location.origin },
+        {
+          onSuccess: () => {
+            message.success({
+              content: 'Password reset link sent to your email',
+              duration: 3,
+              icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />
+            })
+            form.resetFields()
+          },
+          onError: error => {
+            console.error('Forgot password error:', error)
+            message.error({
+              content: 'Something went wrong. Please try again.',
+              duration: 3
+            })
+          }
         }
-      })
+      )
     } catch (error) {
       console.error('Forgot password error:', error)
       message.error({
@@ -45,13 +46,11 @@ const ForgotPassword = () => {
       })
     }
   }
-
   const handleKeyPress = e => {
     if (e.key === 'Enter') {
       form.submit()
     }
   }
-
   return (
     <ConfigProvider
       theme={{
@@ -115,19 +114,13 @@ const ForgotPassword = () => {
                   aria-invalid={form.getFieldError('email').length > 0}
                 />
               </Form.Item>
-
               <Form.Item shouldUpdate>
                 {() => (
                   <Button
                     type="primary"
                     htmlType="submit"
-                    loading={forgotPasswordMutation.isPending}
                     block
-                    disabled={
-                      forgotPasswordMutation.isPending ||
-                      !form.isFieldTouched('email') ||
-                      !!form.getFieldError('email').length
-                    }
+                    disabled={!form.isFieldTouched('email') || !!form.getFieldError('email').length}
                     className="h-12 rounded-lg !bg-[#003087] text-sm font-medium !text-white hover:!bg-[#003087]/90 sm:text-base"
                     style={{
                       boxShadow: 'none',
@@ -152,7 +145,6 @@ const ForgotPassword = () => {
             </Form>
           </div>
         </Col>
-
         <Col xs={0} md={12} className="flex items-center justify-center bg-white p-8 lg:p-16">
           <div className="relative aspect-square w-full max-w-[600px]">
             <Image
@@ -167,5 +159,4 @@ const ForgotPassword = () => {
     </ConfigProvider>
   )
 }
-
 export default ForgotPassword

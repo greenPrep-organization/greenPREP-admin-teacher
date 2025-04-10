@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Table, Input, Space, Button, Card, Typography, Breadcrumb, Spin } from 'antd'
-import { EditOutlined, EyeOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons'
+import { Table, Input, Space, Button, Card, Typography, Spin } from 'antd'
+import { EditOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useFetchClasses, useFetchClassDetails } from '@features/class-management/hooks/fetch-class'
 import { CreateClassModal, EditClassModal } from '@features/class-management/ui/class-modal'
 import DeleteClassModal from '@features/class-management/ui/delete-modal'
+import AppBreadcrumb from '@shared/ui/Breadcrumb'
 
 const { Title, Text } = Typography
 
@@ -69,7 +70,9 @@ const ClassList = () => {
     setEditingClass(cls)
     setIsEditModalVisible(true)
   }
-  const handleView = cls => navigate(`/classes-management/${cls.ID}`, { state: { classInfo: cls } })
+  const handleView = cls => {
+    navigate(`/classes-management/${cls.ID}`, { state: { classInfo: cls } })
+  }
   const showDeleteModal = clsID => {
     setClassToDelete(clsID)
     setIsDeleteModalVisible(true)
@@ -82,7 +85,10 @@ const ClassList = () => {
       key: 'className',
       align: 'center',
       render: (text, record) => (
-        <a onClick={() => handleView(record)} style={{ cursor: 'pointer', color: 'black' }}>
+        <a
+          onClick={() => handleView(record)}
+          style={{ cursor: 'pointer', color: 'black', display: 'inline-block', textAlign: 'left' }}
+        >
           {text}
         </a>
       )
@@ -104,12 +110,7 @@ const ClassList = () => {
 
   return (
     <div>
-      <Breadcrumb className="mb-4" style={{ cursor: 'pointer' }}>
-        <Breadcrumb.Item onClick={() => navigate('/dashboard')}>
-          <HomeOutlined /> <span>Dashboard</span>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>Classes</Breadcrumb.Item>
-      </Breadcrumb>
+      <AppBreadcrumb items={[{ label: 'Classes' }]} />
       <Title level={3} style={{ textAlign: 'left', marginBottom: '16px' }}>
         Classes
       </Title>
@@ -126,7 +127,7 @@ const ClassList = () => {
         </Button>
       </div>
 
-      <Card className="rounded-lg shadow-md">
+      <Card className="rounded-lg shadow-sm">
         <Table
           // @ts-ignore
           columns={columns}
