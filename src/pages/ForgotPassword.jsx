@@ -19,7 +19,7 @@ const ForgotPassword = () => {
       // @ts-ignore
       mutate(
         // @ts-ignore
-        { email: values.email, host: window.location.origin },
+        { email: values.email, host: import.meta.env.VITE_HOST_URL },
         {
           onSuccess: () => {
             message.success({
@@ -70,7 +70,6 @@ const ForgotPassword = () => {
                 GreenPREP
               </Title>
             </div>
-
             <div className="space-y-2 sm:space-y-3">
               <Title level={2} className="!m-0 text-2xl !font-bold sm:text-3xl md:text-4xl">
                 Forgot Password?
@@ -79,7 +78,6 @@ const ForgotPassword = () => {
                 No worries, we&apos;ll send you reset instruction.
               </Paragraph>
             </div>
-
             <Form
               form={form}
               onFinish={handleSubmit}
