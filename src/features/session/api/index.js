@@ -49,3 +49,8 @@ export const createSession = async data => {
     throw new Error(error.response?.data?.message || 'Failed to create session')
   }
 }
+
+export const getTestSets = async () => {
+  const response = await axiosInstance.get('/topics')
+  return response.data
+}

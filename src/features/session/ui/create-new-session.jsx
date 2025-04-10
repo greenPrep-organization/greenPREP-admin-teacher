@@ -1,33 +1,29 @@
 // @ts-nocheck
 import { CalendarOutlined } from '@ant-design/icons'
+import { getTestSets } from '@features/session/api'
 import { useCreateSession } from '@features/session/hooks'
 import { Button, DatePicker, Form, Input, Modal, Select } from 'antd'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-export default function CreateSessionModal1({ open, onClose, classId }) {
+export default function CreateSessionModal({ open, onClose, classId }) {
   const { mutateAsync, isLoading } = useCreateSession(classId)
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
+  const [testSets, setTestSets] = useState([])
   const [form] = Form.useForm()
 
-  const testSets = [
-    {
-      id: 'ef6b69aa-2ec2-4c65-bf48-294fd12e13fc',
-      name: 'Test Set 1'
-    },
-    {
-      id: 2,
-      name: 'Test Set 2'
-    },
-    {
-      id: 3,
-      name: 'Test Set 3'
-    },
-    {
-      id: 4,
-      name: 'Test Set 4'
+  useEffect(() => {
+    const fetchTestSets = async () => {
+      try {
+        const res = await getTestSets()
+        setTestSets(res.data || [])
+      } catch (error) {
+        console.error('Failed to fetch test sets:', error)
+      }
     }
-  ]
+
+    fetchTestSets()
+  }, [])
 
   const handleSubmit = async () => {
     try {
@@ -143,8 +139,8 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
         <Form.Item label="Exam Set" name="examSet" rules={[{ required: true, message: 'Please select exam set!' }]}>
           <Select placeholder="Select exam set">
             {testSets?.map(testSet => (
-              <Select.Option key={testSet.id} value={testSet.id}>
-                {testSet.name}
+              <Select.Option key={testSet.ID} value={testSet.ID}>
+                {testSet.Name}
               </Select.Option>
             ))}
           </Select>
