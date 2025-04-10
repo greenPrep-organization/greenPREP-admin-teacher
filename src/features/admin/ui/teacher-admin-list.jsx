@@ -1,8 +1,7 @@
-'use client'
-
 import { DeleteOutlined, EditOutlined, LoadingOutlined, SearchOutlined } from '@ant-design/icons'
-import { useTeachers, useUpdateTeacherProfile } from '@features/admin/hooks' // adjust the import path as needed
+import { useTeachers, useUpdateTeacherProfile } from '@features/admin/hooks'
 import EditTeacherModal from '@features/admin/ui/edit-teacher'
+import { CreateTeacher } from '@features/admin/ui/create-teacher'
 import { Button, Input, message, Pagination, Select, Space, Spin, Table, Tag } from 'antd'
 import { useEffect, useState } from 'react'
 import StatusConfirmationModal from './status-confirmation-modal'
@@ -21,6 +20,7 @@ const TeacherAdminList = () => {
   const [editModalVisible, setEditModalVisible] = useState(false)
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const deleteTeacherMutation = useDeleteTeacher()
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
 
   const statusValue = statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined
   const handleEditStatusClick = record => {
@@ -89,6 +89,20 @@ const TeacherAdminList = () => {
     setEditModalVisible(false)
     setSelectedTeacher(null)
     setIsModalVisible(false)
+  }
+
+  const handleCreateNewAccount = () => {
+    setIsCreateModalVisible(true)
+  }
+
+  const handleCreateModalCancel = () => {
+    setIsCreateModalVisible(false)
+  }
+
+  const handleCreateSuccess = () => {
+    setIsCreateModalVisible(false)
+    refetch()
+    message.success('Teacher account created successfully!')
   }
 
   const columns = [
@@ -191,7 +205,7 @@ const TeacherAdminList = () => {
             ]}
           />
         </div>
-        <Button type="primary" className="bg-blue-700 shadow-sm hover:bg-blue-800">
+        <Button type="primary" className="bg-blue-700 shadow-sm hover:bg-blue-800" onClick={handleCreateNewAccount}>
           Create New Account
         </Button>
       </div>
@@ -265,6 +279,8 @@ const TeacherAdminList = () => {
         }}
         onConfirm={() => handleDeleteStatusConfirm(selectedTeacher)}
       />
+
+      <CreateTeacher open={isCreateModalVisible} onClose={handleCreateModalCancel} onSave={handleCreateSuccess} />
     </div>
   )
 }
