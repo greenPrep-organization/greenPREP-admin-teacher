@@ -5,8 +5,8 @@ const studentMockData = [
     class: 'GCD1111',
     email: '123@gmail.com',
     phone: '0123456789',
-    writing: 7.5,
-    speaking: 8.0
+    writing: null,
+    speaking: null
   },
   {
     name: 'B Tran',
@@ -14,8 +14,8 @@ const studentMockData = [
     class: 'GCD1111',
     email: '456@gmail.com',
     phone: '0987654321',
-    writing: 6.5,
-    speaking: 7.0
+    writing: null,
+    speaking: null
   },
   {
     name: 'C Le',
@@ -23,8 +23,8 @@ const studentMockData = [
     class: 'GCD1111',
     email: '789@gmail.com',
     phone: '0912345678',
-    writing: 8.0,
-    speaking: 7.5
+    writing: null,
+    speaking: null
   }
 ]
 

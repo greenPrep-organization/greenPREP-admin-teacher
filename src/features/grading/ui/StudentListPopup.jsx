@@ -35,8 +35,8 @@ const StudentListPopup = ({ visible, onCancel, onSelectStudent, studentList }) =
               className="grid grid-cols-4 items-center border border-x-0 border-b border-t-0 border-solid border-gray-200 py-4"
             >
               <div>{student.name}</div>
-              <div className="text-center">{student.writing}</div>
-              <div className="text-center">{student.speaking}</div>
+              <div className="text-center">{student.writing ?? 'Ungraded'}</div>
+              <div className="text-center">{student.speaking ?? 'Ungraded'}</div>
               <div className="text-right">
                 <Button
                   type="primary"

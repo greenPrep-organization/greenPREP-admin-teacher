@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button, Breadcrumb } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import StudentCard from '@features/grading/ui/student-information'
@@ -13,6 +13,13 @@ function GradingPage() {
   const [activeSection, setActiveSection] = useState('speaking')
   const [currentStudent, setCurrentStudent] = useState(1)
   const [isPopupVisible, setIsPopupVisible] = useState(false)
+  const [isSpeakingGraded, setIsSpeakingGraded] = useState(false)
+  const [isWritingGraded, setIsWritingGraded] = useState(false)
+  const [isFirstCompletionNotice, setIsFirstCompletionNotice] = useState(true)
+  const [speakingScore, setSpeakingScore] = useState('')
+  const [writingScore, setWritingScore] = useState('')
+  const [previousSpeakingScore, setPreviousSpeakingScore] = useState('')
+  const [previousWritingScore, setPreviousWritingScore] = useState('')
   const navigate = useNavigate()
 
   const GRADING_CONFIG = {
@@ -24,7 +31,7 @@ function GradingPage() {
     CLASSES_PATH: 'Classes'
   }
 
-  const studentList = studentMockData
+  const [studentList, setStudentList] = useState(studentMockData)
   const [studentData, setStudentData] = useState(studentList[0])
 
   const { data: speakingTest, isLoading: speakingLoading } = useGetSpeakingTest(
@@ -32,16 +39,51 @@ function GradingPage() {
     GRADING_CONFIG.TEST_TYPE
   )
 
+  useEffect(() => {
+    const loadScoresFromStorage = () => {
+      const storedData = localStorage.getItem(`grading_${studentData.id}`)
+      if (storedData) {
+        const { speakingScore: storedSpeaking, writingScore: storedWriting } = JSON.parse(storedData)
+        setSpeakingScore(storedSpeaking || '')
+        setWritingScore(storedWriting || '')
+        setPreviousSpeakingScore(storedSpeaking || '')
+        setPreviousWritingScore(storedWriting || '')
+        setIsSpeakingGraded(!!storedSpeaking)
+        setIsWritingGraded(!!storedWriting)
+        setIsFirstCompletionNotice(!(storedSpeaking && storedWriting))
+      } else {
+        setSpeakingScore(studentData.speaking?.toString() || '')
+        setWritingScore(studentData.writing?.toString() || '')
+        setPreviousSpeakingScore(studentData.speaking?.toString() || '')
+        setPreviousWritingScore(studentData.writing?.toString() || '')
+        setIsSpeakingGraded(!!studentData.speaking)
+        setIsWritingGraded(!!studentData.writing)
+        setIsFirstCompletionNotice(!(studentData.speaking && studentData.writing))
+      }
+    }
+    loadScoresFromStorage()
+  }, [studentData.id, studentData.speaking, studentData.writing])
+
+  const saveScoresToStorage = () => {
+    const data = {
+      speakingScore,
+      writingScore
+    }
+    localStorage.setItem(`grading_${studentData.id}`, JSON.stringify(data))
+  }
+
   const navigateToPreviousStudent = () => {
     const prevIndex = Math.max(0, currentStudent - 2)
     setCurrentStudent(prevIndex + 1)
     setStudentData(studentList[prevIndex])
+    setActiveSection('speaking')
   }
 
   const navigateToNextStudent = () => {
     const nextIndex = Math.min(studentList.length - 1, currentStudent)
     setCurrentStudent(nextIndex + 1)
     setStudentData(studentList[nextIndex])
+    setActiveSection('speaking')
   }
 
   const handleBack = () => {
@@ -59,11 +101,36 @@ function GradingPage() {
   const handleSelectStudent = student => {
     setStudentData(student)
     setCurrentStudent(studentList.findIndex(s => s.id === student.id) + 1)
+    setActiveSection('speaking')
     setIsPopupVisible(false)
   }
 
-  const handleScoreSubmit = score => {
-    console.log(`Submitting ${activeSection} score:`, score)
+  const handleScoreSubmit = (score, section) => {
+    console.log(`Submitting ${section} score:`, score)
+    if (section === 'speaking') {
+      setIsSpeakingGraded(true)
+      setSpeakingScore(score.toString())
+      if (isWritingGraded) setIsFirstCompletionNotice(false)
+    } else if (section === 'writing') {
+      setIsWritingGraded(true)
+      setWritingScore(score.toString())
+      if (isSpeakingGraded) setIsFirstCompletionNotice(false)
+    }
+
+    setStudentList(prevList =>
+      prevList.map(student => (student.id === studentData.id ? { ...student, [section]: score } : student))
+    )
+
+    saveScoresToStorage()
+  }
+
+  const handleScoreChange = value => {
+    if (activeSection === 'speaking') setSpeakingScore(value)
+    else if (activeSection === 'writing') setWritingScore(value)
+  }
+
+  const handleSectionChange = newSection => {
+    setActiveSection(newSection)
   }
 
   const breadcrumbItems = [
@@ -128,7 +195,7 @@ function GradingPage() {
           <div className="flex items-center justify-between">
             <div className="flex gap-3">
               <Button
-                onClick={() => setActiveSection('speaking')}
+                onClick={() => handleSectionChange('speaking')}
                 className={`min-w-[120px] rounded-lg px-6 py-5 text-base font-medium ${
                   activeSection === 'speaking'
                     ? 'border-none bg-[#003087] text-white'
@@ -138,7 +205,7 @@ function GradingPage() {
                 Speaking
               </Button>
               <Button
-                onClick={() => setActiveSection('writing')}
+                onClick={() => handleSectionChange('writing')}
                 className={`min-w-[120px] rounded-lg px-6 py-5 text-base font-medium ${
                   activeSection === 'writing'
                     ? 'border-none bg-[#003087] text-white'
@@ -156,12 +223,22 @@ function GradingPage() {
       </div>
 
       <div className="rounded-lg bg-white px-6 py-5 shadow-md">
-        <GradingScoringPanel type={activeSection} onSubmit={handleScoreSubmit} />
+        <GradingScoringPanel
+          type={activeSection}
+          onSubmit={handleScoreSubmit}
+          onSectionChange={handleSectionChange}
+          isSpeakingGraded={isSpeakingGraded}
+          isWritingGraded={isWritingGraded}
+          isFirstCompletionNotice={isFirstCompletionNotice}
+          score={activeSection === 'speaking' ? speakingScore : writingScore}
+          onScoreChange={handleScoreChange}
+          previousScore={activeSection === 'speaking' ? previousSpeakingScore : previousWritingScore}
+        />
       </div>
 
       <div className="rounded-lg bg-white p-6 shadow-lg">
         {activeSection === 'speaking' ? (
-          <Speaking testData={speakingTest} isLoading={speakingLoading} />
+          <Speaking testData={speakingTest} isLoading={speakingLoading} studentId={studentData.id} />
         ) : (
           <Writing studentId={studentData.id} />
         )}

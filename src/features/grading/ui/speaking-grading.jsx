@@ -5,10 +5,31 @@ import AudioPlayer from '@features/grading/ui/audio-player'
 
 const { TextArea } = Input
 
-const Speaking = ({ testData, isLoading }) => {
+const FEEDBACK_STORAGE_KEY = 'speaking_grading_feedback'
+
+const Speaking = ({ testData, isLoading, studentId }) => {
   const [activePart, setActivePart] = useState('PART 1')
-  const [questionFeedbacks, setQuestionFeedbacks] = useState({})
+  const [feedbacks, setFeedbacks] = useState({})
   const parts = useMemo(() => testData?.Parts || [], [testData])
+
+  useEffect(() => {
+    try {
+      const storedFeedbacks = JSON.parse(localStorage.getItem(`${FEEDBACK_STORAGE_KEY}_${studentId}`))
+      if (storedFeedbacks) {
+        setFeedbacks(storedFeedbacks)
+      }
+    } catch (error) {
+      console.error('Error loading feedbacks:', error)
+    }
+  }, [studentId])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(`${FEEDBACK_STORAGE_KEY}_${studentId}`, JSON.stringify(feedbacks))
+    } catch (error) {
+      console.error('Error saving feedbacks:', error)
+    }
+  }, [feedbacks, studentId])
 
   useEffect(() => {
     if (parts.length > 0 && !parts.find(p => p.Content === activePart)) {
@@ -16,10 +37,13 @@ const Speaking = ({ testData, isLoading }) => {
     }
   }, [parts, activePart])
 
-  const handleQuestionFeedbackChange = (questionId, feedback) => {
-    setQuestionFeedbacks(prev => ({
-      ...prev,
-      [questionId]: feedback
+  const handleFeedbackChange = (part, questionIndex, value) => {
+    setFeedbacks(prevFeedbacks => ({
+      ...prevFeedbacks,
+      [part]: {
+        ...prevFeedbacks[part],
+        [questionIndex]: value
+      }
     }))
   }
 
@@ -84,7 +108,6 @@ const Speaking = ({ testData, isLoading }) => {
                     Question {index + 1}: {question.Content}
                   </p>
                 </div>
-
                 <div className="space-y-4 p-4">
                   <div>
                     <p className="mb-2 text-base">Student Answer:</p>
@@ -99,8 +122,8 @@ const Speaking = ({ testData, isLoading }) => {
                 </div>
                 <div className="p-4">
                   <TextArea
-                    value={questionFeedbacks[question.ID] || ''}
-                    onChange={e => handleQuestionFeedbackChange(question.ID, e.target.value)}
+                    value={feedbacks[activePart]?.[index] || ''}
+                    onChange={e => handleFeedbackChange(activePart, index, e.target.value)}
                     placeholder="Enter your feedback here..."
                     autoSize={{ minRows: 3, maxRows: 6 }}
                     className="w-full rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"
@@ -133,7 +156,8 @@ Speaking.propTypes = {
       })
     )
   }),
-  isLoading: PropTypes.bool
+  isLoading: PropTypes.bool,
+  studentId: PropTypes.string.isRequired
 }
 
 export default Speaking
