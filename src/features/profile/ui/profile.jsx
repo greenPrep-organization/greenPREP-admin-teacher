@@ -179,6 +179,10 @@ const Profile = () => {
             <p className="mb-1 text-gray-600">Phone number</p>
             <p className="text-gray-500">{userData.phone}</p>
           </div>
+          <div>
+            <p className="mb-1 text-gray-600">Teacher Code</p>
+            <p className="text-gray-500">{userData.teacherCode}</p>
+          </div>
         </div>
       </Card>
 

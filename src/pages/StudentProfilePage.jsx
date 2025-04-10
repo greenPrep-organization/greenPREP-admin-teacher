@@ -1,10 +1,11 @@
-import { useStudentProfile } from '@features/student-profile/hooks'
+import { useSessionDetail, useStudentProfile } from '@features/student-profile/hooks'
 import StudentSessionHistory from '@features/student-profile/ui/student-session-history'
 import StudentSessionInformation from '@features/student-profile/ui/student-session-information'
 import { getDefaultAvatar } from '@shared/lib/utils/avatarUtils'
-import { Avatar, Breadcrumb, Spin, message } from 'antd'
+import { Avatar, Skeleton, Spin, message } from 'antd'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import AppBreadcrumb from '../shared/ui/Breadcrumb/index'
 
 export default function StudentProfilePage() {
   const { classId, sessionId, studentId } = useParams()
@@ -12,6 +13,9 @@ export default function StudentProfilePage() {
 
   const [student, setStudent] = useState(null)
   const { data: userData, isLoading, isError } = useStudentProfile(studentId)
+  const { data: sessionDetail } = useSessionDetail(sessionId)
+  const className = sessionDetail?.Classes?.className ?? 'Loading...'
+  const sessionName = sessionDetail?.sessionName ?? 'Loading...'
 
   useEffect(() => {
     if (userData) {
@@ -30,31 +34,29 @@ export default function StudentProfilePage() {
     )
   }
 
+  const breadcrumbItems = [
+    { label: 'Classes', path: '/classes-management' },
+    {
+      label: isLoading ? <Skeleton.Input active size="small" style={{ width: 100 }} /> : className,
+      path: `/classes-management/${classId}`
+    },
+    {
+      label: sessionName,
+      path: `/classes-management/${classId}/${sessionId}`
+    },
+    {
+      label: student?.lastName || 'Student',
+      path: `/classes-management/${classId}/${sessionId}/students/${studentId}`
+    }
+  ]
+
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
       <div className="flex flex-1">
         <main className="flex-1 p-6">
           <div className="mb-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Breadcrumb separator="/">
-                <Breadcrumb.Item>
-                  <Link to="/dashboard">Dashboard</Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item>
-                  <Link to="/classes-management">Classes</Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item>
-                  <Link to={`/classes-management/${classId}`}>{classId}</Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item>
-                  <Link to={`/classes-management/${classId}/${sessionId}`}>{sessionId}</Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item>
-                  <Link to={`/classes-management/${classId}/${sessionId}/students/${studentId}`}>
-                    {student?.lastName || 'Student'}
-                  </Link>
-                </Breadcrumb.Item>
-              </Breadcrumb>
+              <AppBreadcrumb items={breadcrumbItems} />
             </div>
           </div>
 
