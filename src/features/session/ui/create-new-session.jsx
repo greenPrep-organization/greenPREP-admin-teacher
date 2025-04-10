@@ -1,9 +1,8 @@
 // @ts-nocheck
 import { CalendarOutlined } from '@ant-design/icons'
 import { useCreateSession } from '@features/session/hooks'
-import { Button, DatePicker, Form, Input, Modal, Select, notification } from 'antd'
+import { Button, DatePicker, Form, Input, Modal, Select } from 'antd'
 import { useState } from 'react'
-import dayjs from 'dayjs'
 
 export default function CreateSessionModal1({ open, onClose, classId }) {
   const { mutateAsync, isLoading } = useCreateSession(classId)
@@ -13,7 +12,7 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
 
   const testSets = [
     {
-      id: 1,
+      id: 'ef6b69aa-2ec2-4c65-bf48-294fd12e13fc',
       name: 'Test Set 1'
     },
     {
@@ -41,29 +40,10 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
         Status: 'NOT_STARTED'
       }
       await mutateAsync(payload)
-      notification.success({
-        message: (
-          <div className="flex items-center gap-3">
-            <div>
-              <div className="font-medium text-[#1D1C20]">Create Session Successfully</div>
-              <div className="text-[13px] text-[#00000073]">Your session has been created</div>
-            </div>
-          </div>
-        ),
-        placement: 'topRight',
-        duration: 3,
-        className: 'custom-notification-success'
-      })
       onClose()
       form.resetFields()
     } catch (err) {
       console.error(err)
-      notification.error({
-        message: 'Failed to create session',
-        description: err.response?.data?.message || err.message || 'Please check your input and try again',
-        placement: 'topRight',
-        duration: 3
-      })
     }
   }
 
@@ -83,11 +63,8 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
         onClose()
         form.resetFields()
       }}
-      width={500}
-      maskClosable={false}
-      className="create-session-modal"
-      footer={
-        <div className="flex justify-end space-x-4">
+      footer={[
+        <>
           <Button key="cancel" onClick={onClose} className="h-10 w-24 border border-[#D1D5DB] text-[#374151]">
             Cancel
           </Button>
@@ -100,24 +77,20 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
           >
             Create
           </Button>
-        </div>
-      }
+        </>
+      ]}
     >
       <Form form={form} layout="vertical" className="px-4">
         <Form.Item
           name="sessionName"
-          label={<span>Session name</span>}
-          rules={[
-            { required: true, message: 'Please input session name' },
-            { max: 100, message: 'Name must be less than 100 characters' }
-          ]}
+          label="Session Name"
+          rules={[{ required: true, message: 'Please enter session name' }]}
         >
           <Input placeholder="Enter session name" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
         </Form.Item>
-
         <Form.Item
           name="sessionKey"
-          label={<span>Session key</span>}
+          label="Session Key"
           rules={[
             { required: true, message: 'Please input session key' },
             { pattern: /^[a-zA-Z0-9_-]+$/, message: 'Only letters, numbers, underscores and hyphens allowed' }
@@ -125,43 +98,27 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
         >
           <Input placeholder="Enter session key" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
         </Form.Item>
-
-        <Form.Item
-          name="examSet"
-          label={<span>Test set</span>}
-          rules={[{ required: true, message: 'Please select a test set' }]}
-        >
-          <Select placeholder="Choose the test set" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB]">
-            {testSets?.map(testSet => (
-              <Select.Option key={testSet.id} value={testSet.id}>
-                {testSet.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
+            label="Start Date"
             name="startDate"
-            label={<span>Start date</span>}
-            rules={[{ required: true, message: 'Please select start date' }]}
+            rules={[{ required: true, message: 'Please select start time!' }]}
           >
             <DatePicker
               showTime
-              format="DD/MM/YYYY HH:mm"
+              format="YYYY-MM-DD HH:mm"
               onChange={date => setStartDate(date)}
               placeholder="Select start date"
-              className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
               suffixIcon={<CalendarOutlined className="text-gray-400" />}
-              disabledDate={current => current && current < dayjs().startOf('day')}
+              className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
             />
           </Form.Item>
 
           <Form.Item
+            label="End Date"
             name="endDate"
-            label={<span>End date</span>}
             rules={[
-              { required: true, message: 'Please select end date' },
+              { required: true, message: 'Please select end time!' },
               {
                 validator: (_, value) => {
                   if (value && startDate && value.isBefore(startDate)) {
@@ -174,15 +131,24 @@ export default function CreateSessionModal1({ open, onClose, classId }) {
           >
             <DatePicker
               showTime
-              format="DD/MM/YYYY HH:mm"
+              format="YYYY-MM-DD HH:mm"
               placeholder="Select end date"
               onChange={handleEndDateChange}
-              className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
               suffixIcon={<CalendarOutlined className="text-gray-400" />}
-              disabledDate={current => current && current < dayjs().startOf('day')}
+              className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
             />
           </Form.Item>
         </div>
+
+        <Form.Item label="Exam Set" name="examSet" rules={[{ required: true, message: 'Please select exam set!' }]}>
+          <Select placeholder="Select exam set">
+            {testSets?.map(testSet => (
+              <Select.Option key={testSet.id} value={testSet.id}>
+                {testSet.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
       </Form>
     </Modal>
   )

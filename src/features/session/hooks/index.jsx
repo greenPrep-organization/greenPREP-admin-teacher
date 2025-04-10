@@ -26,10 +26,12 @@ export function useCreateSession(classId) {
 
   return useMutation({
     mutationFn: async data => {
-      return await createSession(data, classId)
+      return await createSession(data)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['sessions', classId])
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', classId]
+      })
     }
   })
 }

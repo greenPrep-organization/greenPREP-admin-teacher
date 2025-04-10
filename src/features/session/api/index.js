@@ -41,11 +41,9 @@ export function getSessionsByClassId(classId) {
   return axiosInstance.get('/sessions', { params: { classId } })
 }
 
-export const createSession = async (data, classId) => {
+export const createSession = async data => {
   try {
-    const response = await axiosInstance.post('/sessions', data, {
-      params: { classId }
-    })
+    const response = await axiosInstance.post('/sessions', data)
     return response.data
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to create session')
