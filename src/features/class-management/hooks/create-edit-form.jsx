@@ -2,8 +2,11 @@ import { Form, Input, Button, message } from 'antd'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { updateClass, createClass } from '@features/class-management/api'
 import { useEffect } from 'react'
+import { useSelector } from 'react-redux'
 
 const ClassForm = ({ initialData, onSuccess, isEditMode, onClose }) => {
+  const auth = useSelector(state => state.auth)
+  const { userId } = auth.user || {}
   const [form] = Form.useForm()
   const queryClient = useQueryClient()
 
@@ -21,8 +24,8 @@ const ClassForm = ({ initialData, onSuccess, isEditMode, onClose }) => {
       onSuccess()
       onClose()
     },
-    onError: () => {
-      message.error('Existed class name. Failed to create class!')
+    onError: error => {
+      message.error(error.message)
     }
   })
 
@@ -46,7 +49,7 @@ const ClassForm = ({ initialData, onSuccess, isEditMode, onClose }) => {
       // @ts-ignore
       updateClassMutation.mutate({ id: initialData.ID, className: values.className })
     } else {
-      createClassMutation.mutate(values)
+      createClassMutation.mutate({ ...values, UserID: userId })
     }
   }
 
