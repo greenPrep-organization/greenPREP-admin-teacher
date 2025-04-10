@@ -11,7 +11,7 @@ const GradingScoringPanel = ({
   isFirstCompletionNotice,
   score,
   onScoreChange,
-  previousScore // Thêm prop để biết điểm đã lưu trước đó
+  previousScore
 }) => {
   const [error, setError] = useState('')
 
@@ -34,16 +34,13 @@ const GradingScoringPanel = ({
     }
 
     const numericScore = Number(score)
-    const hasScoreChanged = score !== previousScore // Kiểm tra xem điểm có thay đổi không
+    const hasScoreChanged = score !== previousScore
 
-    // Nếu section đã được chấm điểm
     if ((type === 'speaking' && isSpeakingGraded) || (type === 'writing' && isWritingGraded)) {
       if (hasScoreChanged) {
-        // Nếu điểm thay đổi, cập nhật điểm mới
         onSubmit(numericScore, type)
         message.success(`${type === 'speaking' ? 'Speaking' : 'Writing'} score updated successfully!`)
       } else {
-        // Nếu không thay đổi điểm, giữ nguyên thông báo cũ
         message.info('This section has already been graded.')
         if (type === 'speaking' && !isWritingGraded) onSectionChange('writing')
         else if (type === 'writing' && !isSpeakingGraded) onSectionChange('speaking')
@@ -51,7 +48,6 @@ const GradingScoringPanel = ({
       return
     }
 
-    // Nếu section chưa được chấm điểm, xử lý như cũ
     onSubmit(numericScore, type)
     setError('')
 
@@ -135,7 +131,7 @@ GradingScoringPanel.propTypes = {
   isFirstCompletionNotice: PropTypes.bool.isRequired,
   score: PropTypes.string.isRequired,
   onScoreChange: PropTypes.func.isRequired,
-  previousScore: PropTypes.string // Thêm propTypes cho previousScore
+  previousScore: PropTypes.string
 }
 
 export default GradingScoringPanel

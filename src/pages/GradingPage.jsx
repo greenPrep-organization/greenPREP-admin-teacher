@@ -70,7 +70,6 @@ function GradingPage() {
       writingScore
     }
     localStorage.setItem(`grading_${studentData.id}`, JSON.stringify(data))
-    // message.success('Score saved successfully!')
   }
 
   const navigateToPreviousStudent = () => {
