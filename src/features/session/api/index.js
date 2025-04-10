@@ -40,3 +40,14 @@ export const publishSessionResults = async sessionId => {
 export function getSessionsByClassId(classId) {
   return axiosInstance.get('/sessions', { params: { classId } })
 }
+
+export const createSession = async (data, classId) => {
+  try {
+    const response = await axiosInstance.post('/sessions', data, {
+      params: { classId }
+    })
+    return response.data
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to create session')
+  }
+}

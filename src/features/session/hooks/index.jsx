@@ -1,5 +1,5 @@
-import { getSessionsByClassId } from '@features/session/api'
-import { useQuery } from '@tanstack/react-query'
+import { createSession, getSessionsByClassId } from '@features/session/api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export function useSessions(classId) {
   return useQuery({
@@ -18,5 +18,18 @@ export function useSessions(classId) {
     },
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: true
+  })
+}
+
+export function useCreateSession(classId) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async data => {
+      return await createSession(data, classId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['sessions', classId])
+    }
   })
 }

@@ -5,28 +5,9 @@ import CreateSessionModal from '@features/session/ui/create-new-session'
 import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { formatDate, getStatusColor } from '@shared/lib/utils/index'
-import { Button, Empty, Input, Space, Spin, Table, message, Typography } from 'antd'
+import { Button, Empty, Input, message, Space, Spin, Table, Typography } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-const testSets = [
-  {
-    id: 1,
-    name: 'Test Set 1'
-  },
-  {
-    id: 2,
-    name: 'Test Set 2'
-  },
-  {
-    id: 3,
-    name: 'Test Set 3'
-  },
-  {
-    id: 4,
-    name: 'Test Set 4'
-  }
-]
 
 const SessionsList = ({ classId }) => {
   const { data: sessions = [], isLoading, isError } = useSessions(classId)
@@ -88,28 +69,6 @@ const SessionsList = ({ classId }) => {
       message.success('Session updated successfully')
     },
     [selectedSession, sessions]
-  )
-
-  const handleCreateSession = useCallback(
-    async sessionData => {
-      try {
-        const newSession = {
-          id: `session-${sessions.length + 1}`,
-          name: sessionData.name,
-          key: sessionData.key,
-          startTime: sessionData.startTime,
-          endTime: sessionData.endTime,
-          participants: 0,
-          status: 'Pending'
-        }
-        const updatedSessions = [newSession, ...sessions]
-        setFilteredSessions(updatedSessions)
-      } catch (err) {
-        message.error('Failed to create session')
-        console.error(err)
-      }
-    },
-    [sessions]
   )
 
   const columns = useMemo(
@@ -293,12 +252,7 @@ const SessionsList = ({ classId }) => {
         </Empty>
       )}
 
-      <CreateSessionModal
-        visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        onSubmit={handleCreateSession}
-        testSets={testSets}
-      />
+      <CreateSessionModal open={isModalVisible} onClose={() => setIsModalVisible(false)} classId={classId} />
 
       {deleteSessionId && (
         <DeleteSessionPopup

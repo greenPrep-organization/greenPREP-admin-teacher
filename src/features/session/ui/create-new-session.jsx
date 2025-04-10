@@ -1,24 +1,46 @@
-// features/sessions/components/CreateSessionModal.jsx
-import { Modal, Form, Input, Select, DatePicker, notification, Button } from 'antd'
-import dayjs from 'dayjs'
-import PropTypes from 'prop-types'
+// @ts-nocheck
 import { CalendarOutlined } from '@ant-design/icons'
+import { useCreateSession } from '@features/session/hooks'
+import { Button, DatePicker, Form, Input, Modal, Select, notification } from 'antd'
+import { useState } from 'react'
+import dayjs from 'dayjs'
 
-const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
+export default function CreateSessionModal1({ open, onClose, classId }) {
+  const { mutateAsync, isLoading } = useCreateSession(classId)
+  const [startDate, setStartDate] = useState(null)
+  const [endDate, setEndDate] = useState(null)
   const [form] = Form.useForm()
+
+  const testSets = [
+    {
+      id: 1,
+      name: 'Test Set 1'
+    },
+    {
+      id: 2,
+      name: 'Test Set 2'
+    },
+    {
+      id: 3,
+      name: 'Test Set 3'
+    },
+    {
+      id: 4,
+      name: 'Test Set 4'
+    }
+  ]
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields()
-      const sessionData = {
-        name: values.name,
-        key: values.key,
-        testSetId: values.testSetId,
-        startTime: values.startDate.toDate(),
-        endTime: values.endDate.toDate()
+      const payload = {
+        ...values,
+        startTime: startDate?.toISOString(),
+        endTime: endDate?.toISOString(),
+        ClassID: classId,
+        Status: 'NOT_STARTED'
       }
-
-      await onSubmit(sessionData)
+      await mutateAsync(payload)
       notification.success({
         message: (
           <div className="flex items-center gap-3">
@@ -32,37 +54,48 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
         duration: 3,
         className: 'custom-notification-success'
       })
-
+      onClose()
       form.resetFields()
-      onCancel()
-    } catch (error) {
-      console.error('Validation failed:', error)
+    } catch (err) {
+      console.error(err)
       notification.error({
         message: 'Failed to create session',
-        description: 'Please check your input and try again',
+        description: err.response?.data?.message || err.message || 'Please check your input and try again',
         placement: 'topRight',
         duration: 3
       })
     }
   }
 
+  const handleEndDateChange = date => {
+    if (startDate && date && date.isBefore(startDate)) {
+      setEndDate(startDate)
+    } else {
+      setEndDate(date)
+    }
+  }
+
   return (
     <Modal
+      open={open}
       title={<div className="text-center text-2xl font-semibold">Create new session</div>}
-      open={visible}
-      onCancel={onCancel}
+      onCancel={() => {
+        onClose()
+        form.resetFields()
+      }}
       width={500}
       maskClosable={false}
       className="create-session-modal"
       footer={
         <div className="flex justify-end space-x-4">
-          <Button key="cancel" onClick={onCancel} className="h-10 w-24 border border-[#D1D5DB] text-[#374151]">
+          <Button key="cancel" onClick={onClose} className="h-10 w-24 border border-[#D1D5DB] text-[#374151]">
             Cancel
           </Button>
           <Button
             key="submit"
             type="primary"
             onClick={handleSubmit}
+            loading={isLoading}
             className="h-10 w-24 bg-[#003087] hover:bg-[#003087]/90"
           >
             Create
@@ -72,7 +105,7 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
     >
       <Form form={form} layout="vertical" className="px-4">
         <Form.Item
-          name="name"
+          name="sessionName"
           label={<span>Session name</span>}
           rules={[
             { required: true, message: 'Please input session name' },
@@ -83,7 +116,7 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
         </Form.Item>
 
         <Form.Item
-          name="key"
+          name="sessionKey"
           label={<span>Session key</span>}
           rules={[
             { required: true, message: 'Please input session key' },
@@ -94,7 +127,7 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
         </Form.Item>
 
         <Form.Item
-          name="testSetId"
+          name="examSet"
           label={<span>Test set</span>}
           rules={[{ required: true, message: 'Please select a test set' }]}
         >
@@ -116,6 +149,7 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
             <DatePicker
               showTime
               format="DD/MM/YYYY HH:mm"
+              onChange={date => setStartDate(date)}
               placeholder="Select start date"
               className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
               suffixIcon={<CalendarOutlined className="text-gray-400" />}
@@ -128,26 +162,21 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
             label={<span>End date</span>}
             rules={[
               { required: true, message: 'Please select end date' },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  const startDate = getFieldValue('startDate')
-                  if (!value || !startDate) {
-                    return Promise.resolve()
-                  }
-                  const startTime = startDate.valueOf()
-                  const endTime = value.valueOf()
-                  if (endTime <= startTime) {
-                    return Promise.reject(new Error('End time must be after start time'))
+              {
+                validator: (_, value) => {
+                  if (value && startDate && value.isBefore(startDate)) {
+                    return Promise.reject('End date cannot be before start date!')
                   }
                   return Promise.resolve()
                 }
-              })
+              }
             ]}
           >
             <DatePicker
               showTime
               format="DD/MM/YYYY HH:mm"
               placeholder="Select end date"
+              onChange={handleEndDateChange}
               className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
               suffixIcon={<CalendarOutlined className="text-gray-400" />}
               disabledDate={current => current && current < dayjs().startOf('day')}
@@ -158,17 +187,3 @@ const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
     </Modal>
   )
 }
-
-CreateSessionModal.propTypes = {
-  visible: PropTypes.bool.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
-  testSets: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired
-    })
-  )
-}
-
-export default CreateSessionModal
