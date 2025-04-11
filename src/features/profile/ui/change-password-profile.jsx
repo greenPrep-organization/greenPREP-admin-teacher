@@ -1,7 +1,7 @@
-import { Form, Input, message, Modal, Button } from 'antd'
+import { PASSWORD_REG } from '@/shared/lib/constants/reg'
+import { Button, Form, Input, message, Modal } from 'antd'
 import { useState } from 'react'
 import * as Yup from 'yup'
-import { PASSWORD_REG } from '@/shared/lib/constants/reg'
 
 const passwordValidationSchema = Yup.object().shape({
   oldPassword: Yup.string().required('Old password is required'),
@@ -22,6 +22,7 @@ const ChangePasswordModal = ({ open, onCancel, onSubmit, userId }) => {
         oldPassword: passwordData.oldPassword,
         newPassword: passwordData.newPassword
       })
+      message.success('Password changed successfully!')
       setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' })
     } catch (error) {
       if (error.inner) {
