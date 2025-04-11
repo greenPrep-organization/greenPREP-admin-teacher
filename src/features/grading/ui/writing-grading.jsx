@@ -10,26 +10,26 @@ const FEEDBACK_STORAGE_KEY = 'writing_grading_feedback'
 
 let hasLoadedWritingDraft = false
 
-function WritingGrade({ studentId }) {
+function WritingGrade({ sessionParticipantId }) {
   const [activePart, setActivePart] = useState('part1')
   const [feedbacks, setFeedbacks] = useState({})
 
-  const { data: apiData, isLoading, isError } = useGetWritingData()
+  const { data: apiData, isLoading, isError } = useGetWritingData(sessionParticipantId)
 
   useEffect(() => {
-    const storedFeedbacks = JSON.parse(localStorage.getItem(`${FEEDBACK_STORAGE_KEY}_${studentId}`) || '{}')
+    const storedFeedbacks = JSON.parse(localStorage.getItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`) || '{}')
     if (storedFeedbacks) {
       setFeedbacks(storedFeedbacks)
     }
-  }, [studentId])
+  }, [sessionParticipantId])
 
   useEffect(() => {
-    localStorage.setItem(`${FEEDBACK_STORAGE_KEY}_${studentId}`, JSON.stringify(feedbacks))
-  }, [feedbacks, studentId])
+    localStorage.setItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`, JSON.stringify(feedbacks))
+  }, [feedbacks, sessionParticipantId])
 
   useEffect(() => {
     if (!hasLoadedWritingDraft && apiData?.data) {
-      const draftData = JSON.parse(localStorage.getItem(`${STORAGE_KEY}_${studentId}`) || '[]')
+      const draftData = JSON.parse(localStorage.getItem(`${STORAGE_KEY}_${sessionParticipantId}`) || '[]')
       if (draftData) {
         const loadedScores = {}
         draftData.forEach(({ part, scores: partScores }) => {
@@ -42,7 +42,7 @@ function WritingGrade({ studentId }) {
         hasLoadedWritingDraft = true
       }
     }
-  }, [apiData, studentId])
+  }, [apiData, sessionParticipantId])
 
   const handlePartChange = key => setActivePart(key)
 
@@ -61,14 +61,15 @@ function WritingGrade({ studentId }) {
       part4: { questions: [], answers: [], instructions: '', subInstructions: '' }
     }
 
-    if (!apiData?.data || apiData.data.length === 0) {
+    if (!apiData?.data?.topic?.Parts) {
       return emptyParts
     }
 
     const parts = { ...emptyParts }
+    const topicParts = apiData.data.topic.Parts
 
-    apiData.data.forEach(item => {
-      const partContent = item.Question?.Part?.Content || ''
+    topicParts.forEach(part => {
+      const partContent = part.Content || ''
       let partNumber = 1
 
       const partMatch = partContent.match(/Part (\d+)/i)
@@ -78,16 +79,17 @@ function WritingGrade({ studentId }) {
 
       const partKey = `part${partNumber}`
 
-      if (!parts[partKey].instructions && item.Question?.Part?.Content) {
-        parts[partKey].instructions = item.Question.Part.Content
-      }
+      parts[partKey].instructions = part.Content || ''
+      parts[partKey].subInstructions = part.SubContent || ''
 
-      if (!parts[partKey].subInstructions && item.Question?.Part?.SubContent) {
-        parts[partKey].subInstructions = item.Question.Part.SubContent
-      }
+      if (part.Questions && part.Questions.length > 0) {
+        part.Questions.forEach(question => {
+          parts[partKey].questions.push(question.Content || '')
 
-      parts[partKey].questions.push(item.Question?.Content || '')
-      parts[partKey].answers.push(item.AnswerText || '')
+          const answer = question.studentAnswer?.AnswerText || ''
+          parts[partKey].answers.push(answer)
+        })
+      }
     })
 
     return parts
@@ -213,7 +215,7 @@ function WritingGrade({ studentId }) {
 }
 
 WritingGrade.propTypes = {
-  studentId: PropTypes.string.isRequired
+  sessionParticipantId: PropTypes.string.isRequired
 }
 
 export default WritingGrade

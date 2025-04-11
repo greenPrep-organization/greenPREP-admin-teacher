@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import axiosInstance from '@shared/config/axios'
 
+const SESSION_PARTICIPANT_ID = '45c6d73a-ad6f-4eb7-b5ba-9adcb97c91f0'
+
 export const useGetSpeakingTest = (topicId, skillName = 'SPEAKING') => {
   return useQuery({
     queryKey: ['speakingTest', topicId],
@@ -24,19 +26,14 @@ export const useGetSpeakingTest = (topicId, skillName = 'SPEAKING') => {
   })
 }
 
-export const useGetWritingData = () => {
-  const SessionId = '26fc28e3-a9d8-45f5-ac7b-88086075e82e'
-  const topicId = 'ef6b69aa-2ec2-4c65-bf48-294fd12e13fc'
-  const StudentId = '7a5cb071-5ba0-4ecf-a4cf-b1b62e5f9798'
-  const SkillName = 'writing'
-
+export const useGetWritingData = (sessionParticipantId = SESSION_PARTICIPANT_ID, skillName = 'writing') => {
   return useQuery({
-    queryKey: ['writingData', SessionId, StudentId, SkillName, topicId],
+    queryKey: ['writingData', sessionParticipantId, skillName],
     queryFn: async () => {
-      const url = `/grades/participants?sessionId=${SessionId}&studentId=${StudentId}&skillName=${SkillName}&topicId=${topicId}`
+      const url = `/grades/participants?sessionParticipantId=${sessionParticipantId}&skillName=${skillName}`
       const response = await axiosInstance.get(url)
       return response.data
     },
-    enabled: !!SessionId && !!StudentId && !!SkillName && !!topicId
+    enabled: !!sessionParticipantId && !!skillName
   })
 }
