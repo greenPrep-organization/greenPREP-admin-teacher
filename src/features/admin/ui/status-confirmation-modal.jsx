@@ -13,11 +13,6 @@ const StatusConfirmationModal = ({ isVisible, onCancel, onConfirm, teacherName, 
       centered
       closable={false}
       className="status-confirmation-modal"
-      styles={{
-        body: {
-          padding: 0 // Tailwind handles padding, so set to 0 here
-        }
-      }}
     >
       <div className="flex flex-col items-center p-4 text-center">
         <div className="mb-4 rounded-full bg-red-100 p-4">
