@@ -1,7 +1,7 @@
 import { Form, Input, message, Modal, Button } from 'antd'
 import { useState } from 'react'
 import * as Yup from 'yup'
-import { PASSWORD_REG } from '../../../shared/lib/constants/reg'
+import { PASSWORD_REG } from '@/shared/lib/constants/reg'
 
 const passwordValidationSchema = Yup.object().shape({
   oldPassword: Yup.string().required('Old password is required'),

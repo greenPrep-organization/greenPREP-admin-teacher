@@ -1,5 +1,5 @@
 import { Form, Input, Modal, Button } from 'antd'
-import { EMAIL_REG, PHONE_REG } from '../../../shared/lib/constants/reg'
+import { EMAIL_REG, PHONE_REG } from '@/shared/lib/constants/reg'
 
 const EditProfileModal = ({ open, onCancel, onSave, formData, setFormData }) => {
   const [form] = Form.useForm()
