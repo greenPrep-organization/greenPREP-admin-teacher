@@ -55,3 +55,12 @@ export const getTestSets = async () => {
   const response = await axiosInstance.get('/topics')
   return response.data
 }
+
+export const deleteSession = async sessionId => {
+  try {
+    const response = await axiosInstance.delete(`/sessions/${sessionId}`)
+    return response.data
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to delete session')
+  }
+}
