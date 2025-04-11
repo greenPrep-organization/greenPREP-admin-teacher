@@ -1,8 +1,12 @@
+// @ts-nocheck
 import { CheckOutlined, FileDoneOutlined, UserOutlined, WarningOutlined } from '@ant-design/icons'
-import { useSessionData } from '@features/dashboard/hooks'
+import { fetchSessionParticipants } from '@features/dashboard/api'
+import { useMyClasses, useSessionData } from '@features/dashboard/hooks'
 import CalendarCard from '@features/dashboard/ui/calendar'
 import { Card } from 'antd'
+import { useEffect, useState } from 'react'
 import Chart from 'react-apexcharts'
+import { useSelector } from 'react-redux'
 
 // Mock data
 const studentCountData = {
@@ -37,14 +41,34 @@ const skillComparisonData = {
 }
 
 const DashboardPage = () => {
+  const auth = useSelector(state => state.auth)
   const { data: sessionData, isLoading, isError } = useSessionData()
-
-  if (isLoading) return <p>Loading...</p>
-  if (isError) return <p>Error fetching sessions: {isError}</p>
+  const { data: myClasses = [], isLoading: classLoading } = useMyClasses(auth.user?.userId)
   const sessionsArray = Array.isArray(sessionData?.data) ? sessionData.data : []
-  const notStartedCount = sessionsArray.filter(session => session.status?.toUpperCase() === 'NOT_STARTED').length
-  const startedCount = sessionsArray.filter(session => session.status?.toUpperCase() === 'STARTED').length
+  const teacherSessions = sessionsArray.filter(
+    session => session?.Classes?.UserID?.trim() === auth.user?.userId?.trim()
+  )
+  const mySessions = sessionsArray.filter(session => session?.Classes?.UserID?.trim() === auth.user?.userId?.trim())
+  const CompleteCount = teacherSessions.filter(session => session.status?.toUpperCase() === 'COMPLETE').length
+  const myClassCount = myClasses?.length || 0
+  const [ungradedCount, setUngradedCount] = useState(0)
 
+  useEffect(() => {
+    const fetchUngraded = async () => {
+      try {
+        const allUngraded = await Promise.all(
+          mySessions.map(session => fetchSessionParticipants(session.ID).then(res => res.filter(p => p.Total === null)))
+        )
+        setUngradedCount(allUngraded.flat().length)
+      } catch (error) {
+        console.error('Error fetching ungraded participants', error)
+      }
+    }
+
+    if (mySessions.length > 0) {
+      fetchUngraded()
+    }
+  }, [mySessions])
   const performanceData = [
     { level: 'A1', percentage: 60 },
     { level: 'A2', percentage: 70 },
@@ -56,25 +80,25 @@ const DashboardPage = () => {
     {
       title: 'Total Student',
       value: '200',
-      subtitle: 'students',
+      subtitle: 'Students',
       icon: <UserOutlined className="text-2xl text-blue-500" />,
       bgColor: 'bg-blue-100',
       trendColor: 'text-blue-600',
       isIncrease: true
     },
     {
-      title: 'Total Session Started',
-      value: startedCount,
-      subtitle: 'Session Started',
+      title: 'Total Session Completed',
+      value: CompleteCount,
+      subtitle: 'Session Completed',
       icon: <FileDoneOutlined className="text-2xl text-purple-500" />,
       bgColor: 'bg-purple-100',
       trendColor: 'text-purple-600',
       isIncrease: false
     },
     {
-      title: 'Total Session Completed',
-      value: '50',
-      subtitle: 'Session Completed',
+      title: 'My Classes',
+      value: myClassCount,
+      subtitle: 'Classes Assigned',
       icon: <CheckOutlined className="text-2xl text-yellow-500" />,
       bgColor: 'bg-yellow-100',
       trendColor: 'text-yellow-600',
@@ -82,14 +106,16 @@ const DashboardPage = () => {
     },
     {
       title: 'Total Ungrade',
-      value: notStartedCount,
-      subtitle: 'Exam not ungrade',
+      value: ungradedCount,
+      subtitle: 'Exam not graded',
       icon: <WarningOutlined className="text-2xl text-red-500" />,
       bgColor: 'bg-red-100',
       trendColor: 'text-red-600',
       isIncrease: true
     }
   ]
+  if (isLoading || classLoading) return <p>Loading...</p>
+  if (isError) return <p>Error fetching sessions: {isError}</p>
   return (
     <div className="p-4">
       <div className="grid grid-cols-1 gap-6 pb-5 md:grid-cols-2 lg:grid-cols-4">
@@ -104,7 +130,7 @@ const DashboardPage = () => {
                 <div>{stat.icon}</div>
               </div>
               <div>
-                <div className="text-md font-medium text-gray-600">{stat.title}</div>
+                <div className="text-md whitespace-nowrap font-medium text-gray-600">{stat.title}</div>
                 <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
                 <div className="h-8 w-full rounded-md">{stat.subtitle}</div>
               </div>
