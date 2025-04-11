@@ -1,3 +1,4 @@
+// @ts-nocheck
 import EditSession from '@/features/session/ui/edit-session'
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { useSessions } from '@features/session/hooks'

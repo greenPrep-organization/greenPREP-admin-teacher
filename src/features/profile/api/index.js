@@ -2,7 +2,6 @@ import axiosInstance from '@shared/config/axios'
 
 export const fetchUserProfile = async userId => {
   try {
-    console.log(`Fetching user profile for userId: ${userId}`)
     const { data } = await axiosInstance.get(`/users/${userId}`)
     return data
   } catch (error) {

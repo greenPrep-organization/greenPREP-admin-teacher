@@ -12,19 +12,20 @@ export const getSessionDetail = async sessionId => {
 export const getSessionParticipants = async (sessionId, params = {}) => {
   try {
     const response = await axiosInstance.get(`/session-participants/${sessionId}`, { params })
-    console.log(response)
     return response.data
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to fetch participants')
   }
 }
 
-export const updateParticipantLevel = async (sessionId, participantId, level) => {
+export const updateParticipantLevelById = async (id, level) => {
   try {
-    const response = await axiosInstance.patch(`/sessions/${sessionId}/participants/${participantId}`, { level })
+    const response = await axiosInstance.put(`/session-participants/${id}/level`, {
+      newLevel: level
+    })
     return response.data
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to update participant level')
+    throw new Error(error.response?.data?.message || 'Failed to update participant level by ID')
   }
 }
 
@@ -48,4 +49,9 @@ export const createSession = async data => {
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to create session')
   }
+}
+
+export const getTestSets = async () => {
+  const response = await axiosInstance.get('/topics')
+  return response.data
 }
