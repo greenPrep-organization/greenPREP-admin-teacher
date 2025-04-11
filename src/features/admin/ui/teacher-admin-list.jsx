@@ -11,7 +11,6 @@ import StatusConfirmationModal from './status-confirmation-modal'
 
 const TeacherAdminList = () => {
   const [searchText, setSearchText] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
   const updateProfileMutation = useUpdateTeacherProfile()
@@ -23,8 +22,6 @@ const TeacherAdminList = () => {
   const deleteTeacherMutation = useDeleteTeacher()
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
 
-  const statusValue = statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined
-  console.log(statusFilter, statusValue)
   const handleEditStatusClick = record => {
     setSelectedTeacher(record)
     setEditModalVisible(true)
@@ -55,14 +52,10 @@ const TeacherAdminList = () => {
   }
 
   const handleStatusFilterChange = value => {
-    setStatusFilter(value)
-    console.log(value)
     if (value === 'active') {
       setTeachers(teachersResponse?.teachers.filter(item => item.status === true))
-      console.log(teachers)
     } else if (value === 'inactive') {
       setTeachers(teachersResponse?.teachers.filter(item => item.status === false))
-      console.log(teachers)
     } else {
       setTeachers(teachersResponse?.teachers)
     }
@@ -206,7 +199,6 @@ const TeacherAdminList = () => {
           </div>
           <Select
             defaultValue="all"
-            value={statusFilter}
             onChange={handleStatusFilterChange}
             style={{ width: 150 }}
             className="shadow-sm"
