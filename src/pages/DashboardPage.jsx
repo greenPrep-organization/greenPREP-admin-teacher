@@ -3,12 +3,11 @@ import { CheckOutlined, FileDoneOutlined, UserOutlined, WarningOutlined } from '
 import { fetchSessionParticipants } from '@features/dashboard/api'
 import { useMyClasses, useSessionData } from '@features/dashboard/hooks'
 import CalendarCard from '@features/dashboard/ui/calendar'
-import { Card } from 'antd'
+import { Alert, Card, Spin } from 'antd'
 import { useEffect, useState } from 'react'
 import Chart from 'react-apexcharts'
 import { useSelector } from 'react-redux'
 
-// Mock data
 const studentCountData = {
   A1: { passed: 30, total: 50 },
   A2: { passed: 35, total: 50 },
@@ -39,16 +38,23 @@ const skillComparisonData = {
     Grammar: 50
   }
 }
+const performanceData = [
+  { level: 'A1', percentage: 60 },
+  { level: 'A2', percentage: 70 },
+  { level: 'B1', percentage: 30 },
+  { level: 'B2', percentage: 50 },
+  { level: 'C', percentage: 40 }
+]
 
 const DashboardPage = () => {
   const auth = useSelector(state => state.auth)
   const { data: sessionData, isLoading, isError } = useSessionData()
   const { data: myClasses = [], isLoading: classLoading } = useMyClasses(auth.user?.userId)
   const sessionsArray = Array.isArray(sessionData?.data) ? sessionData.data : []
+  const mySessions = sessionsArray.filter(session => session?.Classes?.UserID?.trim() === auth.user?.userId?.trim())
   const teacherSessions = sessionsArray.filter(
     session => session?.Classes?.UserID?.trim() === auth.user?.userId?.trim()
   )
-  const mySessions = sessionsArray.filter(session => session?.Classes?.UserID?.trim() === auth.user?.userId?.trim())
   const CompleteCount = teacherSessions.filter(session => session.status?.toUpperCase() === 'COMPLETE').length
   const myClassCount = myClasses?.length || 0
   const [ungradedCount, setUngradedCount] = useState(0)
@@ -69,13 +75,7 @@ const DashboardPage = () => {
       fetchUngraded()
     }
   }, [mySessions])
-  const performanceData = [
-    { level: 'A1', percentage: 60 },
-    { level: 'A2', percentage: 70 },
-    { level: 'B1', percentage: 30 },
-    { level: 'B2', percentage: 50 },
-    { level: 'C', percentage: 40 }
-  ]
+
   const statsConfig = [
     {
       title: 'Total Student',
@@ -114,8 +114,25 @@ const DashboardPage = () => {
       isIncrease: true
     }
   ]
-  if (isLoading || classLoading) return <p>Loading...</p>
-  if (isError) return <p>Error fetching sessions: {isError}</p>
+
+  if (isLoading || classLoading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <Spin tip="Loading..." size="large" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <Alert
+        message="Error"
+        description={`Error fetching sessions: ${isError.message || isError}`}
+        type="error"
+        showIcon
+      />
+    )
+  }
   return (
     <div className="p-4">
       <div className="grid grid-cols-1 gap-6 pb-5 md:grid-cols-2 lg:grid-cols-4">
