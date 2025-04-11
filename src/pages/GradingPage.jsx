@@ -7,6 +7,7 @@ import Writing from '@features/grading/ui/writing-grading'
 import GradingScoringPanel from '@features/grading/ui/grading-scoring-panel'
 import { useGetSpeakingTest } from '@features/grading/api'
 import StudentListPopup from '@features/grading/ui/StudentListPopup'
+import ExportToPdfButton from '@features/grading/ui/export-to-pdf'
 import studentMockData from '@features/grading/constants/studentMockData.js'
 
 function GradingPage() {
@@ -20,6 +21,7 @@ function GradingPage() {
   const [writingScore, setWritingScore] = useState('')
   const [previousSpeakingScore, setPreviousSpeakingScore] = useState('')
   const [previousWritingScore, setPreviousWritingScore] = useState('')
+  const [activeWritingPart, setActiveWritingPart] = useState('part1')
   const navigate = useNavigate()
 
   const GRADING_CONFIG = {
@@ -133,6 +135,10 @@ function GradingPage() {
     setActiveSection(newSection)
   }
 
+  const handleWritingPartChange = part => {
+    setActiveWritingPart(part)
+  }
+
   const breadcrumbItems = [
     { title: GRADING_CONFIG.DASHBOARD_PATH },
     { title: GRADING_CONFIG.CLASSES_PATH },
@@ -215,9 +221,10 @@ function GradingPage() {
                 Writing
               </Button>
             </div>
-            <Button className="rounded-lg bg-red-400 px-8 py-5 text-base font-medium text-white hover:bg-red-500">
-              Export to PDF
-            </Button>
+            <ExportToPdfButton 
+              studentId={studentData.id} 
+              activePart={activeSection === 'writing' ? activeWritingPart : 'part1'} 
+            />
           </div>
         </div>
       </div>
@@ -240,7 +247,7 @@ function GradingPage() {
         {activeSection === 'speaking' ? (
           <Speaking testData={speakingTest} isLoading={speakingLoading} studentId={studentData.id} />
         ) : (
-          <Writing studentId={studentData.id} />
+          <Writing studentId={studentData.id} onPartChange={handleWritingPartChange} />
         )}
       </div>
     </div>

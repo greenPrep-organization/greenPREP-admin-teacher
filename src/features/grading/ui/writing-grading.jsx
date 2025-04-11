@@ -10,7 +10,7 @@ const FEEDBACK_STORAGE_KEY = 'writing_grading_feedback'
 
 let hasLoadedWritingDraft = false
 
-function WritingGrade({ studentId }) {
+function WritingGrade({ studentId, onPartChange }) {
   const [activePart, setActivePart] = useState('part1')
   const [feedbacks, setFeedbacks] = useState({})
 
@@ -44,7 +44,12 @@ function WritingGrade({ studentId }) {
     }
   }, [apiData, studentId])
 
-  const handlePartChange = key => setActivePart(key)
+  const handlePartChange = key => {
+    setActivePart(key)
+    if (onPartChange) {
+      onPartChange(key)
+    }
+  }
 
   const handleFeedbackChange = (part, questionIndex, value) => {
     setFeedbacks(prevFeedbacks => ({
@@ -213,7 +218,8 @@ function WritingGrade({ studentId }) {
 }
 
 WritingGrade.propTypes = {
-  studentId: PropTypes.string.isRequired
+  studentId: PropTypes.string.isRequired,
+  onPartChange: PropTypes.func
 }
 
 export default WritingGrade
