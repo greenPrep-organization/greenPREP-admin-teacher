@@ -39,14 +39,6 @@ const SessionsList = ({ classId }) => {
     setFilteredSessions(filtered)
   }, [searchText, sessions])
 
-  const handleDelete = async () => {
-    if (!deleteSessionId) return
-    const updatedSessions = sessions.filter(session => session.id !== deleteSessionId)
-    setFilteredSessions(updatedSessions)
-    setDeleteSessionId(null)
-    message.success('Session deleted successfully')
-  }
-
   const handleViewSession = useCallback(
     sessionId => {
       navigate(`/classes-management/${classId}/session/${sessionId}`)
@@ -259,7 +251,7 @@ const SessionsList = ({ classId }) => {
         <DeleteSessionPopup
           isOpen={!!deleteSessionId}
           onClose={() => setDeleteSessionId(null)}
-          onDelete={handleDelete}
+          sessionId={deleteSessionId}
         />
       )}
     </div>
