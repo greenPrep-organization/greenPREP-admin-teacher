@@ -1,10 +1,10 @@
 import { fetchTeachersList, updateTeacherProfile } from '@features/admin/api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-export const useTeachers = ({ page = 1, limit = 10, search = '', status = true }) => {
+export const useTeachers = ({ page = 1, limit = 10, search = '' }) => {
   return useQuery({
-    queryKey: ['teachers', { page, limit, search, status }],
-    queryFn: () => fetchTeachersList({ page, limit, search, status })
+    queryKey: ['teachers', { page, limit, search }],
+    queryFn: () => fetchTeachersList({ page, limit, search })
   })
 }
 export const useUpdateTeacherProfile = () => {

@@ -11,7 +11,6 @@ import StatusConfirmationModal from './status-confirmation-modal'
 
 const TeacherAdminList = () => {
   const [searchText, setSearchText] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
   const updateProfileMutation = useUpdateTeacherProfile()
@@ -23,7 +22,6 @@ const TeacherAdminList = () => {
   const deleteTeacherMutation = useDeleteTeacher()
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
 
-  const statusValue = statusFilter === 'active' ? true : statusFilter === 'inactive' ? false : undefined
   const handleEditStatusClick = record => {
     setSelectedTeacher(record)
     setEditModalVisible(true)
@@ -44,8 +42,7 @@ const TeacherAdminList = () => {
   } = useTeachers({
     page: currentPage,
     limit: pageSize,
-    search: searchText,
-    status: statusValue
+    search: searchText
   })
   const totalItems = teachersResponse?.total || 0
 
@@ -55,7 +52,13 @@ const TeacherAdminList = () => {
   }
 
   const handleStatusFilterChange = value => {
-    setStatusFilter(value)
+    if (value === 'active') {
+      setTeachers(teachersResponse?.teachers.filter(item => item.status === true))
+    } else if (value === 'inactive') {
+      setTeachers(teachersResponse?.teachers.filter(item => item.status === false))
+    } else {
+      setTeachers(teachersResponse?.teachers)
+    }
     setCurrentPage(1)
   }
 
@@ -138,7 +141,7 @@ const TeacherAdminList = () => {
       key: 'status',
       render: (status, record) => (
         <div
-          className={`cursor-pointer rounded px-3 py-1 ${status ? 'bg-teal-500 text-white' : 'bg-gray-300 text-black'}`}
+          className={`w-[6rem] cursor-pointer rounded px-3 py-1 ${status ? 'bg-teal-500 text-white' : 'bg-gray-300 text-black'}`}
           onClick={() => handleStatusClick(record)}
         >
           {status ? 'Active' : 'Inactive'}
@@ -196,7 +199,6 @@ const TeacherAdminList = () => {
           </div>
           <Select
             defaultValue="all"
-            value={statusFilter}
             onChange={handleStatusFilterChange}
             style={{ width: 150 }}
             className="shadow-sm"
