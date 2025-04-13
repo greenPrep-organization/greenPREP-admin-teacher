@@ -1,17 +1,24 @@
 import { useState, useEffect } from 'react'
-import { Button, Breadcrumb } from 'antd'
-import { useNavigate } from 'react-router-dom'
+import { Button } from 'antd'
+import { useNavigate, useParams } from 'react-router-dom'
 import StudentCard from '@features/grading/ui/student-information'
 import Speaking from '@features/grading/ui/speaking-grading'
 import Writing from '@features/grading/ui/writing-grading'
 import GradingScoringPanel from '@features/grading/ui/grading-scoring-panel'
-import { useGetSpeakingTest } from '@features/grading/api'
 import StudentListPopup from '@features/grading/ui/StudentListPopup'
-import studentMockData from '@features/grading/constants/studentMockData.js'
+import { useGetSpeakingTest, useGetSessionParticipants } from '@features/grading/api'
+import axiosInstance from '@shared/config/axios'
+import AppBreadcrumb from '@/shared/ui/Breadcrumb'
+import { useQuery } from '@tanstack/react-query'
+import { LeftOutlined } from '@ant-design/icons'
+
+const fetchSessionDetail = async sessionId => {
+  const res = await axiosInstance.get(`/sessions/${sessionId}`)
+  return res.data.data
+}
 
 function GradingPage() {
   const [activeSection, setActiveSection] = useState('speaking')
-  const [currentStudent, setCurrentStudent] = useState(1)
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const [isSpeakingGraded, setIsSpeakingGraded] = useState(false)
   const [isWritingGraded, setIsWritingGraded] = useState(false)
@@ -20,27 +27,75 @@ function GradingPage() {
   const [writingScore, setWritingScore] = useState('')
   const [previousSpeakingScore, setPreviousSpeakingScore] = useState('')
   const [previousWritingScore, setPreviousWritingScore] = useState('')
+  const [studentData, setStudentData] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [currentStudentIndex, setCurrentStudentIndex] = useState(0)
+  const [searchText, setSearchText] = useState('')
+  const pageSize = 10
   const navigate = useNavigate()
+  const { sessionId, participantId } = useParams()
 
-  const GRADING_CONFIG = {
-    SPEAKING_TEST_ID: 'ef6b69aa-2ec2-4c65-bf48-294fd12e13fc',
-    TEST_TYPE: 'SPEAKING',
-    CLASS_NAME: 'CLASS01',
-    TERM: 'Feb_2025',
-    DASHBOARD_PATH: 'Dashboard',
-    CLASSES_PATH: 'Classes'
-  }
+  const { data: speakingTestData, isLoading: speakingLoading } = useGetSpeakingTest(participantId)
 
-  const [studentList, setStudentList] = useState(studentMockData)
-  const [studentData, setStudentData] = useState(studentList[0])
+  const {
+    data: participantsData,
+    isLoading: participantsLoading,
+    refetch: refetchParticipants
+  } = useGetSessionParticipants(sessionId, {
+    page: currentPage,
+    limit: pageSize,
+    search: searchText
+  })
 
-  const { data: speakingTest, isLoading: speakingLoading } = useGetSpeakingTest(
-    GRADING_CONFIG.SPEAKING_TEST_ID,
-    GRADING_CONFIG.TEST_TYPE
-  )
+  const { data: sessionDetail } = useQuery({
+    queryKey: ['session-detail', sessionId],
+    queryFn: () => fetchSessionDetail(sessionId),
+    enabled: !!sessionId
+  })
+
+  console.log('Session Detail:', sessionDetail)
+
+  const className = sessionDetail?.Classes?.className ?? 'Loading...'
+  const sessionName = sessionDetail?.sessionName ?? 'Loading...'
+
+  useEffect(() => {
+    if (isPopupVisible) {
+      setCurrentPage(1)
+      setSearchText('')
+    }
+  }, [isPopupVisible])
+
+  useEffect(() => {
+    if (participantsData?.data) {
+      const currentStudent = participantsData.data.find(p => p.ID === participantId)
+      if (currentStudent) {
+        const studentInfo = {
+          id: currentStudent.ID,
+          userId: currentStudent.UserID,
+          name: currentStudent.User.fullName,
+          email: currentStudent.User.email,
+          phone: currentStudent.User.phone,
+          class: currentStudent.User.class,
+          speaking: currentStudent.Speaking,
+          writing: currentStudent.Writing,
+          studentCode: currentStudent.User.studentCode,
+          classId: currentStudent.ClassID
+        }
+        setStudentData(studentInfo)
+
+        const studentIndex = participantsData.data.findIndex(p => p.ID === participantId)
+        if (studentIndex !== -1) {
+          const globalIndex = (currentPage - 1) * pageSize + studentIndex + 1
+          setCurrentStudentIndex(Math.min(globalIndex, participantsData.pagination.totalItems))
+        }
+      }
+    }
+  }, [participantsData, participantId, currentPage, pageSize])
 
   useEffect(() => {
     const loadScoresFromStorage = () => {
+      if (!studentData) return
+
       const storedData = localStorage.getItem(`grading_${studentData.id}`)
       if (storedData) {
         const { speakingScore: storedSpeaking, writingScore: storedWriting } = JSON.parse(storedData)
@@ -62,9 +117,10 @@ function GradingPage() {
       }
     }
     loadScoresFromStorage()
-  }, [studentData.id, studentData.speaking, studentData.writing])
+  }, [studentData])
 
   const saveScoresToStorage = () => {
+    if (!studentData) return
     const data = {
       speakingScore,
       writingScore
@@ -72,22 +128,62 @@ function GradingPage() {
     localStorage.setItem(`grading_${studentData.id}`, JSON.stringify(data))
   }
 
-  const navigateToPreviousStudent = () => {
-    const prevIndex = Math.max(0, currentStudent - 2)
-    setCurrentStudent(prevIndex + 1)
-    setStudentData(studentList[prevIndex])
-    setActiveSection('speaking')
+  const navigateToPreviousStudent = async () => {
+    if (participantsData?.data) {
+      const currentIndex = participantsData.data.findIndex(s => s.ID === participantId)
+
+      if (currentIndex > 0) {
+        const prevStudent = participantsData.data[currentIndex - 1]
+        const prevIndex = (currentPage - 1) * pageSize + currentIndex
+        setCurrentStudentIndex(Math.min(prevIndex, participantsData.pagination.totalItems))
+        navigate(`/grading/${sessionId}/${prevStudent.ID}`)
+      } else if (currentPage > 1) {
+        const prevPage = currentPage - 1
+        const prevPageResponse = await axiosInstance.get(`/session-participants/${sessionId}`, {
+          params: { page: prevPage, limit: pageSize, search: searchText }
+        })
+
+        if (prevPageResponse.data.data.length > 0) {
+          const lastStudentInPrevPage = prevPageResponse.data.data[prevPageResponse.data.data.length - 1]
+          const prevIndex = prevPage * pageSize
+          setCurrentStudentIndex(Math.min(prevIndex, participantsData.pagination.totalItems))
+          setCurrentPage(prevPage)
+          navigate(`/grading/${sessionId}/${lastStudentInPrevPage.ID}`)
+        }
+      }
+    }
   }
 
-  const navigateToNextStudent = () => {
-    const nextIndex = Math.min(studentList.length - 1, currentStudent)
-    setCurrentStudent(nextIndex + 1)
-    setStudentData(studentList[nextIndex])
-    setActiveSection('speaking')
+  const navigateToNextStudent = async () => {
+    if (participantsData?.data) {
+      const currentIndex = participantsData.data.findIndex(s => s.ID === participantId)
+
+      if (currentIndex < participantsData.data.length - 1) {
+        const nextStudent = participantsData.data[currentIndex + 1]
+        const nextIndex = (currentPage - 1) * pageSize + currentIndex + 2
+        setCurrentStudentIndex(Math.min(nextIndex, participantsData.pagination.totalItems))
+        navigate(`/grading/${sessionId}/${nextStudent.ID}`)
+      } else if (currentPage < participantsData.pagination.totalPages) {
+        const nextPage = currentPage + 1
+        const nextPageResponse = await axiosInstance.get(`/session-participants/${sessionId}`, {
+          params: { page: nextPage, limit: pageSize, search: searchText }
+        })
+
+        if (nextPageResponse.data.data.length > 0) {
+          const firstStudentInNextPage = nextPageResponse.data.data[0]
+          const nextIndex = (nextPage - 1) * pageSize + 1
+          setCurrentStudentIndex(Math.min(nextIndex, participantsData.pagination.totalItems))
+          setCurrentPage(nextPage)
+          navigate(`/grading/${sessionId}/${firstStudentInNextPage.ID}`)
+        }
+      }
+    }
   }
 
-  const handleBack = () => {
-    navigate(-1)
+  const handleViewStudentDetails = () => {
+    if (studentData) {
+      navigate(`/classes-management/${sessionId.split('-')[0]}/${sessionId}/students/${studentData.userId}`)
+    }
   }
 
   const handleChangeStudent = () => {
@@ -99,29 +195,31 @@ function GradingPage() {
   }
 
   const handleSelectStudent = student => {
-    setStudentData(student)
-    setCurrentStudent(studentList.findIndex(s => s.id === student.id) + 1)
-    setActiveSection('speaking')
+    navigate(`/grading/${sessionId}/${student.ID}`)
     setIsPopupVisible(false)
   }
 
-  const handleScoreSubmit = (score, section) => {
-    console.log(`Submitting ${section} score:`, score)
-    if (section === 'speaking') {
-      setIsSpeakingGraded(true)
-      setSpeakingScore(score.toString())
-      if (isWritingGraded) setIsFirstCompletionNotice(false)
-    } else if (section === 'writing') {
-      setIsWritingGraded(true)
-      setWritingScore(score.toString())
-      if (isSpeakingGraded) setIsFirstCompletionNotice(false)
+  const handleScoreSubmit = async (score, section) => {
+    try {
+      await axiosInstance.put(`/grades/participants/${studentData.id}`, {
+        skillName: section.toUpperCase(),
+        score: parseInt(score)
+      })
+
+      if (section === 'speaking') {
+        setIsSpeakingGraded(true)
+        setSpeakingScore(score.toString())
+        if (isWritingGraded) setIsFirstCompletionNotice(false)
+      } else if (section === 'writing') {
+        setIsWritingGraded(true)
+        setWritingScore(score.toString())
+        if (isSpeakingGraded) setIsFirstCompletionNotice(false)
+      }
+
+      saveScoresToStorage()
+    } catch (error) {
+      console.error(`Error updating ${section} score:`, error)
     }
-
-    setStudentList(prevList =>
-      prevList.map(student => (student.id === studentData.id ? { ...student, [section]: score } : student))
-    )
-
-    saveScoresToStorage()
   }
 
   const handleScoreChange = value => {
@@ -133,21 +231,61 @@ function GradingPage() {
     setActiveSection(newSection)
   }
 
+  const handleSearch = value => {
+    setSearchText(value)
+    setCurrentPage(1)
+  }
+
+  const handlePageChange = page => {
+    setCurrentPage(page)
+    refetchParticipants()
+  }
+
   const breadcrumbItems = [
-    { title: GRADING_CONFIG.DASHBOARD_PATH },
-    { title: GRADING_CONFIG.CLASSES_PATH },
-    { title: GRADING_CONFIG.CLASS_NAME },
-    { title: GRADING_CONFIG.TERM },
-    { title: studentData.name },
-    { title: activeSection === 'speaking' ? 'Speaking' : 'Writing' }
+    { label: 'Classes', path: '/classes-management' },
+    {
+      label: className,
+      path: `/classes-management/${sessionDetail?.Classes?.ID}`,
+      state: {
+        classInfo: {
+          ID: sessionDetail?.Classes?.ID,
+          className: sessionDetail?.Classes?.className
+        }
+      }
+    },
+    {
+      label: sessionName,
+      path: `/classes-management/${sessionDetail?.Classes?.ID}/session/${sessionId}`,
+      state: {
+        classInfo: {
+          ID: sessionDetail?.Classes?.ID,
+          className: sessionDetail?.Classes?.className
+        }
+      }
+    },
+    {
+      label: studentData?.name || 'Student',
+      path: `/classes-management/${sessionDetail?.Classes?.ID}/${sessionId}/students/${studentData?.userId}`,
+      state: {
+        classInfo: {
+          ID: sessionDetail?.Classes?.ID,
+          className: sessionDetail?.Classes?.className
+        }
+      }
+    },
+    {
+      label: activeSection === 'speaking' ? 'Speaking Assessment' : 'Writing Assessment'
+    }
   ]
 
   const renderBreadcrumb = () => (
     <div className="flex flex-col gap-2 px-6 py-3">
-      <Breadcrumb separator="/" items={breadcrumbItems} className="text-sm text-gray-600" />
+      <AppBreadcrumb items={breadcrumbItems} />
       <Button
-        onClick={handleBack}
-        className="flex w-fit items-center justify-center rounded-lg bg-[#003087] py-1 text-white hover:bg-[#002366]"
+        onClick={() => navigate(`/classes-management/${sessionId.split('-')[0]}/session/${sessionId}`)}
+        type="primary"
+        icon={<LeftOutlined />}
+        style={{ backgroundColor: '#013088', border: 'none', width: 'fit-content' }}
       >
         Back
       </Button>
@@ -159,13 +297,21 @@ function GradingPage() {
       <div>
         <div className="mb-2 flex items-center justify-between">
           <div>
-            <h1 className="mb-1 text-3xl">Student Information: {studentData.name}</h1>
-            <span className="text-sm text-gray-400">View student details</span>
+            <h1 className="mb-1 text-3xl">Student Information: {studentData?.name}</h1>
+            <span
+              className="cursor-pointer text-sm text-gray-400 hover:text-blue-600"
+              onClick={handleViewStudentDetails}
+            >
+              View student details
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <Button
               onClick={navigateToPreviousStudent}
-              className="flex h-11 min-w-[160px] items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 text-base font-medium shadow-sm"
+              disabled={currentStudentIndex <= 1}
+              className={`flex h-11 min-w-[160px] items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 text-base font-medium shadow-sm ${
+                currentStudentIndex <= 1 ? 'cursor-not-allowed opacity-50' : ''
+              }`}
               icon={<span className="text-[#003087]">←</span>}
             >
               Previous Student
@@ -179,16 +325,23 @@ function GradingPage() {
             </Button>
             <Button
               onClick={navigateToNextStudent}
-              className="flex h-11 min-w-[160px] items-center justify-center gap-2 rounded-lg bg-[#003087] px-4 text-base font-medium text-white shadow-sm hover:bg-[#002366]"
+              disabled={currentStudentIndex >= (participantsData?.pagination?.totalItems || 0)}
+              className={`flex h-11 min-w-[160px] items-center justify-center gap-2 rounded-lg bg-[#003087] px-4 text-base font-medium text-white shadow-sm hover:bg-[#002366] ${
+                currentStudentIndex >= (participantsData?.pagination?.totalItems || 0)
+                  ? 'cursor-not-allowed opacity-50'
+                  : ''
+              }`}
             >
               Next Student →
             </Button>
           </div>
         </div>
-        <div className="text-right text-sm text-gray-500">of {studentList.length} students</div>
+        <div className="text-right text-sm text-gray-500">
+          {currentStudentIndex} of {participantsData?.pagination?.totalItems || 0} students
+        </div>
       </div>
 
-      <StudentCard student={studentData} />
+      {studentData && <StudentCard student={studentData} />}
 
       <div className="rounded-t-lg bg-transparent">
         <div className="py-4">
@@ -238,9 +391,13 @@ function GradingPage() {
 
       <div className="rounded-lg bg-white p-6 shadow-lg">
         {activeSection === 'speaking' ? (
-          <Speaking testData={speakingTest} isLoading={speakingLoading} studentId={studentData.id} />
+          <Speaking
+            testData={speakingTestData?.data?.topic}
+            isLoading={speakingLoading}
+            sessionParticipantId={participantId}
+          />
         ) : (
-          <Writing studentId={studentData.id} />
+          <Writing sessionParticipantId={participantId} />
         )}
       </div>
     </div>
@@ -254,7 +411,13 @@ function GradingPage() {
         visible={isPopupVisible}
         onCancel={handleClosePopup}
         onSelectStudent={handleSelectStudent}
-        studentList={studentList}
+        selectedStudentId={participantId}
+        participantsData={participantsData}
+        isLoading={participantsLoading}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
+        onSearch={handleSearch}
+        pageSize={pageSize}
       />
     </div>
   )
