@@ -1,7 +1,5 @@
+import { HomeOutlined, SettingOutlined, TeamOutlined } from '@ant-design/icons'
 import LogoutOutlined from '@ant-design/icons/lib/icons/LogoutOutlined'
-import ReadOutlined from '@ant-design/icons/lib/icons/ReadOutlined'
-import TeamOutlined from '@ant-design/icons/lib/icons/TeamOutlined'
-import UserOutlined from '@ant-design/icons/lib/icons/UserOutlined'
 import { Logo } from '@assets/images'
 import LogoutModal from '@pages/LogoutModal'
 import SharedHeader from '@shared/ui/Header/SharedHeader'
@@ -63,46 +61,45 @@ const Layout = ({ children }) => {
       localStorage.setItem('selectedMenuKey', key)
     }
   }
-
+  const baseMenuItemClass = 'bg-primary-color text-white hover:bg-white hover:text-black transition-colors duration-200'
   const menuItems = [
     {
       key: '1',
-      icon: <UserOutlined className="text-lg" />,
+      icon: <HomeOutlined className="text-lg" />,
       label: (
-        <Link to="/" className="text-white hover:text-white">
+        <Link to="/" className="text-[16px] text-white hover:text-white">
           Dashboard
         </Link>
       ),
-      className: 'hover:bg-blue-600 transition-colors duration-200'
+      className: baseMenuItemClass
     },
     {
       key: '2',
-      icon: <ReadOutlined className="text-lg" />,
+      icon: <TeamOutlined className="text-lg" />,
       label: (
-        <Link to="/classes-management" className="text-white hover:text-white">
+        <Link to="/classes-management" className="text-[16px] text-white hover:text-white">
           Classes
         </Link>
       ),
-      className: 'hover:bg-blue-600 transition-colors duration-200'
+      className: baseMenuItemClass
     }
   ]
-
   if (auth?.role?.includes('admin')) {
     menuItems.push({
       key: '3',
-      icon: <TeamOutlined className="text-lg" />,
+      icon: <SettingOutlined className="text-lg" />,
       label: (
-        <Link to="/account-management" className="text-white hover:text-white">
-          Management Teacher Account
+        <Link to="/account-management" className="text-[16px] text-white hover:text-white">
+          Management Accounts
         </Link>
       ),
-      className: 'hover:bg-red-500 transition-colors duration-200'
+      className: baseMenuItemClass
     })
   }
   menuItems.push({
     key: '4',
     icon: <LogoutOutlined className="text-lg" />,
-    label: <span className="text-white">Sign out</span>,
+    label: <span className="text-[16px] text-white">Sign out</span>,
     style: {
       backgroundColor: '#ef4444'
     },
@@ -121,11 +118,18 @@ const Layout = ({ children }) => {
         breakpoint="lg"
         onBreakpoint={broken => setCollapsed(broken)}
       >
-        <div className="flex items-center justify-center border-b border-blue-400 p-4">
-          <img className={`transition-all duration-300 ${collapsed ? 'w-10' : 'w-40'}`} src={Logo} alt="Logo" />
+        <div className="flex-col items-center justify-center border-b border-blue-400 p-4">
+          <div className="mb-2 flex items-center justify-center">
+            <img className={`transition-all duration-300 ${collapsed ? 'w-12' : 'w-30'}`} src={Logo} alt="Logo" />
+          </div>
+          <div
+            className={`flex items-center justify-center text-[30px] font-[400] text-white transition-all duration-300 ${collapsed ? 'hidden' : 'block'}`}
+          >
+            <p>GreenPREP</p>
+          </div>
         </div>
         <Menu
-          className="bg-primary-color border-0"
+          className="bg-primary-color border-0 px-4 py-6"
           mode="inline"
           selectedKeys={[selectedKey]}
           onClick={handleMenuClick}

@@ -182,7 +182,7 @@ const TeacherAdminList = () => {
   }, [teachersResponse])
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen">
       <div className="mb-2 text-sm text-gray-500">Dashboard / Teacher Account Management</div>
       <h1 className="mb-8 text-2xl font-bold">Teacher Account Management</h1>
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row">
