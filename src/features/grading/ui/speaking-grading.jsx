@@ -7,29 +7,37 @@ const { TextArea } = Input
 
 const FEEDBACK_STORAGE_KEY = 'speaking_grading_feedback'
 
-const Speaking = ({ testData, isLoading, studentId }) => {
+const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
   const [activePart, setActivePart] = useState('PART 1')
   const [feedbacks, setFeedbacks] = useState({})
-  const parts = useMemo(() => testData?.Parts || [], [testData])
+
+  const parts = useMemo(() => {
+    const sortedParts = [...(testData?.Parts || [])].sort((a, b) => {
+      const partNumberA = parseInt(a.Content.split(' ')[1])
+      const partNumberB = parseInt(b.Content.split(' ')[1])
+      return partNumberA - partNumberB
+    })
+    return sortedParts
+  }, [testData])
 
   useEffect(() => {
     try {
-      const storedFeedbacks = JSON.parse(localStorage.getItem(`${FEEDBACK_STORAGE_KEY}_${studentId}`))
+      const storedFeedbacks = JSON.parse(localStorage.getItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`))
       if (storedFeedbacks) {
         setFeedbacks(storedFeedbacks)
       }
     } catch (error) {
       console.error('Error loading feedbacks:', error)
     }
-  }, [studentId])
+  }, [sessionParticipantId])
 
   useEffect(() => {
     try {
-      localStorage.setItem(`${FEEDBACK_STORAGE_KEY}_${studentId}`, JSON.stringify(feedbacks))
+      localStorage.setItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`, JSON.stringify(feedbacks))
     } catch (error) {
       console.error('Error saving feedbacks:', error)
     }
-  }, [feedbacks, studentId])
+  }, [feedbacks, sessionParticipantId])
 
   useEffect(() => {
     if (parts.length > 0 && !parts.find(p => p.Content === activePart)) {
@@ -72,14 +80,16 @@ const Speaking = ({ testData, isLoading, studentId }) => {
   }
 
   return (
-    <div>
-      <div className="mb-6 flex gap-1">
+    <div className="space-y-6">
+      <div className="flex gap-4">
         {parts.map(part => (
           <Button
             key={part.ID}
             onClick={() => setActivePart(part.Content)}
-            className={`min-w-[80px] rounded-lg border-none px-4 py-1 ${
-              activePart === part.Content ? 'bg-[#003087] text-white' : 'bg-white text-black hover:bg-gray-50'
+            className={`rounded-lg px-6 py-2 ${
+              activePart === part.Content
+                ? 'bg-[#003087] text-white hover:bg-[#002366]'
+                : 'border border-gray-200 bg-white'
             }`}
           >
             {part.Content}
@@ -88,51 +98,50 @@ const Speaking = ({ testData, isLoading, studentId }) => {
       </div>
 
       <div className="space-y-6">
-        <div>
-          <h3 className="mb-2 text-lg font-medium text-[#003087]">{currentPart.Content}</h3>
-          <div className="rounded-lg border border-solid border-[#003087] p-4">
-            {currentPart.Questions?.map(question => (
-              <div key={`title-${question.ID}`} className="text-base">
-                {question.Content}
+        {currentPart.Questions?.map((question, index) => (
+          <div key={question.ID} className="grid grid-cols-[1fr,1fr] gap-6">
+            <div className="overflow-hidden rounded-lg border border-gray-300 shadow-md">
+              <div className="bg-[#E5E7EB] px-4 py-3">
+                <p className="text-base">
+                  Question {index + 1}: {question.Content}
+                </p>
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          {currentPart.Questions?.map((question, index) => (
-            <div key={question.ID} className="grid grid-cols-[1fr,1fr] gap-6">
-              <div className="overflow-hidden rounded-lg border border-gray-300 shadow-md">
-                <div className="bg-[#E5E7EB] px-4 py-3">
-                  <p className="text-base">
-                    Question {index + 1}: {question.Content}
-                  </p>
-                </div>
-                <div className="space-y-4 p-4">
+              <div className="space-y-4 p-4">
+                {question.ImageKeys?.[0] && (
                   <div>
-                    <p className="mb-2 text-base">Student Answer:</p>
-                    <AudioPlayer audioUrl={'https://ipaine.com/download/sample.mp3'} />
+                    <img
+                      src={question.ImageKeys[0]}
+                      alt="Question reference"
+                      className="mx-auto h-[250px] w-full max-w-[400px] rounded-lg border border-gray-200 object-contain"
+                    />
                   </div>
-                </div>
-              </div>
-
-              <div className="overflow-hidden rounded-lg border border-gray-300 shadow-md">
-                <div className="bg-[#E5E7EB] px-4 py-3">
-                  <p className="text-base">Comment</p>
-                </div>
-                <div className="p-4">
-                  <TextArea
-                    value={feedbacks[activePart]?.[index] || ''}
-                    onChange={e => handleFeedbackChange(activePart, index, e.target.value)}
-                    placeholder="Enter your feedback here..."
-                    autoSize={{ minRows: 3, maxRows: 6 }}
-                    className="w-full rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"
-                  />
+                )}
+                <div>
+                  <p className="mb-2 text-base">Student Answer:</p>
+                  {question.studentAnswer?.AnswerAudio ? (
+                    <AudioPlayer audioUrl={question.studentAnswer.AnswerAudio} />
+                  ) : (
+                    <div className="rounded-lg bg-gray-50 p-4 text-gray-500">No audio submission available</div>
+                  )}
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+
+            <div className="flex flex-col overflow-hidden rounded-lg border border-gray-300 shadow-md">
+              <div className="bg-[#E5E7EB] px-4 py-3">
+                <p className="text-base">Comment</p>
+              </div>
+              <div className="flex-1 p-4">
+                <TextArea
+                  value={feedbacks[activePart]?.[index] || ''}
+                  onChange={e => handleFeedbackChange(activePart, index, e.target.value)}
+                  placeholder="Enter your feedback here..."
+                  className="h-full !min-h-full w-full resize-none rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"
+                />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -150,14 +159,19 @@ Speaking.propTypes = {
           PropTypes.shape({
             ID: PropTypes.string,
             Content: PropTypes.string,
-            ImageKeys: PropTypes.arrayOf(PropTypes.string)
+            ImageKeys: PropTypes.arrayOf(PropTypes.string),
+            AudioKeys: PropTypes.arrayOf(PropTypes.string),
+            AnswerContent: PropTypes.shape({
+              audioUrl: PropTypes.string,
+              content: PropTypes.string
+            })
           })
         )
       })
     )
   }),
   isLoading: PropTypes.bool,
-  studentId: PropTypes.string.isRequired
+  sessionParticipantId: PropTypes.string.isRequired
 }
 
 export default Speaking

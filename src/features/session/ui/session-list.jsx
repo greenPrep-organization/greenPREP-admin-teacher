@@ -238,11 +238,7 @@ const SessionsList = ({ classId }) => {
         <Empty
           description="No sessions found. Click here to create a new session."
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-        >
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
-            Create Session
-          </Button>
-        </Empty>
+        ></Empty>
       )}
 
       <CreateSessionModal open={isModalVisible} onClose={() => setIsModalVisible(false)} classId={classId} />

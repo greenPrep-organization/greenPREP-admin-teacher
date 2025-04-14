@@ -111,7 +111,21 @@ const SessionParticipantList = () => {
       key: 'speaking',
       width: '12%',
       responsive: ['md'],
-      render: text => text || 'Ungrade',
+      render: (text, record) => {
+        if (!text) {
+          return (
+            <span
+              className="cursor-pointer text-blue-600 hover:underline"
+              onClick={() => {
+                navigate(`/grading/${sessionId}/${record.ID}`)
+              }}
+            >
+              Ungraded
+            </span>
+          )
+        }
+        return text
+      },
       align: 'center'
     },
     {
@@ -120,7 +134,21 @@ const SessionParticipantList = () => {
       key: 'writing',
       width: '12%',
       responsive: ['md'],
-      render: text => text || 'Ungrade',
+      render: (text, record) => {
+        if (!text) {
+          return (
+            <span
+              className="cursor-pointer text-blue-600 hover:underline"
+              onClick={() => {
+                navigate(`/grading/${sessionId}/${record.ID}`)
+              }}
+            >
+              Ungraded
+            </span>
+          )
+        }
+        return text
+      },
       align: 'center'
     },
     {

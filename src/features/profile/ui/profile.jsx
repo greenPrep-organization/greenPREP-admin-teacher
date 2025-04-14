@@ -1,8 +1,9 @@
-import { useChangeUserPassword, useUpdateUserProfile, useUserProfile } from '@features/profile/hooks/useProfile'
+import { UserOutlined } from '@ant-design/icons'
+import { useChangeUserPassword, useUpdateUserProfile, useUserProfile } from '@features/profile/hooks'
 import ChangePasswordModal from '@features/profile/ui/change-password-profile'
 import EditProfileModal from '@features/profile/ui/edit-profile'
 import { EMAIL_REG, PHONE_REG } from '@shared/lib/constants/reg'
-import { Avatar, Button, Card, Divider, message, Spin, Tag } from 'antd'
+import { Avatar, Button, Card, Divider, message, Spin, Tag, Tooltip } from 'antd'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import * as Yup from 'yup'
@@ -15,6 +16,12 @@ const profileValidationSchema = Yup.object().shape({
     .matches(PHONE_REG, { message: 'Invalid phone number format' })
     .required('Phone number is required')
 })
+
+const roleColors = {
+  admin: 'red',
+  teacher: 'blue',
+  default: 'gray'
+}
 
 const Profile = () => {
   // @ts-ignore
@@ -142,13 +149,20 @@ const Profile = () => {
             <p className="mb-1 text-gray-600">Role</p>
             <div className="flex flex-wrap gap-2">
               {Array.isArray(userData?.roleIDs) && userData?.roleIDs?.length > 0 ? (
-                userData.roleIDs.map((role, index) => (
-                  <p key={index} className="capitalize text-gray-500">
-                    {role}
-                  </p>
-                ))
+                userData.roleIDs.map((role, index) => {
+                  const color = roleColors[role.toLowerCase()] || roleColors.default
+                  return (
+                    <Tooltip title={`Role: ${role}`} key={index}>
+                      <Tag color={color} icon={<UserOutlined />} className="capitalize">
+                        {role}
+                      </Tag>
+                    </Tooltip>
+                  )
+                })
               ) : (
-                <Tag className="capitalize">{userData?.role || 'No role assigned'}</Tag>
+                <Tag color="default" icon={<UserOutlined />} className="capitalize">
+                  {userData?.role || 'No role assigned'}
+                </Tag>
               )}
             </div>
           </div>
@@ -201,7 +215,7 @@ const Profile = () => {
         onSubmit={async (userId, passwordData) => {
           try {
             await changePasswordMutation.mutateAsync({ userId, passwordData })
-            message.success('Password changed successfully!')
+            window.location.reload()
             setIsPasswordModalOpen(false)
           } catch (error) {
             if (error.response) {

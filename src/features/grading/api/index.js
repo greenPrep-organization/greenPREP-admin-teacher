@@ -1,37 +1,45 @@
 import { useQuery } from '@tanstack/react-query'
 import axiosInstance from '@shared/config/axios'
 
-const SESSION_PARTICIPANT_ID = '45c6d73a-ad6f-4eb7-b5ba-9adcb97c91f0'
-
-export const useGetSpeakingTest = (topicId, skillName = 'SPEAKING') => {
+export const useGetSpeakingTest = (sessionParticipantId, skillName = 'speaking') => {
   return useQuery({
-    queryKey: ['speakingTest', topicId],
+    queryKey: ['speakingTest', sessionParticipantId],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/topics/${topicId}`, {
-        params: { skillName }
+      const response = await axiosInstance.get('/grades/participants', {
+        params: {
+          sessionParticipantId,
+          skillName
+        }
       })
-
-      const sortedData = {
-        ...response.data,
-        Parts: [...response.data.Parts].sort((a, b) => {
-          const partNumberA = parseInt(a.Content.split(' ')[1])
-          const partNumberB = parseInt(b.Content.split(' ')[1])
-          return partNumberA - partNumberB
-        })
-      }
-
-      return sortedData
+      return response.data
     },
-    enabled: !!topicId
+    enabled: !!sessionParticipantId
   })
 }
 
-export const useGetWritingData = (sessionParticipantId = SESSION_PARTICIPANT_ID, skillName = 'writing') => {
+export const useGetSessionParticipants = (sessionId, params = { page: 1, limit: 5, search: '' }) => {
+  return useQuery({
+    queryKey: ['sessionParticipants', sessionId, params],
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/session-participants/${sessionId}`, {
+        params
+      })
+      return response.data
+    },
+    enabled: !!sessionId
+  })
+}
+
+export const useGetWritingData = (sessionParticipantId, skillName = 'writing') => {
   return useQuery({
     queryKey: ['writingData', sessionParticipantId, skillName],
     queryFn: async () => {
-      const url = `/grades/participants?sessionParticipantId=${sessionParticipantId}&skillName=${skillName}`
-      const response = await axiosInstance.get(url)
+      const response = await axiosInstance.get('/grades/participants', {
+        params: {
+          sessionParticipantId,
+          skillName
+        }
+      })
       return response.data
     },
     enabled: !!sessionParticipantId && !!skillName
