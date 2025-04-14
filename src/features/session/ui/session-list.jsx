@@ -1,16 +1,18 @@
+// @ts-nocheck
 import EditSession from '@/features/session/ui/edit-session'
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import { useSessions } from '@features/session/hooks'
+import { useSessions, useUpdateSession } from '@features/session/hooks'
 import CreateSessionModal from '@features/session/ui/create-new-session'
 import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { formatDate, getStatusColor } from '@shared/lib/utils/index'
-import { Button, Empty, Input, Space, Spin, Table, message } from 'antd'
+import { Button, Empty, Input, message, Space, Spin, Table, Typography } from 'antd'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 const SessionsList = ({ classId }) => {
   const { data: sessions = [], isLoading, isError } = useSessions(classId)
+  const updateSessionMutation = useUpdateSession(classId)
   const [filteredSessions, setFilteredSessions] = useState([])
   const [searchText, setSearchText] = useState('')
   const [editModalVisible, setEditModalVisible] = useState(false)
@@ -18,9 +20,9 @@ const SessionsList = ({ classId }) => {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [deleteSessionId, setDeleteSessionId] = useState(null)
   const navigate = useNavigate()
+  const { Text, Title } = Typography
 
   useEffect(() => {
-    console.log(sessions)
     setFilteredSessions(sessions)
   }, [sessions])
 
@@ -38,17 +40,9 @@ const SessionsList = ({ classId }) => {
     setFilteredSessions(filtered)
   }, [searchText, sessions])
 
-  const handleDelete = async () => {
-    if (!deleteSessionId) return
-    const updatedSessions = sessions.filter(session => session.id !== deleteSessionId)
-    setFilteredSessions(updatedSessions)
-    setDeleteSessionId(null)
-    message.success('Session deleted successfully')
-  }
-
   const handleViewSession = useCallback(
-    id => {
-      navigate(`/session/${id}`, { replace: true })
+    sessionId => {
+      navigate(`/classes-management/${classId}/session/${sessionId}`)
     },
     [navigate]
   )
@@ -60,37 +54,35 @@ const SessionsList = ({ classId }) => {
 
   const handleUpdate = useCallback(
     updatedSession => {
-      const updatedSessions = sessions.map(session =>
-        session.id === selectedSession.id ? { ...session, ...updatedSession } : session
-      )
-      setFilteredSessions(updatedSessions)
-      setEditModalVisible(false)
-      setSelectedSession(null)
-      message.success('Session updated successfully')
-    },
-    [selectedSession, sessions]
-  )
+      if (!selectedSession) return
 
-  const handleCreateSession = useCallback(
-    async sessionData => {
-      try {
-        const newSession = {
-          id: `session-${sessions.length + 1}`,
-          name: sessionData.name,
-          key: sessionData.key,
-          startTime: sessionData.startTime,
-          endTime: sessionData.endTime,
-          participants: 0,
-          status: 'Pending'
-        }
-        const updatedSessions = [newSession, ...sessions]
-        setFilteredSessions(updatedSessions)
-      } catch (err) {
-        message.error('Failed to create session')
-        console.error(err)
+      const formattedData = {
+        sessionName: updatedSession.name,
+        sessionKey: updatedSession.key,
+        startTime: updatedSession.startTime.toISOString(),
+        endTime: updatedSession.endTime.toISOString(),
+        status: selectedSession.status,
+        ClassID: classId
       }
+
+      updateSessionMutation.mutate(
+        {
+          sessionId: selectedSession.id,
+          data: formattedData
+        },
+        {
+          onSuccess: () => {
+            setEditModalVisible(false)
+            setSelectedSession(null)
+            message.success('Session updated successfully')
+          },
+          onError: error => {
+            message.error(error.message || 'Failed to update session')
+          }
+        }
+      )
     },
-    [sessions]
+    [selectedSession, classId, updateSessionMutation]
   )
 
   const columns = useMemo(
@@ -101,7 +93,7 @@ const SessionsList = ({ classId }) => {
         key: 'name',
         align: 'center',
         render: (text, record) => (
-          <a onClick={() => handleViewSession(record.id)} className="text-blue-600 hover:text-blue-800">
+          <a onClick={() => handleViewSession(record.id)} className="text-blue-800 hover:text-blue-800">
             {text}
           </a>
         )
@@ -195,10 +187,30 @@ const SessionsList = ({ classId }) => {
   return (
     <div className="rounded-lg bg-white p-6 shadow">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Sessions List</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
-          Create Session
-        </Button>
+        <div>
+          <Title
+            level={5}
+            style={{
+              fontSize: '16px',
+              fontWeight: '500',
+              marginBottom: '8px',
+              paddingBottom: '8px',
+              borderBottom: '1px solid #f0f0f0'
+            }}
+          >
+            Sessions List
+          </Title>
+        </div>
+        <div>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setIsModalVisible(true)}
+            className="bg-[#013088] hover:bg-[#003087]/90"
+          >
+            Create Session
+          </Button>
+        </div>
       </div>
 
       <div className="mb-4">
@@ -228,7 +240,18 @@ const SessionsList = ({ classId }) => {
           rowKey="id"
           pagination={{
             ...DEFAULT_PAGINATION,
-            showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total}`
+            showTotal: (total, range) => (
+              <Text
+                type="secondary"
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  fontSize: '14px'
+                }}
+              >
+                Showing {range[0]}-{range[1]} of {total}
+              </Text>
+            )
           }}
           className="overflow-x-auto"
         />
@@ -236,24 +259,16 @@ const SessionsList = ({ classId }) => {
         <Empty
           description="No sessions found. Click here to create a new session."
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-        >
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
-            Create Session
-          </Button>
-        </Empty>
+        ></Empty>
       )}
 
-      <CreateSessionModal
-        visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        onSubmit={handleCreateSession}
-      />
+      <CreateSessionModal open={isModalVisible} onClose={() => setIsModalVisible(false)} classId={classId} />
 
       {deleteSessionId && (
         <DeleteSessionPopup
           isOpen={!!deleteSessionId}
           onClose={() => setDeleteSessionId(null)}
-          onDelete={handleDelete}
+          sessionId={deleteSessionId}
         />
       )}
     </div>

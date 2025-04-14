@@ -1,17 +1,32 @@
-import { SearchOutlined } from '@ant-design/icons'
-import { usePendingSessionRequests } from '@features/student/hooks/index'
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import {
+  useApproveSessionRequest,
+  usePendingSessionRequests,
+  useRejectSessionRequest
+} from '@features/student/hooks/index'
+import ApproveSessionPopup from '@features/student/ui/approve-session-request'
+import RejectSessionPopup from '@features/student/ui/reject-session-request'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { Button, Input, Table, message } from 'antd'
 import { useEffect, useState } from 'react'
 
-const PendingList = ({ sessionId }) => {
-  const { data: pendingDataRaw = [], isLoading, isError } = usePendingSessionRequests(sessionId)
+const PendingList = ({ sessionId, onStudentApproved }) => {
+  // Include refetch from the custom hook to reload data
+  const { data: pendingDataRaw = [], isLoading, isError, refetch } = usePendingSessionRequests(sessionId)
   const [pendingData, setPendingData] = useState([])
-  const [pendingPagination, setPendingPagination] = useState(DEFAULT_PAGINATION)
+  const [pendingPagination, setPendingPagination] = useState({
+    ...DEFAULT_PAGINATION,
+    size: 'default'
+  })
   const [pendingSearchText, setPendingSearchText] = useState('')
+  const [selectedRequest, setSelectedRequest] = useState(null)
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false)
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false)
+  const { mutate: approveRequest, isPending: isApproving } = useApproveSessionRequest(sessionId)
+  const { mutate: rejectRequest, isPending: isRejecting } = useRejectSessionRequest(sessionId)
 
   useEffect(() => {
-    console.log(pendingDataRaw, 'pending')
+    console.log(pendingDataRaw)
     if (!pendingDataRaw.length) return
 
     const filtered = pendingDataRaw.filter(
@@ -29,23 +44,50 @@ const PendingList = ({ sessionId }) => {
     setPendingData(filtered.slice(0, pendingPagination.pageSize))
   }, [pendingDataRaw, pendingSearchText, pendingPagination.pageSize])
 
-  const handleEnrollStudent = async record => {
+  const handleRejectStudent = async record => {
+    setSelectedRequest(record)
+    setIsRejectModalOpen(true)
+  }
+
+  const handleApproveStudent = async record => {
+    setSelectedRequest(record)
+    setIsApproveModalOpen(true)
+  }
+
+  const handleConfirmApprove = async () => {
     try {
-      const newData = pendingData.filter(item => item.key !== record.key)
+      await approveRequest(selectedRequest.key)
+      const newData = pendingData.filter(item => item.key !== selectedRequest.key)
       setPendingData(newData)
-      message.success(`${record.studentName} has been enrolled successfully`)
-    } catch {
-      message.error('Failed to enroll student')
+      setPendingPagination(prev => ({
+        ...prev,
+        total: prev.total - 1
+      }))
+      message.success(`${selectedRequest.studentName} has been approved successfully`)
+      onStudentApproved()
+    } catch (error) {
+      message.error(error.message || 'Failed to approve student')
+    } finally {
+      setIsApproveModalOpen(false)
+      setSelectedRequest(null)
     }
   }
 
-  const handleRejectStudent = async record => {
+  const handleConfirmReject = async () => {
     try {
-      const newData = pendingData.filter(item => item.key !== record.key)
+      await rejectRequest(selectedRequest.key)
+      const newData = pendingData.filter(item => item.key !== selectedRequest.key)
       setPendingData(newData)
-      message.success(`${record.studentName}'s request has been rejected`)
-    } catch {
-      message.error('Failed to reject student')
+      setPendingPagination(prev => ({
+        ...prev,
+        total: prev.total - 1
+      }))
+      message.success(`${selectedRequest.studentName}'s request has been rejected`)
+    } catch (error) {
+      message.error(error.message || 'Failed to reject student')
+    } finally {
+      setIsRejectModalOpen(false)
+      setSelectedRequest(null)
     }
   }
 
@@ -82,7 +124,7 @@ const PendingList = ({ sessionId }) => {
           <Button
             type="text"
             className="flex items-center justify-center text-green-500 hover:text-green-700"
-            onClick={() => handleEnrollStudent(record)}
+            onClick={() => handleApproveStudent(record)}
           >
             <span className="flex h-6 w-6 items-center justify-center rounded-full border border-green-500">✓</span>
           </Button>
@@ -110,7 +152,8 @@ const PendingList = ({ sessionId }) => {
     setPendingData(filtered.slice(start, end))
     setPendingPagination({
       ...newPagination,
-      total: filtered.length
+      total: filtered.length,
+      size: 'default'
     })
   }
 
@@ -124,7 +167,7 @@ const PendingList = ({ sessionId }) => {
   return (
     <div>
       <div className="mt-8">
-        <div className="mb-4 flex justify-between">
+        <div className="mb-4 flex items-center justify-between">
           <div className="relative">
             <Input
               placeholder="Search by student name, ID or class"
@@ -134,6 +177,10 @@ const PendingList = ({ sessionId }) => {
               className="w-64"
             />
           </div>
+          {/* Refresh Button */}
+          <Button type="default" icon={<ReloadOutlined />} onClick={refetch}>
+            Refresh
+          </Button>
         </div>
       </div>
       <Table
@@ -141,8 +188,28 @@ const PendingList = ({ sessionId }) => {
         dataSource={pendingData}
         pagination={pendingPagination}
         onChange={handlePendingTableChange}
-        loading={false}
+        loading={isLoading}
         scroll={{ x: 800 }}
+      />
+      <ApproveSessionPopup
+        isOpen={isApproveModalOpen}
+        onClose={() => {
+          setIsApproveModalOpen(false)
+          setSelectedRequest(null)
+        }}
+        onApprove={handleConfirmApprove}
+        studentName={selectedRequest?.studentName}
+        loading={isApproving}
+      />
+      <RejectSessionPopup
+        isOpen={isRejectModalOpen}
+        onClose={() => {
+          setIsRejectModalOpen(false)
+          setSelectedRequest(null)
+        }}
+        onReject={handleConfirmReject}
+        studentName={selectedRequest?.studentName}
+        loading={isRejecting}
       />
     </div>
   )

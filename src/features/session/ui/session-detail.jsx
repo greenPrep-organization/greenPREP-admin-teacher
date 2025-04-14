@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Tag, Spin, Alert } from 'antd'
+import { Tag, Spin, Alert, Typography } from 'antd'
 import { formatDateTime, getStatusColor } from '@shared/lib/utils/index'
-import { getSessionDetail } from '../api'
+import { getSessionDetail, getSessionParticipants } from '../api'
 import { useParams } from 'react-router-dom'
+
+const { Title } = Typography
 
 const SessionDetail = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [sessionData, setSessionData] = useState(null)
+  const [participantCount, setParticipantCount] = useState(0)
   const { sessionId } = useParams()
 
   useEffect(() => {
@@ -17,6 +20,8 @@ const SessionDetail = () => {
         setError(null)
         const data = await getSessionDetail(sessionId)
         setSessionData(data.data)
+        const participantsResponse = await getSessionParticipants(sessionId)
+        setParticipantCount(participantsResponse.data?.length || 0)
       } catch (error) {
         setError(error.message || 'Unable to load session details. Please try again later')
       } finally {
@@ -46,9 +51,20 @@ const SessionDetail = () => {
   const statusColors = getStatusColor(sessionData?.status || 'Pending')
 
   return (
-    <div className="rounded-lg bg-white p-4">
-      <div className="mb-6 flex items-center justify-between border-b pb-4">
-        <h2 className="text-lg font-medium">Session Information</h2>
+    <div className="rounded-lg bg-white p-6">
+      <div className="mb-4 flex items-center justify-between border-b">
+        <Title
+          level={5}
+          style={{
+            fontSize: '16px',
+            fontWeight: '500',
+            marginBottom: '8px',
+            paddingBottom: '8px',
+            borderBottom: '1px solid #f0f0f0'
+          }}
+        >
+          Session Information
+        </Title>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -60,10 +76,6 @@ const SessionDetail = () => {
           <div>
             <p className="mb-2 text-sm text-gray-500">Session Key</p>
             <p className="font-medium">{sessionData?.sessionKey || 'N/A'}</p>
-          </div>
-          <div>
-            <p className="mb-2 text-sm text-gray-500">Exam Set</p>
-            <p className="font-medium">{sessionData?.examSet || 'N/A'}</p>
           </div>
           <div>
             <p className="mb-2 text-sm text-gray-500">Status</p>
@@ -81,6 +93,10 @@ const SessionDetail = () => {
           <div>
             <p className="mb-2 text-sm text-gray-500">End Time</p>
             <p className="font-medium">{sessionData?.endTime ? formatDateTime(sessionData.endTime) : 'N/A'}</p>
+          </div>
+          <div>
+            <p className="mb-2 text-sm text-gray-500">Number of Participants</p>
+            <p className="font-medium">{participantCount || 'N/A'}</p>
           </div>
         </div>
       </div>

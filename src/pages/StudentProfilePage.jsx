@@ -1,12 +1,54 @@
-import SessionHistory from '@features/session/ui/session-history'
-import SessionInformation from '@features/session/ui/session-information'
+import { useSessionDetail, useStudentProfile } from '@features/student-profile/hooks'
+import StudentSessionHistory from '@features/student-profile/ui/student-session-history'
+import StudentSessionInformation from '@features/student-profile/ui/student-session-information'
 import { getDefaultAvatar } from '@shared/lib/utils/avatarUtils'
-import { Avatar, Breadcrumb } from 'antd'
+import { Avatar, Skeleton, Spin, message } from 'antd'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import AppBreadcrumb from '../shared/ui/Breadcrumb/index'
 
 export default function StudentProfilePage() {
-  const { studentId } = useParams()
+  const { classId, sessionId, studentId } = useParams()
   const navigate = useNavigate()
+
+  const [student, setStudent] = useState(null)
+  const { data: userData, isLoading, isError } = useStudentProfile(studentId)
+  const { data: sessionDetail } = useSessionDetail(sessionId)
+  const className = sessionDetail?.Classes?.className ?? 'Loading...'
+  const sessionName = sessionDetail?.sessionName ?? 'Loading...'
+
+  useEffect(() => {
+    if (userData) {
+      setStudent(userData)
+    }
+    if (isError) {
+      message.error('Error when fetch data student')
+    }
+  }, [userData, isError])
+
+  if (isLoading || !student) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Spin size="large" />
+      </div>
+    )
+  }
+
+  const breadcrumbItems = [
+    { label: 'Classes', path: '/classes-management' },
+    {
+      label: isLoading ? <Skeleton.Input active size="small" style={{ width: 100 }} /> : className,
+      path: `/classes-management/${classId}`
+    },
+    {
+      label: sessionName,
+      path: `/classes-management/${classId}/${sessionId}`
+    },
+    {
+      label: student?.lastName || 'Student',
+      path: `/classes-management/${classId}/${sessionId}/students/${studentId}`
+    }
+  ]
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
@@ -14,13 +56,7 @@ export default function StudentProfilePage() {
         <main className="flex-1 p-6">
           <div className="mb-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Breadcrumb separator="/">
-                <Breadcrumb.Item>Dashboard</Breadcrumb.Item>
-                <Breadcrumb.Item>Classes</Breadcrumb.Item>
-                <Breadcrumb.Item>CLASS01</Breadcrumb.Item>
-                <Breadcrumb.Item>Feb_2025</Breadcrumb.Item>
-                <Breadcrumb.Item>A Nguyen</Breadcrumb.Item>
-              </Breadcrumb>
+              <AppBreadcrumb items={breadcrumbItems} />
             </div>
           </div>
 
@@ -35,20 +71,20 @@ export default function StudentProfilePage() {
 
           <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <SessionInformation studentId={studentId} />
+              <StudentSessionInformation userId={studentId} />
             </div>
 
             <div className="lg:col-span-1">
               <div className="flex items-center justify-center overflow-hidden rounded-lg bg-white p-4 shadow-md">
                 <Avatar size={215} className="bg-gray-500 text-white">
-                  {getDefaultAvatar('A Nguyen')} {/* Tạm thời hardcode tên, sau này sẽ lấy từ API */}
+                  <div className="text-4xl">{getDefaultAvatar(student?.lastName)}</div>
                 </Avatar>
               </div>
             </div>
           </div>
 
           <div className="mt-6">
-            <SessionHistory studentId={studentId} />
+            <StudentSessionHistory userId={studentId} />
           </div>
         </main>
       </div>

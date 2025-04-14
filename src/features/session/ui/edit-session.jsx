@@ -24,7 +24,8 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
       await editSessionSchema.validate(values, { abortEarly: false })
 
       onUpdate({
-        ...values,
+        name: values.name,
+        key: values.key,
         startTime: values.startDate.toDate(),
         endTime: values.endDate.toDate()
       })
@@ -51,7 +52,7 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
       open={open}
       onCancel={onCancel}
       footer={
-        <div className="flex justify-center space-x-4">
+        <div className="flex justify-end space-x-4">
           <Button key="cancel" onClick={onCancel} className="h-10 w-24 border border-[#D1D5DB] text-[#374151]">
             Cancel
           </Button>

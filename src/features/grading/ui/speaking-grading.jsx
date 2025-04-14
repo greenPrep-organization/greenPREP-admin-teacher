@@ -1,13 +1,43 @@
-import { Button, Spin } from 'antd'
+import { Button, Spin, Input } from 'antd'
 import { useState, useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import AudioPlayer from '@features/grading/ui/audio-player'
-import { Input } from 'antd'
 
-const Speaking = ({ testData, isLoading }) => {
+const { TextArea } = Input
+
+const FEEDBACK_STORAGE_KEY = 'speaking_grading_feedback'
+
+const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
   const [activePart, setActivePart] = useState('PART 1')
-  const [scores, setScores] = useState({})
-  const parts = useMemo(() => testData?.Parts || [], [testData])
+  const [feedbacks, setFeedbacks] = useState({})
+
+  const parts = useMemo(() => {
+    const sortedParts = [...(testData?.Parts || [])].sort((a, b) => {
+      const partNumberA = parseInt(a.Content.split(' ')[1])
+      const partNumberB = parseInt(b.Content.split(' ')[1])
+      return partNumberA - partNumberB
+    })
+    return sortedParts
+  }, [testData])
+
+  useEffect(() => {
+    try {
+      const storedFeedbacks = JSON.parse(localStorage.getItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`))
+      if (storedFeedbacks) {
+        setFeedbacks(storedFeedbacks)
+      }
+    } catch (error) {
+      console.error('Error loading feedbacks:', error)
+    }
+  }, [sessionParticipantId])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`, JSON.stringify(feedbacks))
+    } catch (error) {
+      console.error('Error saving feedbacks:', error)
+    }
+  }, [feedbacks, sessionParticipantId])
 
   useEffect(() => {
     if (parts.length > 0 && !parts.find(p => p.Content === activePart)) {
@@ -15,10 +45,13 @@ const Speaking = ({ testData, isLoading }) => {
     }
   }, [parts, activePart])
 
-  const handleScoreChange = (questionId, value) => {
-    setScores(prev => ({
-      ...prev,
-      [questionId]: value
+  const handleFeedbackChange = (part, questionIndex, value) => {
+    setFeedbacks(prevFeedbacks => ({
+      ...prevFeedbacks,
+      [part]: {
+        ...prevFeedbacks[part],
+        [questionIndex]: value
+      }
     }))
   }
 
@@ -47,15 +80,16 @@ const Speaking = ({ testData, isLoading }) => {
   }
 
   return (
-    <div>
-      <div className="mb-6 flex w-fit gap-2 rounded-xl border border-gray-200 bg-white p-2 shadow-sm">
+    <div className="space-y-6">
+      <div className="flex gap-4">
         {parts.map(part => (
           <Button
             key={part.ID}
-            type={activePart === part.Content ? 'primary' : 'default'}
             onClick={() => setActivePart(part.Content)}
-            className={`min-w-[80px] rounded-xl border-none ${
-              activePart === part.Content ? 'bg-[#003087] text-white' : 'bg-white text-black'
+            className={`rounded-lg px-6 py-2 ${
+              activePart === part.Content
+                ? 'bg-[#003087] text-white hover:bg-[#002366]'
+                : 'border border-gray-200 bg-white'
             }`}
           >
             {part.Content}
@@ -63,74 +97,51 @@ const Speaking = ({ testData, isLoading }) => {
         ))}
       </div>
 
-      <div className="flex gap-8">
-        <div className="flex-1 space-y-5">
-          <div className="mb-4">
-            <h3 className="text-lg font-medium text-[#003087]">{currentPart.Content}:</h3>
-            {currentPart.Questions?.map(question => (
-              <div key={`title-${question.ID}`} className="mt-1 text-base">
-                {question.Content}
-              </div>
-            ))}
-          </div>
-
-          {currentPart.Questions?.map((question, index) => (
-            <div key={question.ID} className="rounded-lg bg-white">
-              <div className="mb-3 rounded-xl border border-gray-100 bg-gray-50 p-4">
-                <p className="font-medium text-[#003087]">
+      <div className="space-y-6">
+        {currentPart.Questions?.map((question, index) => (
+          <div key={question.ID} className="grid grid-cols-[1fr,1fr] gap-6">
+            <div className="overflow-hidden rounded-lg border border-gray-300 shadow-md">
+              <div className="bg-[#E5E7EB] px-4 py-3">
+                <p className="text-base">
                   Question {index + 1}: {question.Content}
                 </p>
+              </div>
+              <div className="space-y-4 p-4">
                 {question.ImageKeys?.[0] && (
-                  <div className="mt-4">
+                  <div>
                     <img
                       src={question.ImageKeys[0]}
-                      alt={`Question ${index + 1}`}
-                      className="max-h-[200px] rounded-lg object-cover"
+                      alt="Question reference"
+                      className="mx-auto h-[250px] w-full max-w-[400px] rounded-lg border border-gray-200 object-contain"
                     />
                   </div>
                 )}
-              </div>
-              <AudioPlayer audioUrl={'https://ipaine.com/download/sample.mp3'} />
-            </div>
-          ))}
-        </div>
-
-        <div className="w-72">
-          <div className="sticky top-6 space-y-4 rounded-md border border-gray-800 p-6 shadow-2xl">
-            {/* Score Inputs */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h4 className="mb-4 font-bold text-[#003087]">{currentPart.Content} Scoring</h4>
-              <div className="space-y-4">
-                {currentPart.Questions?.map((question, index) => (
-                  <div key={`score-${question.ID}`} className="flex items-center justify-between gap-3">
-                    <span className="text-sm text-[#003087]">Question {index + 1}:</span>
-                    <Input
-                      type="number"
-                      className="h-9 w-24 rounded-lg bg-white text-center focus:border-[#003087]"
-                      placeholder="Score"
-                      min={0}
-                      max={10}
-                      value={scores[`${currentPart.Content}-${question.ID}`] || ''}
-                      onChange={e => handleScoreChange(`${currentPart.Content}-${question.ID}`, e.target.value)}
-                    />
-                  </div>
-                ))}
+                <div>
+                  <p className="mb-2 text-base">Student Answer:</p>
+                  {question.studentAnswer?.AnswerAudio ? (
+                    <AudioPlayer audioUrl={question.studentAnswer.AnswerAudio} />
+                  ) : (
+                    <div className="rounded-lg bg-gray-50 p-4 text-gray-500">No audio submission available</div>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="mt-4 space-y-3">
-              <Button type="primary" className="h-10 w-full rounded-lg bg-[#003087] text-white hover:bg-[#002366]">
-                Submit
-              </Button>
-              <Button
-                type="default"
-                className="h-10 w-full rounded-lg border border-[#003087] bg-white text-[#003087] hover:bg-[#f0f2ff]"
-              >
-                Save As Draft
-              </Button>
+            <div className="flex flex-col overflow-hidden rounded-lg border border-gray-300 shadow-md">
+              <div className="bg-[#E5E7EB] px-4 py-3">
+                <p className="text-base">Comment</p>
+              </div>
+              <div className="flex-1 p-4">
+                <TextArea
+                  value={feedbacks[activePart]?.[index] || ''}
+                  onChange={e => handleFeedbackChange(activePart, index, e.target.value)}
+                  placeholder="Enter your feedback here..."
+                  className="h-full !min-h-full w-full resize-none rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"
+                />
+              </div>
             </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   )
@@ -148,13 +159,19 @@ Speaking.propTypes = {
           PropTypes.shape({
             ID: PropTypes.string,
             Content: PropTypes.string,
-            ImageKeys: PropTypes.arrayOf(PropTypes.string)
+            ImageKeys: PropTypes.arrayOf(PropTypes.string),
+            AudioKeys: PropTypes.arrayOf(PropTypes.string),
+            AnswerContent: PropTypes.shape({
+              audioUrl: PropTypes.string,
+              content: PropTypes.string
+            })
           })
         )
       })
     )
   }),
-  isLoading: PropTypes.bool
+  isLoading: PropTypes.bool,
+  sessionParticipantId: PropTypes.string.isRequired
 }
 
 export default Speaking

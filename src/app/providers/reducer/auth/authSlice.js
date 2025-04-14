@@ -9,6 +9,7 @@ const getUserRole = () => {
     if (!token) return null
     const decodedToken = jwtDecode(token)
 
+    // @ts-ignore
     return decodedToken.role || null
   } catch (error) {
     console.error('Error decoding token:', error)
@@ -48,9 +49,17 @@ const authSlice = createSlice({
     },
     updateRole(state) {
       state.role = getUserRole()
+    },
+    updateUser(state, action) {
+      if (state.user) {
+        state.user = {
+          ...state.user,
+          ...action.payload
+        }
+      }
     }
   }
 })
 const { reducer, actions } = authSlice
-export const { logout, login } = actions
+export const { logout, login, updateUser } = actions
 export default reducer

@@ -1,11 +1,25 @@
 import { Modal, Button } from 'antd'
 import { WarningOutlined } from '@ant-design/icons'
+import { useDeleteClass } from '@features/class-management/hooks/delete-class'
 
-const DeleteConfirmModal = ({ visible, onConfirm, onCancel }) => {
+const DeleteConfirmModal = ({ visible, classId, onClose, onSuccess }) => {
+  const deleteClassMutation = useDeleteClass()
+
+  const handleConfirmDelete = () => {
+    if (classId) {
+      deleteClassMutation.mutate(classId, {
+        onSuccess: () => {
+          onSuccess()
+          onClose()
+        }
+      })
+    }
+  }
+
   return (
     <Modal
       open={visible}
-      onCancel={onCancel}
+      onCancel={onClose}
       footer={null}
       width={400}
       style={{ maxWidth: '90vw' }}
@@ -35,7 +49,7 @@ const DeleteConfirmModal = ({ visible, onConfirm, onCancel }) => {
               e.currentTarget.style.backgroundColor = '#FFFFFF'
               e.currentTarget.style.color = 'black'
             }}
-            onClick={onCancel}
+            onClick={onClose}
           >
             Cancel
           </Button>
@@ -51,7 +65,7 @@ const DeleteConfirmModal = ({ visible, onConfirm, onCancel }) => {
             }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#e65050')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#F18181')}
-            onClick={onConfirm}
+            onClick={handleConfirmDelete}
           >
             Yes
           </Button>

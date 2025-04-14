@@ -1,10 +1,11 @@
 import ClassDetailsPage from '@features/class-management/ui/view-class'
 import Profile from '@features/profile/ui/profile'
 import ClassListPage from '@pages/class-management'
-import ClassDetailPage from '@pages/ClassDetailPage'
+import DashboardPage from '@pages/DashboardPage'
 import GradingPage from '@pages/GradingPage'
+import SessionDetailPage from '@pages/SessionDetailPage'
 import StudentProfilePage from '@pages/StudentProfilePage'
-import SessionDetailPage from '../../pages/SessionDetailPage'
+import TeacherAdminList from '../../features/admin/ui/teacher-admin-list'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 
 const PrivateRoute = [
@@ -13,27 +14,23 @@ const PrivateRoute = [
     element: <ProtectedRoute />,
     children: [
       {
-        path: 'homepage',
-        element: 'homepage'
-      },
-      {
-        path: 'classes',
-        element: <ClassDetailPage />
+        index: true,
+        element: <DashboardPage />
       },
       {
         path: 'classes-management',
         element: <ClassListPage />
       },
       {
-        path: 'classes-management/:id',
+        path: '/classes-management/:id',
         element: <ClassDetailsPage />
       },
       {
-        path: 'student/:userId',
+        path: '/classes-management/:id/:sessionId/students/:studentId',
         element: <StudentProfilePage />
       },
       {
-        path: 'session/:sessionId',
+        path: '/classes-management/:id/session/:sessionId',
         element: <SessionDetailPage />
       },
       {
@@ -41,7 +38,11 @@ const PrivateRoute = [
         element: <Profile />
       },
       {
-        path: 'grading',
+        path: '/account-management',
+        element: <TeacherAdminList />
+      },
+      {
+        path: '/grading/:sessionId/:participantId',
         element: <GradingPage />
       }
     ]

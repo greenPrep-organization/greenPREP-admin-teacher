@@ -1,14 +1,14 @@
 // @ts-nocheck
-import { useState } from 'react'
-import { EyeInvisibleOutlined, EyeOutlined, ExclamationCircleOutlined, CheckCircleOutlined } from '@ant-design/icons'
-import { Link, useNavigate } from 'react-router-dom'
-import { Form, Input, Button, Typography, Space, Row, Col } from 'antd'
-import { LoginImg } from '../assets/images'
-import axios from 'axios'
-import { ACCESS_TOKEN } from '@shared/lib/constants/auth'
-import { useDispatch } from 'react-redux'
+import { CheckCircleOutlined, ExclamationCircleOutlined, EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons'
 import { login } from '@app/providers/reducer/auth/authSlice'
+import { LoginImg } from '@assets/images'
+import axiosInstance from '@shared/config/axios'
+import { ACCESS_TOKEN } from '@shared/lib/constants/auth'
+import { Button, Col, Form, Input, Row, Space, Typography } from 'antd'
 import { jwtDecode } from 'jwt-decode'
+import { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { Link, useNavigate } from 'react-router-dom'
 
 const { Title, Text } = Typography
 
@@ -29,6 +29,10 @@ const LoginPage = () => {
       return null
     }
   }
+  const isRoleAllowed = (roles = []) => {
+    const disallowedRoles = ['student']
+    return !roles.some(role => disallowedRoles.includes(role.toLowerCase()))
+  }
 
   const onFinish = async values => {
     setLoading(true)
@@ -36,21 +40,29 @@ const LoginPage = () => {
     setLoginSuccess('')
 
     try {
-      const response = await axios.post('https://dev-api-greenprep.onrender.com/api/users/login', {
+      const response = await axiosInstance.post('/users/login', {
         email: values.email,
         password: values.password
       })
 
       if (response.data?.data?.access_token) {
         const token = response.data.data.access_token
-
         localStorage.setItem(ACCESS_TOKEN, token)
+
         const userData = getUserData(token)
 
         if (userData) {
+          const userRoles = userData?.role || []
+
+          if (!isRoleAllowed(userRoles)) {
+            setLoginError('Access denied: Your account is not permitted to login.')
+            localStorage.removeItem(ACCESS_TOKEN)
+            return
+          }
           dispatch(login(userData))
           setLoginSuccess('Login successful!')
           navigate('/dashboard')
+          window.location.reload()
         } else {
           setLoginError('Invalid token received')
         }

@@ -1,172 +1,155 @@
-// features/sessions/components/CreateSessionModal.jsx
-import { Modal, Form, Input, Select, DatePicker, notification, Button } from 'antd'
-import dayjs from 'dayjs'
-import PropTypes from 'prop-types'
+// @ts-nocheck
+import { CalendarOutlined } from '@ant-design/icons'
+import { getTestSets } from '@features/session/api'
+import { useCreateSession } from '@features/session/hooks'
+import { Button, DatePicker, Form, Input, message, Modal, Select } from 'antd'
+import { useEffect, useState } from 'react'
 
-const CreateSessionModal = ({ visible, onCancel, onSubmit, testSets }) => {
+export default function CreateSessionModal({ open, onClose, classId }) {
+  const { mutateAsync, isLoading } = useCreateSession(classId)
+  const [startDate, setStartDate] = useState(null)
+  const [endDate, setEndDate] = useState(null)
+  const [testSets, setTestSets] = useState([])
   const [form] = Form.useForm()
+
+  useEffect(() => {
+    const fetchTestSets = async () => {
+      try {
+        const res = await getTestSets()
+        setTestSets(res.data || [])
+      } catch (error) {
+        console.error('Failed to fetch test sets:', error)
+      }
+    }
+
+    fetchTestSets()
+  }, [])
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields()
-      const sessionData = {
-        name: values.name,
-        key: values.key,
-        testSetId: values.testSetId,
-        startTime: values.startDate.toDate(),
-        endTime: values.endDate.toDate()
+      const payload = {
+        ...values,
+        startTime: startDate?.toISOString(),
+        endTime: endDate?.toISOString(),
+        ClassID: classId,
+        Status: 'NOT_STARTED'
       }
-
-      await onSubmit(sessionData)
-      notification.success({
-        message: (
-          <div className="flex items-center gap-3">
-            <div>
-              <div className="font-medium text-[#1D1C20]">Create Session Successfully</div>
-              <div className="text-[13px] text-[#00000073]">Your session has been created</div>
-            </div>
-          </div>
-        ),
-        placement: 'topRight',
-        duration: 3,
-        className: 'custom-notification-success'
-      })
-
+      await mutateAsync(payload)
+      message.success('Session created successfully!')
+      onClose()
       form.resetFields()
-      onCancel()
-    } catch (error) {
-      console.error('Validation failed:', error)
-      notification.error({
-        message: 'Failed to create session',
-        description: 'Please check your input and try again',
-        placement: 'topRight',
-        duration: 3
-      })
+    } catch (err) {
+      message.error('Failed to create session', err)
+    }
+  }
+
+  const handleEndDateChange = date => {
+    if (startDate && date && date.isBefore(startDate)) {
+      setEndDate(startDate)
+    } else {
+      setEndDate(date)
     }
   }
 
   return (
     <Modal
-      title="Create new session"
-      open={visible}
-      onCancel={onCancel}
-      width={400}
-      destroyOnClose
-      className="custom-modal"
+      open={open}
+      title={<div className="text-center text-2xl font-semibold">Create new session</div>}
+      onCancel={() => {
+        onClose()
+        form.resetFields()
+      }}
       footer={[
-        <div key="footer" className="flex justify-center gap-2">
-          <Button key="cancel" onClick={onCancel} className="h-10 w-24 border border-[#D1D5DB] text-[#374151]">
+        <>
+          <Button key="cancel" onClick={onClose} className="h-10 w-24 border border-[#D1D5DB] text-[#374151]">
             Cancel
           </Button>
           <Button
             key="submit"
             type="primary"
             onClick={handleSubmit}
+            loading={isLoading}
             className="h-10 w-24 bg-[#003087] hover:bg-[#003087]/90"
           >
             Create
           </Button>
-        </div>
+        </>
       ]}
     >
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="vertical" className="px-4">
         <Form.Item
-          name="name"
-          label={<span className="text-gray-800">Session name:</span>}
-          rules={[
-            { required: true, message: 'Please input session name' },
-            { max: 100, message: 'Name must be less than 100 characters' }
-          ]}
+          name="sessionName"
+          label="Session Name"
+          rules={[{ required: true, message: 'Please enter session name' }]}
         >
-          <Input placeholder="Enter session name" className="rounded" />
+          <Input placeholder="Enter session name" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
         </Form.Item>
-
         <Form.Item
-          name="key"
-          label={<span className="text-gray-800">Session key:</span>}
+          name="sessionKey"
+          label="Session Key"
           rules={[
             { required: true, message: 'Please input session key' },
             { pattern: /^[a-zA-Z0-9_-]+$/, message: 'Only letters, numbers, underscores and hyphens allowed' }
           ]}
         >
-          <Input placeholder="Enter session key" className="rounded" />
+          <Input placeholder="Enter session key" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
         </Form.Item>
-
-        <Form.Item
-          name="testSetId"
-          label={<span className="text-gray-800">Select test set:</span>}
-          rules={[{ required: true, message: 'Please select a test set' }]}
-        >
-          <Select placeholder="Choose the test set" className="rounded">
-            {testSets?.map(testSet => (
-              <Select.Option key={testSet.id} value={testSet.id}>
-                {testSet.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
+            label="Start Date"
             name="startDate"
-            label={<span className="text-gray-800">Start date:</span>}
-            rules={[{ required: true, message: 'Please select start date' }]}
+            rules={[{ required: true, message: 'Please select start time!' }]}
           >
             <DatePicker
               showTime
-              format="DD/MM/YYYY HH:mm"
-              className="w-full rounded"
-              disabledDate={current => current && current < dayjs().startOf('day')}
+              format="YYYY-MM-DD HH:mm"
+              onChange={date => setStartDate(date)}
+              placeholder="Select start date"
+              suffixIcon={<CalendarOutlined className="text-gray-400" />}
+              className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
             />
           </Form.Item>
 
           <Form.Item
+            label="End Date"
             name="endDate"
-            label={<span className="text-gray-800">End date:</span>}
             rules={[
-              { required: true, message: 'Please select end date' },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  const startDate = getFieldValue('startDate')
-                  if (!value || !startDate) {
-                    return Promise.resolve()
+              { required: true, message: 'Please select end time!' },
+              {
+                validator: (_, value) => {
+                  if (value && startDate && value.isBefore(startDate, 'minute')) {
+                    return Promise.reject('End date cannot be before start date!')
                   }
-
-                  // Convert to milliseconds for comparison
-                  const startTime = startDate.valueOf()
-                  const endTime = value.valueOf()
-
-                  if (endTime <= startTime) {
-                    return Promise.reject(new Error('End time must be after start time'))
+                  if (value.isSame(startDate, 'minute')) {
+                    return Promise.reject('End date cannot be the same as start date!')
                   }
                   return Promise.resolve()
                 }
-              })
+              }
             ]}
           >
             <DatePicker
               showTime
-              format="DD/MM/YYYY HH:mm"
-              className="w-full rounded"
-              disabledDate={current => current && current < dayjs().startOf('day')}
+              format="YYYY-MM-DD HH:mm"
+              placeholder="Select end date"
+              onChange={handleEndDateChange}
+              suffixIcon={<CalendarOutlined className="text-gray-400" />}
+              className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
             />
           </Form.Item>
         </div>
+
+        <Form.Item label="Exam Set" name="examSet" rules={[{ required: true, message: 'Please select exam set!' }]}>
+          <Select placeholder="Select exam set">
+            {testSets?.map(testSet => (
+              <Select.Option key={testSet.ID} value={testSet.ID}>
+                {testSet.Name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
       </Form>
     </Modal>
   )
 }
-
-CreateSessionModal.propTypes = {
-  visible: PropTypes.bool.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
-  testSets: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired
-    })
-  )
-}
-
-export default CreateSessionModal

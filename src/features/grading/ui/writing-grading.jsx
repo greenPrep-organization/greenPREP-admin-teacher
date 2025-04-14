@@ -1,193 +1,221 @@
 import { useState, useEffect } from 'react'
-import { Button, InputNumber, Form, Card, message, Divider } from 'antd'
-import { useQuery } from '@tanstack/react-query'
-import mockData from '@features/grading/constants/writingmockdata'
-import SaveAsDraftButton from './save-as-draft-button'
+import { Button, Card, Input, Spin, Alert } from 'antd'
+import PropTypes from 'prop-types'
+import { useGetWritingData } from '@features/grading/api'
+
+const { TextArea } = Input
 
 const STORAGE_KEY = 'writing_grading_draft'
+const FEEDBACK_STORAGE_KEY = 'writing_grading_feedback'
 
-function WritingGrade() {
+let hasLoadedWritingDraft = false
+
+function WritingGrade({ sessionParticipantId }) {
   const [activePart, setActivePart] = useState('part1')
-  const [form] = Form.useForm()
-  const [totalScore, setTotalScore] = useState(0)
-  const [hasLoadedDraft, setHasLoadedDraft] = useState(false)
+  const [feedbacks, setFeedbacks] = useState({})
 
-  const { data: studentData } = useQuery({
-    queryKey: ['studentData'],
-    queryFn: () => Promise.resolve(mockData),
-    initialData: mockData
-  })
-
-  const calculatePartTotal = part => {
-    const values = form.getFieldsValue()
-    const questions = studentData[part].questions
-    let total = 0
-    questions.forEach((_, index) => {
-      const fieldValue = values[`${part}_question_${index}`] || 0
-      total += fieldValue
-    })
-    setTotalScore(total)
-  }
+  const { data: apiData, isLoading, isError } = useGetWritingData(sessionParticipantId)
 
   useEffect(() => {
-    if (!hasLoadedDraft && studentData) {
-      try {
-        const draftData = JSON.parse(localStorage.getItem(STORAGE_KEY))
-        if (draftData) {
-          const formValues = {}
-          draftData.forEach(({ part, scores }) => {
-            scores.forEach(({ questionIndex, score }) => {
-              if (score !== null) {
-                formValues[`${part}_question_${questionIndex}`] = score
-              }
-            })
+    const storedFeedbacks = JSON.parse(localStorage.getItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`) || '{}')
+    if (storedFeedbacks) {
+      setFeedbacks(storedFeedbacks)
+    }
+  }, [sessionParticipantId])
+
+  useEffect(() => {
+    localStorage.setItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`, JSON.stringify(feedbacks))
+  }, [feedbacks, sessionParticipantId])
+
+  useEffect(() => {
+    if (!hasLoadedWritingDraft && apiData?.data) {
+      const draftData = JSON.parse(localStorage.getItem(`${STORAGE_KEY}_${sessionParticipantId}`) || '[]')
+      if (draftData) {
+        const loadedScores = {}
+        draftData.forEach(({ part, scores: partScores }) => {
+          partScores.forEach(({ questionIndex, score }) => {
+            if (score !== null) {
+              loadedScores[`${part}_question_${questionIndex}`] = score
+            }
           })
-          form.setFieldsValue(formValues)
-          setHasLoadedDraft(true)
-          calculatePartTotal(activePart)
-        }
-      } catch (error) {
-        console.error('Error loading draft:', error)
+        })
+        hasLoadedWritingDraft = true
       }
     }
-  }, [studentData, hasLoadedDraft, form, activePart])
+  }, [apiData, sessionParticipantId])
 
-  useEffect(() => {
-    calculatePartTotal(activePart)
-  }, [activePart, studentData])
+  const handlePartChange = key => setActivePart(key)
 
-  const handlePartChange = key => {
-    setActivePart(key)
+  const handleFeedbackChange = (part, questionIndex, value) => {
+    setFeedbacks(prevFeedbacks => ({
+      ...prevFeedbacks,
+      [part]: { ...prevFeedbacks[part], [questionIndex]: value }
+    }))
   }
 
-  const handleScoreChange = (value, field) => {
-    let newValue = value
-    if (newValue > 100) {
-      newValue = 100
-      form.setFieldsValue({ [field]: 100 })
+  const processApiData = () => {
+    const emptyParts = {
+      part1: { questions: [], answers: [], instructions: '', subInstructions: '' },
+      part2: { questions: [], answers: [], instructions: '', subInstructions: '' },
+      part3: { questions: [], answers: [], instructions: '', subInstructions: '' },
+      part4: { questions: [], answers: [], instructions: '', subInstructions: '' }
     }
-    calculatePartTotal(activePart)
-  }
 
-  const handleKeyPress = event => {
-    if (!/[0-9]/.test(event.key)) {
-      event.preventDefault()
+    if (!apiData?.data?.topic?.Parts) {
+      return emptyParts
     }
+
+    const parts = { ...emptyParts }
+    const topicParts = apiData.data.topic.Parts
+
+    topicParts.forEach(part => {
+      const partContent = part.Content || ''
+      let partNumber = 1
+
+      const partMatch = partContent.match(/Part (\d+)/i)
+      if (partMatch && partMatch[1]) {
+        partNumber = parseInt(partMatch[1])
+      }
+
+      const partKey = `part${partNumber}`
+
+      parts[partKey].instructions = part.Content || ''
+      parts[partKey].subInstructions = part.SubContent || ''
+
+      if (part.Questions && part.Questions.length > 0) {
+        part.Questions.forEach(question => {
+          parts[partKey].questions.push(question.Content || '')
+
+          const answer = question.studentAnswer?.AnswerText || ''
+          parts[partKey].answers.push(answer)
+        })
+      }
+    })
+
+    return parts
   }
 
-  const handleSubmit = () => {
-    message.success('Grading submitted successfully')
-  }
-
-  const currentPart = studentData[activePart]
-  const questions = currentPart.questions
-  const answers = currentPart.answers
-  const instructions = currentPart.instructions
+  const processedData = processApiData()
+  const currentPart = processedData[activePart] || { questions: [], answers: [], instructions: '', subInstructions: '' }
+  const questions = currentPart.questions || []
+  const answers = currentPart.answers || []
+  const instructions = currentPart.instructions || ''
+  const subInstructions = currentPart.subInstructions || ''
 
   const renderAnswer = answer => {
     if (!answer || answer.trim() === '') {
-      return <p className="italic text-gray-500">No answer submitted</p>
+      return <p className="m-0 italic text-gray-500">No answer submitted</p>
     }
-    return <p className="whitespace-pre-wrap">{answer}</p>
+    return <p className="m-0 whitespace-pre-wrap">{answer}</p>
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4">
-      <div className="mb-4 max-w-min rounded-xl border border-solid border-[#C0C0C0] px-4 py-2">
-        <div className="flex flex-nowrap gap-1">
-          {['part1', 'part2', 'part3', 'part4'].map(part => (
-            <button
-              key={part}
-              onClick={() => handlePartChange(part)}
-              className={`whitespace-nowrap rounded-md border border-[#C0C0C0] px-2 py-1 transition-colors ${
-                activePart === part ? 'bg-[#003366] text-white' : 'bg-white text-black hover:bg-gray-50'
-              }`}
-            >
-              {`Part ${part.slice(-1)}`}
-            </button>
-          ))}
+    <div>
+      {isLoading ? (
+        <div className="flex h-64 items-center justify-center">
+          <Spin size="large" tip="Loading writing data..." />
         </div>
-      </div>
-
-      <div className="flex flex-col gap-6 md:flex-row">
-        <div className="flex-1">
-          <Card className="mb-4 border-[#C0C0C0]">
-            <div className="text-sm">
-              <p className="mb-2 whitespace-pre-wrap">{instructions}</p>
-              <ol className="list-decimal space-y-1 pl-6">
-                {questions.map((question, index) => (
-                  <li key={index}>{question}</li>
-                ))}
-              </ol>
-            </div>
-          </Card>
-
-          <Card className="max-h-[400px] overflow-y-auto border-[#C0C0C0]">
-            {answers.length === 0 ? (
-              <p className="italic text-gray-500">No answer submitted</p>
-            ) : (
-              <ol className="list-decimal space-y-4 pl-6">
-                {answers.map((answer, index) => (
-                  <li key={index}>{renderAnswer(answer)}</li>
-                ))}
-              </ol>
-            )}
-          </Card>
+      ) : isError ? (
+        <div className="flex h-64 items-center justify-center">
+          <Alert
+            message="Error"
+            description="Failed to load writing data. Please try again later."
+            type="error"
+            showIcon
+          />
         </div>
-
-        <div className="w-full md:w-80">
-          <div className="mx-auto rounded-lg bg-white p-6 shadow-md">
-            <Form form={form} layout="horizontal" onFinish={handleSubmit} initialValues={{}}>
-              {questions.map((_, index) => (
-                <div key={index} className="mb-4 flex items-center">
-                  <label className="w-28 text-center font-medium text-gray-700">Question {index + 1}</label>
-                  <Form.Item
-                    name={`${activePart}_question_${index}`}
-                    className="mb-0 flex-1"
-                    rules={[
-                      { required: true, message: 'Please input a score' },
-                      { type: 'integer', message: 'Score must be an integer' },
-                      { type: 'number', min: 0, max: 100, message: 'Score must be between 0 and 100' }
-                    ]}
-                  >
-                    <InputNumber
-                      className="w-[100px] text-right"
-                      min={0}
-                      max={999}
-                      maxLength={3}
-                      step={1}
-                      precision={0}
-                      onChange={value => handleScoreChange(value, `${activePart}_question_${index}`)}
-                      onKeyPress={handleKeyPress}
-                    />
-                  </Form.Item>
-                </div>
-              ))}
-
-              <Divider className="my-4 border-black" />
-
-              <div className="flex items-center">
-                <label className="w-28 text-center font-medium text-gray-700">Total</label>
-                <Form.Item className="mb-0 flex-1">
-                  <InputNumber className="w-[100px] bg-gray-50 text-right" value={totalScore} disabled />
-                </Form.Item>
-              </div>
-
-              <div className="space-y-2 pt-4">
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  className="w-full bg-[#003366] shadow-md transition-shadow hover:shadow-lg"
-                >
-                  Submit
-                </Button>
-                <SaveAsDraftButton form={form} studentData={studentData} />
-              </div>
-            </Form>
+      ) : (
+        <>
+          <div className="mb-6 flex gap-1">
+            {['part1', 'part2', 'part3', 'part4'].map(part => (
+              <Button
+                key={part}
+                onClick={() => handlePartChange(part)}
+                className={`min-w-[80px] rounded-lg border-none px-4 py-1 ${
+                  activePart === part ? 'bg-[#003087] text-white' : 'bg-white text-black hover:bg-gray-50'
+                }`}
+              >
+                {`PART ${part.slice(-1)}`}
+              </Button>
+            ))}
           </div>
-        </div>
-      </div>
+
+          <div className="space-y-6">
+            <div>
+              <h3 className="mb-2 text-lg font-medium text-[#003087]">{`PART ${activePart.slice(-1)}`}</h3>
+              <div className="rounded-lg border border-solid border-[#003087] p-4">
+                <p className="m-0 whitespace-pre-wrap text-base">
+                  {instructions.match(/^Part \d+:/) ? (
+                    <>
+                      <span className="font-bold">{instructions.match(/^Part \d+:/)[0]}</span>
+                      {instructions.replace(/^Part \d+:/, '')}
+                    </>
+                  ) : (
+                    instructions
+                  )}
+                </p>
+                {subInstructions && (
+                  <p className="mt-2 whitespace-pre-wrap text-base italic text-gray-600">
+                    {subInstructions.match(/^Part \d+:/) ? (
+                      <>
+                        <span className="font-bold not-italic">{subInstructions.match(/^Part \d+:/)[0]}</span>
+                        <span className="italic">{subInstructions.replace(/^Part \d+:/, '')}</span>
+                      </>
+                    ) : (
+                      subInstructions
+                    )}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {questions.length === 0 ? (
+                <Card className="rounded-lg border-gray-300 shadow-md">
+                  <p className="m-0 italic text-gray-500">No questions available</p>
+                </Card>
+              ) : (
+                questions.map((question, index) => (
+                  <div key={index} className="grid grid-cols-[1fr,1fr] gap-6">
+                    <div className="overflow-hidden rounded-lg border border-gray-300 shadow-md">
+                      <div className="bg-[#E5E7EB] px-4 py-3">
+                        <p className="m-0 text-base">
+                          Question {index + 1}: {question}
+                        </p>
+                      </div>
+                      <div className="space-y-4 p-4">
+                        <p className="mb-2 text-base">Student Answer:</p>
+                        <div className="text-black">{renderAnswer(answers[index])}</div>
+                      </div>
+                    </div>
+
+                    <div className="overflow-hidden rounded-lg border border-gray-300 shadow-md">
+                      <div className="bg-[#E5E7EB] px-4 py-3">
+                        <p className="m-0 text-base">Comment</p>
+                      </div>
+                      <div className="p-4">
+                        <TextArea
+                          value={feedbacks[activePart]?.[index] || ''}
+                          onChange={e => handleFeedbackChange(activePart, index, e.target.value)}
+                          placeholder="Enter your feedback here..."
+                          autoSize={{ minRows: 3, maxRows: 6 }}
+                          className="w-full rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
+
+WritingGrade.propTypes = {
+  sessionParticipantId: PropTypes.string.isRequired
+}
+
 export default WritingGrade
