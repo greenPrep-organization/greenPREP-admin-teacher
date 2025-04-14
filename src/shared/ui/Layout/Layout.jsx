@@ -91,7 +91,7 @@ const Layout = ({ children }) => {
       icon: <SettingOutlined className="text-lg" />,
       label: (
         <Link to="/account-management" className="text-[16px] text-white hover:text-white">
-          Management Accounts
+          Accounts
         </Link>
       ),
       className: baseMenuItemClass
@@ -121,7 +121,7 @@ const Layout = ({ children }) => {
           </div>
         </div>
         <Menu
-          className="bg-primary-color border-0 [&_.ant-menu-item-selected]:bg-white [&_.ant-menu-item-selected_.anticon]:text-black [&_.ant-menu-item-selected_a]:text-black"
+          className="bg-primary-color border-0 px-4 [&_.ant-menu-item-selected]:bg-white [&_.ant-menu-item-selected_.anticon]:text-black [&_.ant-menu-item-selected_a]:text-black"
           mode="inline"
           selectedKeys={[selectedKey]}
           onClick={handleMenuClick}
@@ -143,7 +143,7 @@ const Layout = ({ children }) => {
               key: '4',
               icon: <LogoutOutlined className="text-xl" />,
               label: <span className="text-base font-medium text-white">Sign out</span>,
-              className: 'hover:bg-red-500 transition-colors duration-200'
+              className: 'hover:!bg-red-500 transition-colors duration-200'
             }
           ]}
         />

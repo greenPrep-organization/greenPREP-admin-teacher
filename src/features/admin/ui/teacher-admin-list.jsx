@@ -7,6 +7,7 @@ import { Button, Input, message, Pagination, Select, Space, Spin, Table, Tag } f
 import { useEffect, useState } from 'react'
 import DeleteTeacherModal from './delete-teacher'
 import StatusConfirmationModal from './status-confirmation-modal'
+import AppBreadcrumb from '@shared/ui/Breadcrumb'
 
 const TeacherAdminList = () => {
   const [searchText, setSearchText] = useState('')
@@ -183,7 +184,13 @@ const TeacherAdminList = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="mb-2 text-sm text-gray-500">Dashboard / Accounts</div>
+      <AppBreadcrumb
+        items={[
+          {
+            label: 'Accounts'
+          }
+        ]}
+      />
       <h1 className="mb-8 text-2xl font-bold">Account Management</h1>
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row">
         <div className="flex flex-col gap-4 md:flex-row">
