@@ -157,7 +157,10 @@ const DashboardPage = () => {
       </div>
       <div className="mb-8 flex flex-col gap-6 lg:flex-row">
         <div className="w-full space-y-6 lg:w-2/3">
-          <Card title="Student Performance by Level" className="min-h-[300px] shadow-md">
+          <Card
+            title={<span className="text-lg text-[#ba77f2]">Student Performance by Level</span>}
+            className="min-h-[300px] shadow-md"
+          >
             <Chart
               options={{
                 chart: {
@@ -183,17 +186,20 @@ const DashboardPage = () => {
                       return `${passed}/${total} students passed (${val}%)`
                     }
                   }
-                },
-                colors: ['#1890ff', '#13c2c2', '#fa8c16', '#722ed1', '#f5222d']
+                }
               }}
               series={[
                 {
                   name: 'Performance',
-                  data: performanceData.map(item => item.percentage)
+                  data: performanceData.map((item, index) => ({
+                    x: item.level,
+                    y: item.percentage,
+                    fillColor: ['#1890ff', '#13c2c2', '#fa8c16', '#722ed1', '#f5222d'][index % 5]
+                  }))
                 }
               ]}
               type="bar"
-              height={305}
+              height={283}
             />
           </Card>
 
@@ -227,13 +233,13 @@ const DashboardPage = () => {
                 data: [skills.Listening, skills.Speaking, skills.Reading, skills.Writing, skills.Grammar]
               }))}
               type="radar"
-              height={355}
+              height={345}
             />
           </Card>
         </div>
 
-        <div className="flex w-full flex-col justify-between space-y-6 lg:w-1/3">
-          <div className="min-h-[300px]">
+        <div className="flex w-1/3 flex-col justify-between space-y-0">
+          <div className="min-h-[425px]">
             <CalendarCard />
           </div>
           <Card title="Pass vs Fail Student Distribution" className="shadow-md">

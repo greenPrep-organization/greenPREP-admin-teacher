@@ -118,8 +118,11 @@ export default function CreateSessionModal({ open, onClose, classId }) {
               { required: true, message: 'Please select end time!' },
               {
                 validator: (_, value) => {
-                  if (value && startDate && value.isBefore(startDate)) {
+                  if (value && startDate && value.isBefore(startDate, 'minute')) {
                     return Promise.reject('End date cannot be before start date!')
+                  }
+                  if (value.isSame(startDate, 'minute')) {
+                    return Promise.reject('End date cannot be the same as start date!')
                   }
                   return Promise.resolve()
                 }
