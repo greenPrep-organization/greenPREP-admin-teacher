@@ -2,13 +2,9 @@ import { useState, useEffect } from 'react'
 import { Button, Card, Input, Spin, Alert } from 'antd'
 import PropTypes from 'prop-types'
 import { useGetWritingData } from '@features/grading/api'
+import { sharedState } from '@features/grading/constants/shared-state'
 
 const { TextArea } = Input
-
-const STORAGE_KEY = 'writing_grading_draft'
-const FEEDBACK_STORAGE_KEY = 'writing_grading_feedback'
-
-let hasLoadedWritingDraft = false
 
 function WritingGrade({ sessionParticipantId }) {
   const [activePart, setActivePart] = useState('part1')
@@ -17,40 +13,26 @@ function WritingGrade({ sessionParticipantId }) {
   const { data: apiData, isLoading, isError } = useGetWritingData(sessionParticipantId)
 
   useEffect(() => {
-    const storedFeedbacks = JSON.parse(localStorage.getItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`) || '{}')
-    if (storedFeedbacks) {
-      setFeedbacks(storedFeedbacks)
-    }
-  }, [sessionParticipantId])
-
-  useEffect(() => {
-    localStorage.setItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`, JSON.stringify(feedbacks))
-  }, [feedbacks, sessionParticipantId])
-
-  useEffect(() => {
-    if (!hasLoadedWritingDraft && apiData?.data) {
-      const draftData = JSON.parse(localStorage.getItem(`${STORAGE_KEY}_${sessionParticipantId}`) || '[]')
-      if (draftData) {
-        const loadedScores = {}
-        draftData.forEach(({ part, scores: partScores }) => {
-          partScores.forEach(({ questionIndex, score }) => {
-            if (score !== null) {
-              loadedScores[`${part}_question_${questionIndex}`] = score
-            }
-          })
-        })
-        hasLoadedWritingDraft = true
+    if (sessionParticipantId) {
+      const draft = sharedState.getDraft(sessionParticipantId)
+      if (draft.writing) {
+        setFeedbacks(draft.writing)
       }
     }
-  }, [apiData, sessionParticipantId])
+  }, [sessionParticipantId])
 
   const handlePartChange = key => setActivePart(key)
 
   const handleFeedbackChange = (part, questionIndex, value) => {
-    setFeedbacks(prevFeedbacks => ({
-      ...prevFeedbacks,
-      [part]: { ...prevFeedbacks[part], [questionIndex]: value }
-    }))
+    const updatedFeedbacks = {
+      ...feedbacks,
+      [part]: { ...feedbacks[part], [questionIndex]: value }
+    }
+    setFeedbacks(updatedFeedbacks)
+
+    if (sessionParticipantId) {
+      sharedState.updateFeedback(sessionParticipantId, 'writing', part, questionIndex, value)
+    }
   }
 
   const processApiData = () => {

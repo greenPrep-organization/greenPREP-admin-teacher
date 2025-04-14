@@ -1,93 +1,22 @@
 import { Button, message } from 'antd'
+import { sharedState } from '@features/grading/constants/shared-state'
+import PropTypes from 'prop-types'
 
-const WRITING_STORAGE_KEY = 'writing_grading_draft'
-const SPEAKING_STORAGE_KEY = 'speaking_grading_draft'
-const FEEDBACK_STORAGE_KEY = 'grading_feedbacks'
-
-import { sharedScores, sharedFeedbacks } from '@features/grading/constants/shared-state'
-
-function SaveAsDraftButton() {
+function SaveAsDraftButton({ sessionParticipantId }) {
   const handleSaveDraft = () => {
     try {
-      const writingScores = sharedScores.writing || {}
-      const writingDraftData = []
-
-      const writingPartScores = {}
-      Object.keys(writingScores).forEach(key => {
-        const match = key.match(/^(part\d+)_question_(\d+)$/)
-        if (match) {
-          const [, part, questionIndex] = match
-          if (!writingPartScores[part]) {
-            writingPartScores[part] = []
-          }
-          writingPartScores[part][parseInt(questionIndex)] = writingScores[key]
-        }
-      })
-
-      Object.keys(writingPartScores).forEach(part => {
-        const scoresArray = []
-        for (let i = 0; i < writingPartScores[part].length; i++) {
-          scoresArray.push({
-            questionIndex: i,
-            score: writingPartScores[part][i] === undefined ? null : writingPartScores[part][i]
-          })
-        }
-
-        writingDraftData.push({
-          part,
-          timestamp: new Date().toISOString(),
-          isDraft: true,
-          scores: scoresArray
-        })
-      })
-
-      localStorage.setItem(WRITING_STORAGE_KEY, JSON.stringify(writingDraftData))
-
-      const speakingScores = sharedScores.speaking || {}
-      const speakingDraftData = []
-
-      const speakingPartScores = {}
-      Object.keys(speakingScores).forEach(key => {
-        const match = key.match(/^(PART \d+)-(.+)$/)
-        if (match) {
-          const [, part, questionId] = match
-          if (!speakingPartScores[part]) {
-            speakingPartScores[part] = []
-          }
-          speakingPartScores[part].push({
-            questionId,
-            score: speakingScores[key]
-          })
-        }
-      })
-
-      Object.keys(speakingPartScores).forEach(part => {
-        const scoresArray = speakingPartScores[part].map((item, index) => ({
-          questionIndex: index,
-          score: item.score
-        }))
-
-        speakingDraftData.push({
-          part: part.toLowerCase().replace(' ', ''),
-          timestamp: new Date().toISOString(),
-          isDraft: true,
-          scores: scoresArray
-        })
-      })
-
-      localStorage.setItem(SPEAKING_STORAGE_KEY, JSON.stringify(speakingDraftData))
-
-      const combinedDrafts = {
-        writing: writingDraftData,
-        speaking: speakingDraftData,
-        timestamp: new Date().toISOString()
+      if (!sessionParticipantId) {
+        message.error('No student selected')
+        return
       }
 
-      localStorage.setItem('combined_grading_drafts', JSON.stringify(combinedDrafts))
+      const success = sharedState.persistDraft(sessionParticipantId)
 
-      localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(sharedFeedbacks))
-
-      message.success('Draft saved successfully')
+      if (success) {
+        message.success('Draft saved successfully')
+      } else {
+        message.error('Failed to save draft')
+      }
     } catch (error) {
       message.error('Failed to save draft')
       console.error('Error saving draft:', error)
@@ -103,6 +32,10 @@ function SaveAsDraftButton() {
       Save As Draft
     </Button>
   )
+}
+
+SaveAsDraftButton.propTypes = {
+  sessionParticipantId: PropTypes.string.isRequired
 }
 
 export default SaveAsDraftButton

@@ -1,6 +1,7 @@
 import { Input, Button, message } from 'antd'
 import { useState } from 'react'
 import PropTypes from 'prop-types'
+import SaveAsDraftButton from './save-as-draft-button'
 
 const GradingScoringPanel = ({
   type,
@@ -11,7 +12,8 @@ const GradingScoringPanel = ({
   isFirstCompletionNotice,
   score,
   onScoreChange,
-  previousScore
+  previousScore,
+  sessionParticipantId
 }) => {
   const [error, setError] = useState('')
 
@@ -105,12 +107,7 @@ const GradingScoringPanel = ({
           </div>
           {error && <span className="ml-auto text-sm text-red-500">{error}</span>}
         </div>
-        <Button
-          onClick={() => onSubmit(Number(score), type)}
-          className="h-11 rounded-lg border border-gray-200 px-6 text-base font-medium hover:bg-gray-50"
-        >
-          Save As Draft
-        </Button>
+        <SaveAsDraftButton sessionParticipantId={sessionParticipantId} />
         <Button
           onClick={handleSubmit}
           className="h-11 rounded-lg bg-[#003087] px-6 text-base font-medium text-white hover:bg-[#002366]"
@@ -131,7 +128,8 @@ GradingScoringPanel.propTypes = {
   isFirstCompletionNotice: PropTypes.bool.isRequired,
   score: PropTypes.string.isRequired,
   onScoreChange: PropTypes.func.isRequired,
-  previousScore: PropTypes.string
+  previousScore: PropTypes.string,
+  sessionParticipantId: PropTypes.string.isRequired
 }
 
 export default GradingScoringPanel

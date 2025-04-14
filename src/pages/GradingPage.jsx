@@ -11,6 +11,7 @@ import axiosInstance from '@shared/config/axios'
 import AppBreadcrumb from '@/shared/ui/Breadcrumb'
 import { useQuery } from '@tanstack/react-query'
 import { LeftOutlined } from '@ant-design/icons'
+import { sharedState } from '@features/grading/constants/shared-state'
 
 const fetchSessionDetail = async sessionId => {
   const res = await axiosInstance.get(`/sessions/${sessionId}`)
@@ -93,40 +94,28 @@ function GradingPage() {
   }, [participantsData, participantId, currentPage, pageSize])
 
   useEffect(() => {
-    const loadScoresFromStorage = () => {
-      if (!studentData) return
+    if (!studentData) return
 
-      const storedData = localStorage.getItem(`grading_${studentData.id}`)
-      if (storedData) {
-        const { speakingScore: storedSpeaking, writingScore: storedWriting } = JSON.parse(storedData)
-        setSpeakingScore(storedSpeaking || '')
-        setWritingScore(storedWriting || '')
-        setPreviousSpeakingScore(storedSpeaking || '')
-        setPreviousWritingScore(storedWriting || '')
-        setIsSpeakingGraded(!!storedSpeaking)
-        setIsWritingGraded(!!storedWriting)
-        setIsFirstCompletionNotice(!(storedSpeaking && storedWriting))
-      } else {
-        setSpeakingScore(studentData.speaking?.toString() || '')
-        setWritingScore(studentData.writing?.toString() || '')
-        setPreviousSpeakingScore(studentData.speaking?.toString() || '')
-        setPreviousWritingScore(studentData.writing?.toString() || '')
-        setIsSpeakingGraded(!!studentData.speaking)
-        setIsWritingGraded(!!studentData.writing)
-        setIsFirstCompletionNotice(!(studentData.speaking && studentData.writing))
+    setSpeakingScore(studentData.speaking?.toString() || '')
+    setWritingScore(studentData.writing?.toString() || '')
+    setPreviousSpeakingScore(studentData.speaking?.toString() || '')
+    setPreviousWritingScore(studentData.writing?.toString() || '')
+    setIsSpeakingGraded(!!studentData.speaking)
+    setIsWritingGraded(!!studentData.writing)
+    setIsFirstCompletionNotice(!(studentData.speaking && studentData.writing))
+
+    if (participantId) {
+      const draft = sharedState.getDraft(participantId)
+      if (draft.score) {
+        if (draft.score.speaking !== null) {
+          setSpeakingScore(draft.score.speaking.toString())
+        }
+        if (draft.score.writing !== null) {
+          setWritingScore(draft.score.writing.toString())
+        }
       }
     }
-    loadScoresFromStorage()
-  }, [studentData])
-
-  const saveScoresToStorage = () => {
-    if (!studentData) return
-    const data = {
-      speakingScore,
-      writingScore
-    }
-    localStorage.setItem(`grading_${studentData.id}`, JSON.stringify(data))
-  }
+  }, [studentData, participantId])
 
   const navigateToPreviousStudent = async () => {
     if (participantsData?.data) {
@@ -216,15 +205,26 @@ function GradingPage() {
         if (isSpeakingGraded) setIsFirstCompletionNotice(false)
       }
 
-      saveScoresToStorage()
+      if (participantId) {
+        sharedState.clearDraft(participantId)
+      }
     } catch (error) {
       console.error(`Error updating ${section} score:`, error)
     }
   }
 
   const handleScoreChange = value => {
-    if (activeSection === 'speaking') setSpeakingScore(value)
-    else if (activeSection === 'writing') setWritingScore(value)
+    if (activeSection === 'speaking') {
+      setSpeakingScore(value)
+      if (participantId) {
+        sharedState.updateScore(participantId, 'speaking', value)
+      }
+    } else if (activeSection === 'writing') {
+      setWritingScore(value)
+      if (participantId) {
+        sharedState.updateScore(participantId, 'writing', value)
+      }
+    }
   }
 
   const handleSectionChange = newSection => {
@@ -386,6 +386,7 @@ function GradingPage() {
           score={activeSection === 'speaking' ? speakingScore : writingScore}
           onScoreChange={handleScoreChange}
           previousScore={activeSection === 'speaking' ? previousSpeakingScore : previousWritingScore}
+          sessionParticipantId={participantId}
         />
       </div>
 
