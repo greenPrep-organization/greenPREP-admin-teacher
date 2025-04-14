@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { DeleteOutlined, EditOutlined, LoadingOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, LoadingOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons'
 import { useDeleteTeacher, useTeachers, useUpdateTeacherProfile } from '@features/admin/hooks'
 import { CreateTeacher } from '@features/admin/ui/create-teacher'
 import EditTeacherModal from '@features/admin/ui/edit-teacher'
@@ -183,8 +183,8 @@ const TeacherAdminList = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="mb-2 text-sm text-gray-500">Dashboard / Teacher Account Management</div>
-      <h1 className="mb-8 text-2xl font-bold">Teacher Account Management</h1>
+      <div className="mb-2 text-sm text-gray-500">Dashboard / Accounts</div>
+      <h1 className="mb-8 text-2xl font-bold">Account Management</h1>
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row">
         <div className="flex flex-col gap-4 md:flex-row">
           <div className="relative">
@@ -208,7 +208,7 @@ const TeacherAdminList = () => {
             ]}
           />
         </div>
-        <Button type="primary" className="bg-blue-700 shadow-sm hover:bg-blue-800" onClick={handleCreateNewAccount}>
+        <Button type="primary" icon={<PlusOutlined />} className="bg-[#013088]" onClick={handleCreateNewAccount}>
           Create New Account
         </Button>
       </div>

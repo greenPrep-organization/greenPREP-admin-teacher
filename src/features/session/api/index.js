@@ -64,3 +64,12 @@ export const deleteSession = async sessionId => {
     throw new Error(error.response?.data?.message || 'Failed to delete session')
   }
 }
+
+export const updateSession = async (sessionId, data) => {
+  try {
+    const response = await axiosInstance.put(`/sessions/${sessionId}`, data)
+    return response.data
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to update session')
+  }
+}

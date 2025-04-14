@@ -12,6 +12,7 @@ const AudioPlayer = ({ audioUrl }) => {
   const audioRef = useRef(null)
   const progressBarRef = useRef(null)
   const containerRef = useRef(null)
+  const mediaSourceRef = useRef(null)
 
   const handleTimeUpdate = useCallback(() => {
     setCurrentTime(audioRef.current.currentTime)
@@ -44,22 +45,78 @@ const AudioPlayer = ({ audioUrl }) => {
     [isPlaying]
   )
 
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
+  const loadWebmFile = useCallback(async () => {
+    try {
+      const response = await fetch(audioUrl)
+      const arrayBuffer = await response.arrayBuffer()
 
-    audio.addEventListener('timeupdate', handleTimeUpdate)
-    audio.addEventListener('ended', handleEnded)
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata)
-    window.addEventListener('keydown', handleKeyPress)
+      const mediaSource = new MediaSource()
+      mediaSourceRef.current = mediaSource
 
-    return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate)
-      audio.removeEventListener('ended', handleEnded)
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
-      window.removeEventListener('keydown', handleKeyPress)
+      const audio = new Audio()
+      audio.src = URL.createObjectURL(mediaSource)
+
+      mediaSource.addEventListener('sourceopen', () => {
+        const sourceBuffer = mediaSource.addSourceBuffer('audio/webm; codecs=opus')
+        sourceBuffer.addEventListener('updateend', () => {
+          if (!sourceBuffer.updating && mediaSource.readyState === 'open') {
+            mediaSource.endOfStream()
+            if (audio.duration && isFinite(audio.duration)) {
+              setDuration(audio.duration)
+            } else {
+              const estimatedDuration = arrayBuffer.byteLength / 16000
+              setDuration(estimatedDuration)
+            }
+          }
+        })
+        sourceBuffer.appendBuffer(arrayBuffer)
+      })
+
+      audio.addEventListener('loadedmetadata', () => {
+        if (audio.duration && isFinite(audio.duration)) {
+          setDuration(audio.duration)
+        }
+      })
+
+      audio.addEventListener('timeupdate', () => {
+        if (audio.currentTime && isFinite(audio.currentTime)) {
+          setCurrentTime(audio.currentTime)
+          updateProgress()
+        }
+      })
+
+      audio.addEventListener('ended', () => {
+        setIsPlaying(false)
+        setProgress(100)
+      })
+      audioRef.current = audio
+    } catch (error) {
+      console.error('Error loading webm file:', error)
+      setDuration(0)
+      setCurrentTime(0)
     }
-  }, [handleTimeUpdate, handleEnded, handleLoadedMetadata, handleKeyPress])
+  }, [audioUrl])
+
+  useEffect(() => {
+    if (audioUrl && audioUrl.endsWith('.webm')) {
+      loadWebmFile()
+    } else {
+      const audio = audioRef.current
+      if (!audio) return
+
+      audio.addEventListener('timeupdate', handleTimeUpdate)
+      audio.addEventListener('ended', handleEnded)
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+      window.addEventListener('keydown', handleKeyPress)
+
+      return () => {
+        audio.removeEventListener('timeupdate', handleTimeUpdate)
+        audio.removeEventListener('ended', handleEnded)
+        audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
+        window.removeEventListener('keydown', handleKeyPress)
+      }
+    }
+  }, [audioUrl, loadWebmFile])
 
   useEffect(() => {
     setProgress(0)
@@ -74,7 +131,7 @@ const AudioPlayer = ({ audioUrl }) => {
   }, [audioUrl])
 
   const formatTime = seconds => {
-    if (isNaN(seconds)) return '00:00'
+    if (isNaN(seconds) || !isFinite(seconds)) return '00:00'
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = Math.floor(seconds % 60)
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`

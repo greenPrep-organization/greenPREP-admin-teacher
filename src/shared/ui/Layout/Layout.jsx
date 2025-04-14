@@ -4,12 +4,13 @@ import { Logo } from '@assets/images'
 import LogoutModal from '@pages/LogoutModal'
 import SharedHeader from '@shared/ui/Header/SharedHeader'
 
-import { Layout as AntdLayout, Menu } from 'antd'
+import { Layout as AntdLayout, Menu, Divider } from 'antd'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 const { Sider, Content } = AntdLayout
+
 const Layout = ({ children }) => {
   // @ts-ignore
   const auth = useSelector(state => state.auth)
@@ -23,9 +24,9 @@ const Layout = ({ children }) => {
     const savedKey = localStorage.getItem('selectedMenuKey')
     setSelectedKey(savedKey || '1')
   }, [])
+
   useEffect(() => {
     const savedKey = localStorage.getItem('selectedMenuKey')
-
     if (!savedKey) {
       switch (location.pathname) {
         case '/':
@@ -65,23 +66,23 @@ const Layout = ({ children }) => {
   const menuItems = [
     {
       key: '1',
-      icon: <HomeOutlined className="text-lg" />,
+      icon: <HomeOutlined className="text-xl" />,
       label: (
-        <Link to="/" className="text-[16px] text-white hover:text-white">
+        <Link to="/" className="text-base font-medium text-white hover:text-white">
           Dashboard
         </Link>
       ),
-      className: baseMenuItemClass
+      className: 'hover:bg-white hover:text-[#003087] transition-colors duration-200'
     },
     {
       key: '2',
-      icon: <TeamOutlined className="text-lg" />,
+      icon: <TeamOutlined className="text-xl" />,
       label: (
-        <Link to="/classes-management" className="text-[16px] text-white hover:text-white">
+        <Link to="/classes-management" className="text-base font-medium text-white hover:text-white">
           Classes
         </Link>
       ),
-      className: baseMenuItemClass
+      className: 'hover:bg-white hover:text-[#003087] transition-colors duration-200'
     }
   ]
   if (auth?.role?.includes('admin')) {
@@ -96,15 +97,6 @@ const Layout = ({ children }) => {
       className: baseMenuItemClass
     })
   }
-  menuItems.push({
-    key: '4',
-    icon: <LogoutOutlined className="text-lg" />,
-    label: <span className="text-[16px] text-white">Sign out</span>,
-    style: {
-      backgroundColor: '#ef4444'
-    },
-    className: 'hover:bg-red-800 transition-colors duration-200'
-  })
 
   return (
     <AntdLayout className="bg-primary-color min-h-screen">
@@ -129,7 +121,7 @@ const Layout = ({ children }) => {
           </div>
         </div>
         <Menu
-          className="bg-primary-color border-0 px-4 py-6"
+          className="bg-primary-color border-0 [&_.ant-menu-item-selected]:bg-white [&_.ant-menu-item-selected_.anticon]:text-black [&_.ant-menu-item-selected_a]:text-black"
           mode="inline"
           selectedKeys={[selectedKey]}
           onClick={handleMenuClick}
@@ -137,7 +129,26 @@ const Layout = ({ children }) => {
           theme="dark"
           inlineIndent={12}
         />
+        <div className="w-full px-4">
+          <Divider className="my-4 border-t border-white" />
+        </div>
+        <Menu
+          className="bg-primary-color border-0"
+          mode="inline"
+          selectedKeys={selectedKey === '4' ? ['4'] : []}
+          onClick={handleMenuClick}
+          theme="dark"
+          items={[
+            {
+              key: '4',
+              icon: <LogoutOutlined className="text-xl" />,
+              label: <span className="text-base font-medium text-white">Sign out</span>,
+              className: 'hover:bg-red-500 transition-colors duration-200'
+            }
+          ]}
+        />
       </Sider>
+
       <AntdLayout>
         <SharedHeader
           collapsed={collapsed}

@@ -42,7 +42,7 @@ const PrivateRoute = [
         element: <TeacherAdminList />
       },
       {
-        path: 'grading',
+        path: '/grading/:sessionId/:participantId',
         element: <GradingPage />
       }
     ]
