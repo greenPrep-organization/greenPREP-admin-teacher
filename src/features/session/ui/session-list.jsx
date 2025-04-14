@@ -128,11 +128,22 @@ const SessionsList = ({ classId }) => {
       },
       {
         title: 'Status',
-        dataIndex: 'status',
         key: 'status',
         align: 'center',
-        render: status => {
+        render: (_, record) => {
+          const now = new Date()
+          const start = new Date(record.startTime)
+          const end = new Date(record.endTime)
+
+          let status = 'NOT_STARTED'
+          if (now >= end) {
+            status = 'COMPLETED'
+          } else if (now >= start && now < end) {
+            status = 'IN_PROGRESS'
+          }
+
           const { bg, text } = getStatusColor(status)
+
           return (
             <span className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${bg} ${text}`}>
               {status}
@@ -144,7 +155,20 @@ const SessionsList = ({ classId }) => {
           { text: 'IN_PROGRESS', value: 'IN_PROGRESS' },
           { text: 'COMPLETED', value: 'COMPLETED' }
         ],
-        onFilter: (value, record) => record.status === value
+        onFilter: (value, record) => {
+          const now = new Date()
+          const start = new Date(record.startTime)
+          const end = new Date(record.endTime)
+
+          let status = 'NOT_STARTED'
+          if (now >= end) {
+            status = 'COMPLETED'
+          } else if (now >= start && now < end) {
+            status = 'IN_PROGRESS'
+          }
+
+          return status === value
+        }
       },
       {
         title: 'Action',
