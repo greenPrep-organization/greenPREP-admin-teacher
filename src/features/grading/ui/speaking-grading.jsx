@@ -118,8 +118,8 @@ const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
                 )}
                 <div>
                   <p className="mb-2 text-base">Student Answer:</p>
-                  {question.AnswerContent?.audioUrl ? (
-                    <AudioPlayer audioUrl={question.AnswerContent.audioUrl} />
+                  {question.studentAnswer?.AnswerAudio ? (
+                    <AudioPlayer audioUrl={question.studentAnswer.AnswerAudio} />
                   ) : (
                     <div className="rounded-lg bg-gray-50 p-4 text-gray-500">No audio submission available</div>
                   )}
