@@ -2,7 +2,7 @@ import { Button, message } from 'antd'
 import { sharedState } from '@features/grading/constants/shared-state'
 import PropTypes from 'prop-types'
 
-function SaveAsDraftButton({ sessionParticipantId }) {
+function SaveAsDraftButton({ sessionParticipantId, onDraftSaved }) {
   const handleSaveDraft = () => {
     try {
       if (!sessionParticipantId) {
@@ -14,6 +14,9 @@ function SaveAsDraftButton({ sessionParticipantId }) {
 
       if (success) {
         message.success('Draft saved successfully')
+        if (onDraftSaved) {
+          onDraftSaved()
+        }
       } else {
         message.error('Failed to save draft')
       }
@@ -35,7 +38,8 @@ function SaveAsDraftButton({ sessionParticipantId }) {
 }
 
 SaveAsDraftButton.propTypes = {
-  sessionParticipantId: PropTypes.string.isRequired
+  sessionParticipantId: PropTypes.string.isRequired,
+  onDraftSaved: PropTypes.func
 }
 
 export default SaveAsDraftButton
