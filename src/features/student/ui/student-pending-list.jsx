@@ -1,17 +1,18 @@
-import { SearchOutlined } from '@ant-design/icons'
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import {
-  usePendingSessionRequests,
   useApproveSessionRequest,
+  usePendingSessionRequests,
   useRejectSessionRequest
 } from '@features/student/hooks/index'
+import ApproveSessionPopup from '@features/student/ui/approve-session-request'
+import RejectSessionPopup from '@features/student/ui/reject-session-request'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { Button, Input, Table, message } from 'antd'
 import { useEffect, useState } from 'react'
-import ApproveSessionPopup from '@features/student/ui/approve-session-request'
-import RejectSessionPopup from '@features/student/ui/reject-session-request'
 
 const PendingList = ({ sessionId, onStudentApproved }) => {
-  const { data: pendingDataRaw = [], isLoading, isError } = usePendingSessionRequests(sessionId)
+  // Include refetch from the custom hook to reload data
+  const { data: pendingDataRaw = [], isLoading, isError, refetch } = usePendingSessionRequests(sessionId)
   const [pendingData, setPendingData] = useState([])
   const [pendingPagination, setPendingPagination] = useState({
     ...DEFAULT_PAGINATION,
@@ -166,7 +167,7 @@ const PendingList = ({ sessionId, onStudentApproved }) => {
   return (
     <div>
       <div className="mt-8">
-        <div className="mb-4 flex justify-between">
+        <div className="mb-4 flex items-center justify-between">
           <div className="relative">
             <Input
               placeholder="Search by student name, ID or class"
@@ -176,6 +177,10 @@ const PendingList = ({ sessionId, onStudentApproved }) => {
               className="w-64"
             />
           </div>
+          {/* Refresh Button */}
+          <Button type="default" icon={<ReloadOutlined />} onClick={refetch}>
+            Refresh
+          </Button>
         </div>
       </div>
       <Table
