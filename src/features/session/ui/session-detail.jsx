@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
-import { Tag, Spin, Alert, Typography } from 'antd'
 import { formatDateTime, getStatusColor } from '@shared/lib/utils/index'
-import { getSessionDetail, getSessionParticipants } from '../api'
+import { Alert, Spin, Tag, Typography } from 'antd'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { getSessionDetail, getSessionParticipants } from '../api'
 
 const { Title } = Typography
 
@@ -20,6 +20,10 @@ const SessionDetail = () => {
         setError(null)
         const data = await getSessionDetail(sessionId)
         setSessionData(data.data)
+        const session = data.data
+        const calculatedStatus = getStatusByTime(session.startTime, session.endTime)
+        session.status = calculatedStatus
+        setSessionData(session)
         const participantsResponse = await getSessionParticipants(sessionId)
         setParticipantCount(participantsResponse.data?.length || 0)
       } catch (error) {
@@ -31,6 +35,16 @@ const SessionDetail = () => {
 
     fetchSessionData()
   }, [sessionId])
+
+  const getStatusByTime = (startTime, endTime) => {
+    const now = new Date()
+    const start = startTime
+    const end = endTime
+
+    if (now < start) return 'NOT_STARTED'
+    if (now >= start && now < end) return 'IN_PROGRESS'
+    return 'COMPLETED'
+  }
 
   if (loading) {
     return (

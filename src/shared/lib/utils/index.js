@@ -30,7 +30,7 @@ export const getStatusColor = status => {
       bg: 'bg-completed',
       text: 'text-white'
     },
-    'In Progress': {
+    IN_PROGRESS: {
       bg: 'bg-progress',
       text: 'text-white'
     },
