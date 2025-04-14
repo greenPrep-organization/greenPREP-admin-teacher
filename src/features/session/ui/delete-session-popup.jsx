@@ -1,17 +1,22 @@
 import { Warning } from '@assets/images'
-import { Button, Modal } from 'antd'
+import { useDeleteSession } from '@features/session/hooks'
+import { Button, Modal, message } from 'antd'
 import { useState } from 'react'
 
-const DeleteSessionPopup = ({ isOpen, onClose, onDelete }) => {
+const DeleteSessionPopup = ({ isOpen, onClose, sessionId }) => {
   const [loading, setLoading] = useState(false)
+  const deleteSession = useDeleteSession()
 
   const confirmDelete = async () => {
     setLoading(true)
     try {
-      await onDelete()
+      await deleteSession.mutateAsync(sessionId)
+      message.success('Session deleted successfully')
+      onClose()
+    } catch (error) {
+      message.error(error.message || 'Failed to delete session')
     } finally {
       setLoading(false)
-      onClose()
     }
   }
 

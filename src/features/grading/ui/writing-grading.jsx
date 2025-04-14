@@ -2,55 +2,37 @@ import { useState, useEffect } from 'react'
 import { Button, Card, Input, Spin, Alert } from 'antd'
 import PropTypes from 'prop-types'
 import { useGetWritingData } from '@features/grading/api'
+import { sharedState } from '@features/grading/constants/shared-state'
 
 const { TextArea } = Input
 
-const STORAGE_KEY = 'writing_grading_draft'
-const FEEDBACK_STORAGE_KEY = 'writing_grading_feedback'
-
-let hasLoadedWritingDraft = false
-
-function WritingGrade({ studentId }) {
+function WritingGrade({ sessionParticipantId }) {
   const [activePart, setActivePart] = useState('part1')
   const [feedbacks, setFeedbacks] = useState({})
 
-  const { data: apiData, isLoading, isError } = useGetWritingData()
+  const { data: apiData, isLoading, isError } = useGetWritingData(sessionParticipantId)
 
   useEffect(() => {
-    const storedFeedbacks = JSON.parse(localStorage.getItem(`${FEEDBACK_STORAGE_KEY}_${studentId}`) || '{}')
-    if (storedFeedbacks) {
-      setFeedbacks(storedFeedbacks)
-    }
-  }, [studentId])
-
-  useEffect(() => {
-    localStorage.setItem(`${FEEDBACK_STORAGE_KEY}_${studentId}`, JSON.stringify(feedbacks))
-  }, [feedbacks, studentId])
-
-  useEffect(() => {
-    if (!hasLoadedWritingDraft && apiData?.data) {
-      const draftData = JSON.parse(localStorage.getItem(`${STORAGE_KEY}_${studentId}`) || '[]')
-      if (draftData) {
-        const loadedScores = {}
-        draftData.forEach(({ part, scores: partScores }) => {
-          partScores.forEach(({ questionIndex, score }) => {
-            if (score !== null) {
-              loadedScores[`${part}_question_${questionIndex}`] = score
-            }
-          })
-        })
-        hasLoadedWritingDraft = true
+    if (sessionParticipantId) {
+      const draft = sharedState.getDraft(sessionParticipantId)
+      if (draft.writing) {
+        setFeedbacks(draft.writing)
       }
     }
-  }, [apiData, studentId])
+  }, [sessionParticipantId])
 
   const handlePartChange = key => setActivePart(key)
 
   const handleFeedbackChange = (part, questionIndex, value) => {
-    setFeedbacks(prevFeedbacks => ({
-      ...prevFeedbacks,
-      [part]: { ...prevFeedbacks[part], [questionIndex]: value }
-    }))
+    const updatedFeedbacks = {
+      ...feedbacks,
+      [part]: { ...feedbacks[part], [questionIndex]: value }
+    }
+    setFeedbacks(updatedFeedbacks)
+
+    if (sessionParticipantId) {
+      sharedState.updateFeedback(sessionParticipantId, 'writing', part, questionIndex, value)
+    }
   }
 
   const processApiData = () => {
@@ -61,14 +43,15 @@ function WritingGrade({ studentId }) {
       part4: { questions: [], answers: [], instructions: '', subInstructions: '' }
     }
 
-    if (!apiData?.data || apiData.data.length === 0) {
+    if (!apiData?.data?.topic?.Parts) {
       return emptyParts
     }
 
     const parts = { ...emptyParts }
+    const topicParts = apiData.data.topic.Parts
 
-    apiData.data.forEach(item => {
-      const partContent = item.Question?.Part?.Content || ''
+    topicParts.forEach(part => {
+      const partContent = part.Content || ''
       let partNumber = 1
 
       const partMatch = partContent.match(/Part (\d+)/i)
@@ -78,16 +61,17 @@ function WritingGrade({ studentId }) {
 
       const partKey = `part${partNumber}`
 
-      if (!parts[partKey].instructions && item.Question?.Part?.Content) {
-        parts[partKey].instructions = item.Question.Part.Content
-      }
+      parts[partKey].instructions = part.Content || ''
+      parts[partKey].subInstructions = part.SubContent || ''
 
-      if (!parts[partKey].subInstructions && item.Question?.Part?.SubContent) {
-        parts[partKey].subInstructions = item.Question.Part.SubContent
-      }
+      if (part.Questions && part.Questions.length > 0) {
+        part.Questions.forEach(question => {
+          parts[partKey].questions.push(question.Content || '')
 
-      parts[partKey].questions.push(item.Question?.Content || '')
-      parts[partKey].answers.push(item.AnswerText || '')
+          const answer = question.studentAnswer?.AnswerText || ''
+          parts[partKey].answers.push(answer)
+        })
+      }
     })
 
     return parts
@@ -213,7 +197,7 @@ function WritingGrade({ studentId }) {
 }
 
 WritingGrade.propTypes = {
-  studentId: PropTypes.string.isRequired
+  sessionParticipantId: PropTypes.string.isRequired
 }
 
 export default WritingGrade

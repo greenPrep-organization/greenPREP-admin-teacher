@@ -22,8 +22,8 @@ const StudentCard = ({ student }) => {
       <div className="grid grid-cols-3 px-6 py-6 shadow-md">
         <div className="flex flex-col justify-center">
           <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-            <Text className="text-right text-[#6B7280]">ID:</Text>
-            <Text className="font-medium">{student.id}</Text>
+            <Text className="text-right text-[#6B7280]">Student Code:</Text>
+            <Text className="font-medium">{student.studentCode || 'N/A'}</Text>
           </div>
           <div className="mt-6 grid grid-cols-[100px_1fr] items-center gap-2">
             <Text className="text-right text-[#6B7280]">Class:</Text>
@@ -38,7 +38,7 @@ const StudentCard = ({ student }) => {
           </div>
           <div className="mt-6 grid grid-cols-[120px_1fr] items-center gap-2">
             <Text className="text-right text-[#6B7280]">Phone number:</Text>
-            <Text className="font-medium">{student.phone}</Text>
+            <Text className="font-medium">{student.phone || 'N/A'}</Text>
           </div>
         </div>
 

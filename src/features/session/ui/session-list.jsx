@@ -1,7 +1,7 @@
 // @ts-nocheck
 import EditSession from '@/features/session/ui/edit-session'
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import { useSessions } from '@features/session/hooks'
+import { useSessions, useUpdateSession } from '@features/session/hooks'
 import CreateSessionModal from '@features/session/ui/create-new-session'
 import DeleteSessionPopup from '@features/session/ui/delete-session-popup'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom'
 
 const SessionsList = ({ classId }) => {
   const { data: sessions = [], isLoading, isError } = useSessions(classId)
+  const updateSessionMutation = useUpdateSession(classId)
   const [filteredSessions, setFilteredSessions] = useState([])
   const [searchText, setSearchText] = useState('')
   const [editModalVisible, setEditModalVisible] = useState(false)
@@ -39,14 +40,6 @@ const SessionsList = ({ classId }) => {
     setFilteredSessions(filtered)
   }, [searchText, sessions])
 
-  const handleDelete = async () => {
-    if (!deleteSessionId) return
-    const updatedSessions = sessions.filter(session => session.id !== deleteSessionId)
-    setFilteredSessions(updatedSessions)
-    setDeleteSessionId(null)
-    message.success('Session deleted successfully')
-  }
-
   const handleViewSession = useCallback(
     sessionId => {
       navigate(`/classes-management/${classId}/session/${sessionId}`)
@@ -61,15 +54,35 @@ const SessionsList = ({ classId }) => {
 
   const handleUpdate = useCallback(
     updatedSession => {
-      const updatedSessions = sessions.map(session =>
-        session.id === selectedSession.id ? { ...session, ...updatedSession } : session
+      if (!selectedSession) return
+
+      const formattedData = {
+        sessionName: updatedSession.name,
+        sessionKey: updatedSession.key,
+        startTime: updatedSession.startTime.toISOString(),
+        endTime: updatedSession.endTime.toISOString(),
+        status: selectedSession.status,
+        ClassID: classId
+      }
+
+      updateSessionMutation.mutate(
+        {
+          sessionId: selectedSession.id,
+          data: formattedData
+        },
+        {
+          onSuccess: () => {
+            setEditModalVisible(false)
+            setSelectedSession(null)
+            message.success('Session updated successfully')
+          },
+          onError: error => {
+            message.error(error.message || 'Failed to update session')
+          }
+        }
       )
-      setFilteredSessions(updatedSessions)
-      setEditModalVisible(false)
-      setSelectedSession(null)
-      message.success('Session updated successfully')
     },
-    [selectedSession, sessions]
+    [selectedSession, classId, updateSessionMutation]
   )
 
   const columns = useMemo(
@@ -270,11 +283,7 @@ const SessionsList = ({ classId }) => {
         <Empty
           description="No sessions found. Click here to create a new session."
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-        >
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
-            Create Session
-          </Button>
-        </Empty>
+        ></Empty>
       )}
 
       <CreateSessionModal open={isModalVisible} onClose={() => setIsModalVisible(false)} classId={classId} />
@@ -283,7 +292,7 @@ const SessionsList = ({ classId }) => {
         <DeleteSessionPopup
           isOpen={!!deleteSessionId}
           onClose={() => setDeleteSessionId(null)}
-          onDelete={handleDelete}
+          sessionId={deleteSessionId}
         />
       )}
     </div>

@@ -38,7 +38,8 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
       }
 
       onUpdate({
-        ...values,
+        name: values.name,
+        key: values.key,
         startTime: values.startDate.toDate(),
         endTime: values.endDate.toDate(),
         status: Status
