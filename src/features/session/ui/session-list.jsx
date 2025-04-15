@@ -28,7 +28,7 @@ const SessionsList = ({ classId }) => {
 
   useEffect(() => {
     if (!sessions.length) return
-
+    console.log(sessions)
     const filtered = sessions.filter(session => {
       const matchesSearch =
         session.name.toLowerCase().includes(searchText.toLowerCase()) ||
