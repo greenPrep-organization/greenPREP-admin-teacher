@@ -380,9 +380,6 @@ function GradingPage() {
                 Writing
               </Button>
             </div>
-            <Button className="rounded-lg bg-red-400 px-8 py-5 text-base font-medium text-white hover:bg-red-500">
-              Export to PDF
-            </Button>
           </div>
         </div>
       </div>
