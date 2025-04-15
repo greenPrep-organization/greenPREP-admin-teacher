@@ -30,7 +30,7 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
 
       let Status
       if (now >= endTime) {
-        Status = 'COMPLETED'
+        Status = 'COMPLETE'
       } else if (now >= startTime && now < endTime) {
         Status = 'IN_PROGRESS'
       } else {

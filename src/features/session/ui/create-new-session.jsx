@@ -33,7 +33,7 @@ export default function CreateSessionModal({ open, onClose, classId }) {
       const now = new Date()
       let status
       if (now >= endTime) {
-        status = 'COMPLETED'
+        status = 'COMPLETE'
       } else if (now >= startTime && now < endTime) {
         status = 'IN_PROGRESS'
       } else if (now < startTime) {
