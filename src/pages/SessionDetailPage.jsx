@@ -42,7 +42,7 @@ const SessionDetailPage = () => {
   ]
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <AppBreadcrumb items={breadcrumbItems} />
 
       <div className="mb-4 flex items-center">
