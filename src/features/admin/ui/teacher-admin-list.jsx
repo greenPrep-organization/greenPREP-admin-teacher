@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import { DeleteOutlined, EditOutlined, LoadingOutlined, SearchOutlined } from '@ant-design/icons'
-import { useDeleteTeacher, useTeachers, useUpdateTeacherProfile } from '@features/admin/hooks'
+import { useDeleteTeacher, useTeachers, useUpdateTeacherProfile } from '@features/admin/hooks/useAdmin'
 import { CreateTeacher } from '@features/admin/ui/create-teacher'
 import EditTeacherModal from '@features/admin/ui/edit-teacher'
 import { Button, Input, message, Select, Space, Spin, Table, Tag } from 'antd'
