@@ -55,7 +55,7 @@ const DashboardPage = () => {
   const teacherSessions = sessionsArray.filter(
     session => session?.Classes?.UserID?.trim() === auth.user?.userId?.trim()
   )
-  const CompleteCount = teacherSessions.filter(session => session.status?.toUpperCase() === 'NOT_STARTED').length
+  const CompleteCount = teacherSessions.filter(session => session.status?.toUpperCase() === 'COMPLETED').length
   const myClassCount = myClasses?.length || 0
   const [ungradedCount, setUngradedCount] = useState(0)
 
