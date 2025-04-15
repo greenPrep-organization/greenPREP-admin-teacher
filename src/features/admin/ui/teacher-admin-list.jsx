@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { DeleteOutlined, EditOutlined, LoadingOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, LoadingOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons'
 import { useDeleteTeacher, useTeachers, useUpdateTeacherProfile } from '@features/admin/hooks'
 import { CreateTeacher } from '@features/admin/ui/create-teacher'
 import EditTeacherModal from '@features/admin/ui/edit-teacher'
@@ -7,6 +7,7 @@ import { Button, Input, message, Pagination, Select, Space, Spin, Table, Tag } f
 import { useEffect, useState } from 'react'
 import DeleteTeacherModal from './delete-teacher'
 import StatusConfirmationModal from './status-confirmation-modal'
+import AppBreadcrumb from '@shared/ui/Breadcrumb'
 
 const TeacherAdminList = () => {
   const [searchText, setSearchText] = useState('')
@@ -182,9 +183,15 @@ const TeacherAdminList = () => {
   }, [teachersResponse])
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mb-2 text-sm text-gray-500">Dashboard / Teacher Account Management</div>
-      <h1 className="mb-8 text-2xl font-bold">Teacher Account Management</h1>
+    <div className="min-h-screen">
+      <AppBreadcrumb
+        items={[
+          {
+            label: 'Accounts'
+          }
+        ]}
+      />
+      <h1 className="mb-8 text-2xl font-bold">Account Management</h1>
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row">
         <div className="flex flex-col gap-4 md:flex-row">
           <div className="relative">
@@ -208,7 +215,7 @@ const TeacherAdminList = () => {
             ]}
           />
         </div>
-        <Button type="primary" className="bg-blue-700 shadow-sm hover:bg-blue-800" onClick={handleCreateNewAccount}>
+        <Button type="primary" icon={<PlusOutlined />} className="bg-[#013088]" onClick={handleCreateNewAccount}>
           Create New Account
         </Button>
       </div>

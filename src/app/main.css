@@ -56,10 +56,15 @@ img {
   background-color: var(--primary-color);
 }
 
-.custom-sidebar-menu .ant-menu-item {
-  color: white !important;
+.ant-menu-item-selected {
+  background-color: white !important;
+  color: black !important;
 }
 
-.custom-sidebar-menu .ant-menu-item-selected {
+.ant-menu-item-selected a {
   color: black !important;
+}
+
+.ant-menu-item:not(:last-child) {
+  margin-bottom: 10px;
 }

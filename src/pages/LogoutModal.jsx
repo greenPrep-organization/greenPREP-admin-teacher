@@ -79,7 +79,7 @@ const LogoutModal = ({ isOpen, onClose }) => {
       footer={null}
       title={null}
       centered
-      width={350}
+      width={400}
       maskClosable={false}
       closable={false}
       className="rounded-lg"
@@ -104,16 +104,7 @@ const LogoutModal = ({ isOpen, onClose }) => {
         Do you want to log out?
       </Title>
 
-      <Text
-        className="text-center"
-        style={{
-          fontSize: '13px',
-          color: 'rgba(0, 0, 0, 0.65)',
-          maxWidth: '252px',
-          marginBottom: '8px',
-          lineHeight: '1.6'
-        }}
-      >
+      <Text className="mb-[8px] text-center text-xs text-[#637381]">
         Are you sure you want to log out? You will need to log in again to access your account.
       </Text>
 
