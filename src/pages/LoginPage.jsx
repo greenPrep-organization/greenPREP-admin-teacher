@@ -41,7 +41,7 @@ const LoginPage = () => {
 
     try {
       const response = await axiosInstance.post('/users/login', {
-        email: values.email.toLowerCase(),
+        email: values.email,
         password: values.password
       })
 
@@ -61,7 +61,7 @@ const LoginPage = () => {
           }
           dispatch(login(userData))
           setLoginSuccess('Login successful!')
-          navigate('/dashboard')
+          navigate('/')
           window.location.reload()
         } else {
           setLoginError('Invalid token received')

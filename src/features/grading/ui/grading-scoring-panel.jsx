@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import SaveAsDraftButton from './save-as-draft-button'
 import { FlagOutlined } from '@ant-design/icons'
+import Title from 'antd/es/typography/Title'
 
 const GradingScoringPanel = ({
   type,
@@ -84,9 +85,9 @@ const GradingScoringPanel = ({
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h2 className="mb-2 text-2xl font-semibold text-gray-900">
+        <Title level={3} style={{ textAlign: 'left', marginBottom: '24px' }}>
           {type === 'writing' ? 'Writing Assessment Part' : 'Speaking Assessment Part'}
-        </h2>
+        </Title>
         <span className="text-sm text-gray-400">
           {type === 'writing'
             ? 'Detailed breakdown in the writing assessment'

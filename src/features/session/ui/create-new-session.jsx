@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { CalendarOutlined } from '@ant-design/icons'
-import { getTestSets } from '@features/session/api'
+import { generationKey, getTestSets } from '@features/session/api'
 import { useCreateSession } from '@features/session/hooks'
 import { Button, DatePicker, Form, Input, message, Modal, Select } from 'antd'
 import { useEffect, useState } from 'react'
@@ -33,7 +33,7 @@ export default function CreateSessionModal({ open, onClose, classId }) {
       const now = new Date()
       let status
       if (now >= endTime) {
-        status = 'COMPLETED'
+        status = 'COMPLETE'
       } else if (now >= startTime && now < endTime) {
         status = 'IN_PROGRESS'
       } else if (now < startTime) {
@@ -97,16 +97,42 @@ export default function CreateSessionModal({ open, onClose, classId }) {
         >
           <Input placeholder="Enter session name" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
         </Form.Item>
-        <Form.Item
-          name="sessionKey"
-          label="Session Key"
-          rules={[
-            { required: true, message: 'Please input session key' },
-            { pattern: /^[a-zA-Z0-9_-]+$/, message: 'Only letters, numbers, underscores and hyphens allowed' }
-          ]}
-        >
-          <Input placeholder="Enter session key" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
+        <Form.Item label="Session Key" required style={{ marginBottom: 0 }}>
+          <div className="flex gap-2 pb-5">
+            <Form.Item
+              name="sessionKey"
+              rules={[
+                { required: true, message: 'Please generate session key' },
+                { pattern: /^[a-zA-Z0-9_-]+$/, message: 'Only letters, numbers, underscores and hyphens allowed' }
+              ]}
+              noStyle
+            >
+              <Input
+                disabled
+                placeholder="Generate session key"
+                className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3 !text-black !opacity-100"
+              />
+            </Form.Item>
+
+            <Button
+              type="primary"
+              className="h-11 bg-[#003087] px-4 text-white hover:bg-[#003087]/90"
+              onClick={async () => {
+                try {
+                  const res = await generationKey()
+                  const generatedKey = res.key
+                  form.setFieldsValue({ sessionKey: generatedKey })
+                  message.success('Session key generated!')
+                } catch (error) {
+                  message.error('Failed to generate session key!', error)
+                }
+              }}
+            >
+              Generate
+            </Button>
+          </div>
         </Form.Item>
+
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
             label="Start Date"

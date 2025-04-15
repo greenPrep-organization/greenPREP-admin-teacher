@@ -34,7 +34,7 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: '',
+    email: ''.toLowerCase(),
     phone: ''
   })
   // eslint-disable-next-line no-unused-vars
