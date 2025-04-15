@@ -5,11 +5,17 @@ import LogoutModal from '@pages/LogoutModal'
 import SharedHeader from '@shared/ui/Header/SharedHeader'
 
 import { Layout as AntdLayout, Menu, Divider } from 'antd'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 const { Sider, Content } = AntdLayout
+
+const pathToKey = {
+  '/account-management': '3',
+  '/classes-management': '2',
+  '/': '1'
+}
 
 const Layout = ({ children }) => {
   // @ts-ignore
@@ -17,80 +23,48 @@ const Layout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false)
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
   const location = useLocation()
-  const [selectedKey, setSelectedKey] = useState('1')
-  const navigate = useNavigate()
 
-  useEffect(() => {
-    const savedKey = localStorage.getItem('selectedMenuKey')
-    setSelectedKey(savedKey || '1')
-  }, [])
+  const sortedPaths = Object.entries(pathToKey).sort((a, b) => b[0].length - a[0].length)
 
-  useEffect(() => {
-    const savedKey = localStorage.getItem('selectedMenuKey')
-    if (!savedKey) {
-      switch (location.pathname) {
-        case '/':
-          setSelectedKey('1')
-          localStorage.setItem('selectedMenuKey', '1')
-          break
-        case '/classes-management':
-          setSelectedKey('2')
-          localStorage.setItem('selectedMenuKey', '2')
-          break
-        case '/account-management':
-          setSelectedKey('3')
-          localStorage.setItem('selectedMenuKey', '3')
-          break
-        default:
-          setSelectedKey('1')
-          localStorage.setItem('selectedMenuKey', '1')
-      }
-    } else {
-      setSelectedKey(savedKey)
-      if (location.pathname === '/') {
-        if (savedKey === '2') navigate('/classes-management')
-        if (savedKey === '3') navigate('/account-management')
-      }
-    }
-  }, [location.pathname])
-
+  const selectedKey = sortedPaths.find(([path]) => location.pathname.startsWith(path))?.[1] || '1'
   const handleMenuClick = ({ key }) => {
     if (key === '4') {
       setIsLogoutModalOpen(true)
-    } else {
-      setSelectedKey(key)
-      localStorage.setItem('selectedMenuKey', key)
     }
   }
-  const baseMenuItemClass = 'bg-primary-color text-white hover:bg-white hover:text-black transition-colors duration-200'
+
+  const baseMenuItemClass =
+    'bg-primary-color text-white hover:!bg-white hover:!text-black transition-colors duration-200'
+
   const menuItems = [
     {
       key: '1',
       icon: <HomeOutlined className="text-xl" />,
       label: (
-        <Link to="/" className="text-base font-medium text-white hover:text-white">
+        <Link to="/" className="text-md text-base text-white hover:text-white">
           Dashboard
         </Link>
       ),
-      className: 'hover:bg-white hover:text-[#003087] transition-colors duration-200'
+      className: baseMenuItemClass
     },
     {
       key: '2',
       icon: <TeamOutlined className="text-xl" />,
       label: (
-        <Link to="/classes-management" className="text-base font-medium text-white hover:text-white">
+        <Link to="/classes-management" className="text-md text-base text-white">
           Classes
         </Link>
       ),
-      className: 'hover:bg-white hover:text-[#003087] transition-colors duration-200'
+      className: baseMenuItemClass
     }
   ]
+
   if (auth?.role?.includes('admin')) {
     menuItems.push({
       key: '3',
-      icon: <SettingOutlined className="text-lg" />,
+      icon: <SettingOutlined className="text-xl" />,
       label: (
-        <Link to="/account-management" className="text-[16px] text-white hover:text-white">
+        <Link to="/account-management" className="text-md text-base text-white">
           Accounts
         </Link>
       ),
@@ -115,7 +89,9 @@ const Layout = ({ children }) => {
             <img className={`transition-all duration-300 ${collapsed ? 'w-12' : 'w-30'}`} src={Logo} alt="Logo" />
           </div>
           <div
-            className={`flex items-center justify-center text-[30px] font-[400] text-white transition-all duration-300 ${collapsed ? 'hidden' : 'block'}`}
+            className={`flex items-center justify-center text-[30px] font-[400] text-white transition-all duration-300 ${
+              collapsed ? 'hidden' : 'block'
+            }`}
           >
             <p>GreenPREP</p>
           </div>
@@ -133,22 +109,22 @@ const Layout = ({ children }) => {
           <Divider className="my-4 border-t border-white" />
         </div>
         <Menu
-          className="bg-primary-color border-0"
+          className="bg-primary-color border-0 px-4"
           mode="inline"
           selectedKeys={selectedKey === '4' ? ['4'] : []}
           onClick={handleMenuClick}
           theme="dark"
+          inlineIndent={12}
           items={[
             {
               key: '4',
               icon: <LogoutOutlined className="text-xl" />,
-              label: <span className="text-base font-medium text-white">Sign out</span>,
+              label: <span className="text-md text-base text-white">Sign Out</span>,
               className: 'hover:!bg-red-500 transition-colors duration-200'
             }
           ]}
         />
       </Sider>
-
       <AntdLayout>
         <SharedHeader
           collapsed={collapsed}
