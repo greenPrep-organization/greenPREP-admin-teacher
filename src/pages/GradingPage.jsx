@@ -12,6 +12,7 @@ import AppBreadcrumb from '@/shared/ui/Breadcrumb'
 import { useQuery } from '@tanstack/react-query'
 import { LeftOutlined } from '@ant-design/icons'
 import { sharedState } from '@features/grading/constants/shared-state'
+import Title from 'antd/es/typography/Title'
 
 const fetchSessionDetail = async sessionId => {
   const res = await axiosInstance.get(`/sessions/${sessionId}`)
@@ -279,7 +280,7 @@ function GradingPage() {
   ]
 
   const renderBreadcrumb = () => (
-    <div className="flex flex-col gap-2 px-6 py-3">
+    <div className="flex flex-col">
       <AppBreadcrumb items={breadcrumbItems} />
       <Button
         onClick={() => navigate(`/classes-management/${sessionId.split('-')[0]}/session/${sessionId}`)}
@@ -293,11 +294,13 @@ function GradingPage() {
   )
 
   const renderMainContent = () => (
-    <div className="space-y-6 px-6 pb-6">
+    <div className="space-y-6 pt-6">
       <div>
         <div className="mb-2 flex items-center justify-between">
           <div>
-            <h1 className="mb-1 text-3xl">Student Information: {studentData?.name}</h1>
+            <Title level={3} style={{ textAlign: 'left', marginBottom: '24px' }}>
+              Student Information: {studentData?.name}
+            </Title>
             <span
               className="cursor-pointer text-sm text-gray-400 hover:text-blue-600"
               onClick={handleViewStudentDetails}
@@ -390,7 +393,7 @@ function GradingPage() {
         />
       </div>
 
-      <div className="rounded-lg bg-white p-6 shadow-lg">
+      <div className="rounded-lg bg-white shadow-lg">
         {activeSection === 'speaking' ? (
           <Speaking
             testData={speakingTestData?.data?.topic}
@@ -405,7 +408,7 @@ function GradingPage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#F5F6FA]">
+    <div className="min-h-screen">
       {renderBreadcrumb()}
       {renderMainContent()}
       <StudentListPopup
