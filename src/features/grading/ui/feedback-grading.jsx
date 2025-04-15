@@ -2,21 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { Card, Input, Spin, Timeline, Tooltip } from 'antd'
 import PropTypes from 'prop-types'
 import { ClockCircleOutlined, CheckCircleOutlined } from '@ant-design/icons'
-import { sharedFeedbacks } from '@features/grading/constants/shared-state'
+import { sharedState } from '@features/grading/constants/shared-state'
 
 const { TextArea } = Input
-
-const FEEDBACK_STORAGE_KEY = 'grading_feedbacks'
-
-try {
-  const savedFeedbacks = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY))
-  if (savedFeedbacks) {
-    sharedFeedbacks.writing = savedFeedbacks.writing || {}
-    sharedFeedbacks.speaking = savedFeedbacks.speaking || {}
-  }
-} catch (error) {
-  console.error('Error loading feedbacks from localStorage:', error)
-}
 
 function Feedback({
   initialFeedback = '',
@@ -26,7 +14,8 @@ function Feedback({
   submissionStatus = 'pending',
   feedbackHistory = [],
   activePart,
-  type = 'writing'
+  type = 'writing',
+  sessionParticipantId
 }) {
   const [feedbackByPart, setFeedbackByPart] = useState({})
   const [showHistory, setShowHistory] = useState(false)
@@ -40,19 +29,28 @@ function Feedback({
 
   useEffect(() => {
     if (savedFeedback) {
-      sharedFeedbacks[type][activePart] = savedFeedback
+      if (sessionParticipantId) {
+        sharedState.updateFeedback(sessionParticipantId, type, activePart, 0, savedFeedback)
+      }
     }
 
     if (!savedFeedback && !initialFeedback) {
-      setFeedbackByPart(prev => ({
-        ...prev,
-        [getPartKey(activePart)]: sharedFeedbacks[type][activePart] || ''
-      }))
+      if (sessionParticipantId) {
+        const draft = sharedState.getDraft(sessionParticipantId)
+        const feedback = draft[type]?.[activePart]?.[0] || ''
+
+        setFeedbackByPart(prev => ({
+          ...prev,
+          [getPartKey(activePart)]: feedback
+        }))
+      }
     } else if (initialFeedback) {
       const partKey = getPartKey(activePart)
       setFeedbackByPart(prev => {
         if (!prev[partKey]) {
-          sharedFeedbacks[type][activePart] = initialFeedback
+          if (sessionParticipantId) {
+            sharedState.updateFeedback(sessionParticipantId, type, activePart, 0, initialFeedback)
+          }
           return {
             ...prev,
             [partKey]: initialFeedback
@@ -61,7 +59,7 @@ function Feedback({
         return prev
       })
     }
-  }, [initialFeedback, savedFeedback, activePart, type, getPartKey])
+  }, [initialFeedback, savedFeedback, activePart, type, getPartKey, sessionParticipantId])
 
   const handleFeedbackChange = e => {
     const newFeedback = e.target.value
@@ -72,7 +70,9 @@ function Feedback({
       [partKey]: newFeedback
     }))
 
-    sharedFeedbacks[type][activePart] = newFeedback
+    if (sessionParticipantId) {
+      sharedState.updateFeedback(sessionParticipantId, type, activePart, 0, newFeedback)
+    }
 
     if (onFeedbackChange) {
       onFeedbackChange(newFeedback, activePart, type)
@@ -114,7 +114,14 @@ function Feedback({
     )
   }
 
-  const currentFeedback = feedbackByPart[getPartKey(activePart)] || sharedFeedbacks[type][activePart] || ''
+  let currentFeedback = ''
+
+  if (sessionParticipantId) {
+    const draft = sharedState.getDraft(sessionParticipantId)
+    currentFeedback = feedbackByPart[getPartKey(activePart)] || draft[type]?.[activePart]?.[0] || ''
+  } else {
+    currentFeedback = feedbackByPart[getPartKey(activePart)] || ''
+  }
 
   return (
     <Card
@@ -182,7 +189,8 @@ Feedback.propTypes = {
     })
   ),
   activePart: PropTypes.string,
-  type: PropTypes.oneOf(['writing', 'speaking'])
+  type: PropTypes.oneOf(['writing', 'speaking']),
+  sessionParticipantId: PropTypes.string
 }
 
 export default Feedback

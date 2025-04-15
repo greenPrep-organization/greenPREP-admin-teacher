@@ -1,4 +1,4 @@
-import { useCreateTeacher } from '@/features/admin/hooks/useAdmin'
+import { useCreateTeacher } from '@/features/admin/hooks'
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons'
 import { EMAIL_REG, PASSWORD_REG, PHONE_REG } from '@shared/lib/constants/reg'
 import { Button, Form, Input, message, Modal } from 'antd'
@@ -23,7 +23,7 @@ export const CreateTeacher = ({ open, onClose, onSave }) => {
       const teacherData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
-        email: formData.email,
+        email: formData.email.toLowerCase(),
         password: formData.password,
         teacherCode: formData.teacherId,
         roleIDs: ['teacher'],

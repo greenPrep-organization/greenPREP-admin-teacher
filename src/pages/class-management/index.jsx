@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Table, Input, Space, Button, Card, Typography, Spin } from 'antd'
-import { EditOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons'
+import { EditOutlined, EyeOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useFetchClasses, useFetchClassDetails } from '@features/class-management/hooks/fetch-class'
 import { CreateClassModal, EditClassModal } from '@features/class-management/ui/class-modal'
@@ -48,7 +48,7 @@ const ClassList = () => {
       const timer = setTimeout(() => {
         setCachedData(filteredClasses)
         setIsDataReady(true)
-      }, 1000)
+      })
       return () => clearTimeout(timer)
     }
   }, [isFetching, isLoading, filteredClasses])
@@ -122,7 +122,12 @@ const ClassList = () => {
           onChange={e => setSearchTerm(e.target.value)}
           style={{ width: '50%' }}
         />
-        <Button type="primary" onClick={handleCreateClass} style={{ backgroundColor: '#013088', border: 'none' }}>
+        <Button
+          type="primary"
+          onClick={handleCreateClass}
+          icon={<PlusOutlined />}
+          style={{ backgroundColor: '#013088', border: 'none' }}
+        >
           Create Class
         </Button>
       </div>
