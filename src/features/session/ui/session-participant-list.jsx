@@ -275,7 +275,7 @@ const SessionParticipantList = () => {
             <div className="flex justify-end sm:justify-start">
               <PublishPopup
                 sessionId={sessionId}
-                disabled={readyToPublish}
+                disabled={!readyToPublish}
                 onPublishSuccess={() => setReadyToPublish(false)}
               />
             </div>
