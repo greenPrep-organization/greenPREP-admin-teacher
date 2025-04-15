@@ -26,7 +26,7 @@ const SharedHeader = ({ collapsed, setCollapsed, onLogoutClick }) => {
           type="text"
           icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           onClick={() => setCollapsed(!collapsed)}
-          className="text-white transition hover:text-white/80"
+          className="text-white transition hover:!text-white/80"
         />
       </div>
       <div className="flex items-center">
