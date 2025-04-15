@@ -137,7 +137,7 @@ const SessionsList = ({ classId }) => {
 
           let status = 'NOT_STARTED'
           if (now >= end) {
-            status = 'COMPLETED'
+            status = 'COMPLETE'
           } else if (now >= start && now < end) {
             status = 'IN_PROGRESS'
           }
@@ -153,7 +153,7 @@ const SessionsList = ({ classId }) => {
         filters: [
           { text: 'NOT_STARTED', value: 'NOT_STARTED' },
           { text: 'IN_PROGRESS', value: 'IN_PROGRESS' },
-          { text: 'COMPLETED', value: 'COMPLETED' }
+          { text: 'COMPLETE', value: 'COMPLETE' }
         ],
         onFilter: (value, record) => {
           const now = new Date()
@@ -162,7 +162,7 @@ const SessionsList = ({ classId }) => {
 
           let status = 'NOT_STARTED'
           if (now >= end) {
-            status = 'COMPLETED'
+            status = 'COMPLETE'
           } else if (now >= start && now < end) {
             status = 'IN_PROGRESS'
           }

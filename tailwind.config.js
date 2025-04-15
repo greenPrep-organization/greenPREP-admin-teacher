@@ -25,7 +25,7 @@ export default {
     extend: {
       colors: {
         // Status colors
-        completed: {
+        complete: {
           DEFAULT: '#00B087',
           bg: '#E5FAF5',
           text: '#00B087'

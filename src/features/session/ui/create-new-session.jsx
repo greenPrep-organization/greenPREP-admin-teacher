@@ -33,7 +33,7 @@ export default function CreateSessionModal({ open, onClose, classId }) {
       const now = new Date()
       let status
       if (now >= endTime) {
-        status = 'COMPLETED'
+        status = 'COMPLETE'
       } else if (now >= startTime && now < endTime) {
         status = 'IN_PROGRESS'
       } else if (now < startTime) {
@@ -110,7 +110,7 @@ export default function CreateSessionModal({ open, onClose, classId }) {
               <Input
                 disabled
                 placeholder="Generate session key"
-                className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
+                className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3 !text-black !opacity-100"
               />
             </Form.Item>
 
