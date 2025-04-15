@@ -40,7 +40,7 @@ export const sharedState = {
     sharedState.drafts[key] = updatedDraft
   },
 
-  updateFeedback: (sessionParticipantId, skill, part, questionIndex, feedback) => {
+  updateFeedback: (sessionParticipantId, skill, part, questionIndex, feedback, studentAnswerId) => {
     const draft = sharedState.getDraft(sessionParticipantId)
     const updatedDraft = {
       ...draft,
@@ -48,7 +48,10 @@ export const sharedState = {
         ...draft[skill],
         [part]: {
           ...draft[skill][part],
-          [questionIndex]: feedback
+          [questionIndex]: {
+            messageContent: feedback || null,
+            studentAnswerId: studentAnswerId || null
+          }
         }
       }
     }
@@ -67,7 +70,6 @@ export const sharedState = {
     sharedState.saveDraft(sessionParticipantId, updatedDraft)
   },
 
-  // Save draft to localStorage
   persistDraft: sessionParticipantId => {
     const key = sharedState.getDraftKey(sessionParticipantId)
     const draft = sharedState.getDraft(sessionParticipantId)
@@ -82,10 +84,25 @@ export const sharedState = {
     }
   },
 
-  // Clear draft for a specific student
   clearDraft: sessionParticipantId => {
     const key = sharedState.getDraftKey(sessionParticipantId)
     delete sharedState.drafts[key]
     localStorage.removeItem(key)
+  },
+
+  getFeedbackWithStudentAnswerId: (sessionParticipantId, skill) => {
+    const draft = sharedState.getDraft(sessionParticipantId)
+    const feedback = draft[skill] || {}
+    const studentAnswers = []
+    Object.keys(feedback).forEach(part => {
+      Object.keys(feedback[part]).forEach(questionIndex => {
+        const entry = feedback[part][questionIndex]
+        studentAnswers.push({
+          studentAnswerId: entry?.studentAnswerId || null,
+          messageContent: entry?.messageContent || null
+        })
+      })
+    })
+    return studentAnswers
   }
 }

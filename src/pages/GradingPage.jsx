@@ -12,6 +12,7 @@ import AppBreadcrumb from '@/shared/ui/Breadcrumb'
 import { useQuery } from '@tanstack/react-query'
 import { LeftOutlined } from '@ant-design/icons'
 import { sharedState } from '@features/grading/constants/shared-state'
+import { message } from 'antd'
 import Title from 'antd/es/typography/Title'
 
 const fetchSessionDetail = async sessionId => {
@@ -54,8 +55,6 @@ function GradingPage() {
     queryFn: () => fetchSessionDetail(sessionId),
     enabled: !!sessionId
   })
-
-  console.log('Session Detail:', sessionDetail)
 
   const className = sessionDetail?.Classes?.className ?? 'Loading...'
   const sessionName = sessionDetail?.sessionName ?? 'Loading...'
@@ -191,26 +190,36 @@ function GradingPage() {
 
   const handleScoreSubmit = async (score, section) => {
     try {
-      await axiosInstance.put(`/grades/participants/${studentData.id}`, {
+      const studentAnswers = sharedState.getFeedbackWithStudentAnswerId(participantId, section)
+      const payload = {
+        sessionParticipantID: participantId,
+        teacherGradedScore: parseInt(score),
         skillName: section.toUpperCase(),
-        score: parseInt(score)
-      })
+        studentAnswers
+      }
+
+      console.log('Submitting payload:', payload)
+
+      await axiosInstance.post(`/grades/teacher-grade`, payload)
 
       if (section === 'speaking') {
         setIsSpeakingGraded(true)
         setSpeakingScore(score.toString())
         if (isWritingGraded) setIsFirstCompletionNotice(false)
+        message.success('Speaking score and feedback submitted successfully!')
       } else if (section === 'writing') {
         setIsWritingGraded(true)
         setWritingScore(score.toString())
         if (isSpeakingGraded) setIsFirstCompletionNotice(false)
+        message.success('Writing score and feedback submitted successfully!')
       }
 
       if (participantId) {
         sharedState.clearDraft(participantId)
       }
     } catch (error) {
-      console.error(`Error updating ${section} score:`, error)
+      console.error(`Error submitting ${section} score and feedback:`, error)
+      message.error(`Failed to submit ${section} score and feedback. Please try again.`)
     }
   }
 
