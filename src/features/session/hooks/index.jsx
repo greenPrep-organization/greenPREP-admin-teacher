@@ -1,20 +1,32 @@
 import { createSession, deleteSession, getSessionsByClassId, updateSession } from '@features/session/api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-export function useSessions(classId) {
+export function useSessions({ classId, sessionName, status, page, limit }) {
   return useQuery({
-    queryKey: ['sessions', classId],
+    queryKey: ['sessions', classId, sessionName, status, page, limit],
     queryFn: async () => {
-      const response = await getSessionsByClassId(classId)
-      return response.data.data.map(item => ({
-        id: item.ID,
-        name: item.sessionName,
-        key: item.sessionKey,
-        startTime: new Date(item.startTime),
-        endTime: new Date(item.endTime),
-        participants: 0,
-        status: item.status
-      }))
+      const response = await getSessionsByClassId({
+        classId,
+        sessionName,
+        status,
+        page,
+        limit
+      })
+      // Map over the sessions inside the "data" property returned from API.
+      return {
+        sessions: response.data.data.map(item => ({
+          id: item.ID,
+          name: item.sessionName,
+          key: item.sessionKey,
+          startTime: new Date(item.startTime),
+          endTime: new Date(item.endTime),
+          participants: 0,
+          status: item.status
+        })),
+        total: response.data.total,
+        currentPage: response.data.currentPage,
+        totalPages: response.data.totalPages
+      }
     },
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: true

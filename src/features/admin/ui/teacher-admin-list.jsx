@@ -179,7 +179,6 @@ const TeacherAdminList = () => {
   useEffect(() => {
     if (Array.isArray(teachersResponse?.teachers)) {
       setTeachers(teachersResponse.teachers)
-      console.log(teachersResponse.teachers)
     }
   }, [teachersResponse])
 

@@ -38,14 +38,22 @@ export const publishSessionResults = async sessionId => {
   }
 }
 
-export function getSessionsByClassId(classId) {
-  return axiosInstance.get('/sessions', { params: { classId } })
+export function getSessionsByClassId({ classId, sessionName = '', status = '', page, limit }) {
+  return axiosInstance({
+    method: 'get',
+    url: `/sessions?classId=${classId}`,
+    data: {
+      sessionName,
+      status,
+      page,
+      limit
+    }
+  })
 }
 
 export const createSession = async data => {
   try {
     const response = await axiosInstance.post('/sessions', data)
-    console.log(response)
     return response.data
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to create session')
@@ -73,7 +81,6 @@ export const deleteSession = async sessionId => {
 export const updateSession = async (sessionId, data) => {
   try {
     const response = await axiosInstance.put(`/sessions/${sessionId}`, data)
-    console.log(response.data)
     return response.data
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to update session')
