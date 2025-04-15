@@ -1,5 +1,5 @@
 import GreenPREP from './GreenPREP.png'
-import Logo from './logo.png'
+import Logo from './logo-test.png'
 import Warning from './warning.png'
 import LoginImg from './login.png'
 import RegisterImg from './register.png'
