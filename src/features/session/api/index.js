@@ -56,6 +56,10 @@ export const getTestSets = async () => {
   const response = await axiosInstance.get('/topics')
   return response.data
 }
+export const generationKey = async () => {
+  const response = await axiosInstance.get('/sessions/generate-key')
+  return response.data
+}
 
 export const deleteSession = async sessionId => {
   try {
