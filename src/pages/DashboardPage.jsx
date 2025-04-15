@@ -63,7 +63,9 @@ const DashboardPage = () => {
     const fetchUngraded = async () => {
       try {
         const allUngraded = await Promise.all(
-          mySessions.map(session => fetchSessionParticipants(session.ID).then(res => res.filter(p => p.Total === null)))
+          mySessions.map(session =>
+            fetchSessionParticipants(session.ID).then(res => res.filter(p => p.Total === null || 0))
+          )
         )
         setUngradedCount(allUngraded.flat().length)
       } catch (error) {
