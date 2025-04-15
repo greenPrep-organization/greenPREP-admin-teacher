@@ -2,10 +2,9 @@ import { Button, Spin, Input } from 'antd'
 import { useState, useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import AudioPlayer from '@features/grading/ui/audio-player'
+import { sharedState } from '@features/grading/constants/shared-state'
 
 const { TextArea } = Input
-
-const FEEDBACK_STORAGE_KEY = 'speaking_grading_feedback'
 
 const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
   const [activePart, setActivePart] = useState('PART 1')
@@ -21,38 +20,33 @@ const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
   }, [testData])
 
   useEffect(() => {
-    try {
-      const storedFeedbacks = JSON.parse(localStorage.getItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`))
-      if (storedFeedbacks) {
-        setFeedbacks(storedFeedbacks)
-      }
-    } catch (error) {
-      console.error('Error loading feedbacks:', error)
-    }
-  }, [sessionParticipantId])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`, JSON.stringify(feedbacks))
-    } catch (error) {
-      console.error('Error saving feedbacks:', error)
-    }
-  }, [feedbacks, sessionParticipantId])
-
-  useEffect(() => {
     if (parts.length > 0 && !parts.find(p => p.Content === activePart)) {
       setActivePart(parts[0].Content)
     }
   }, [parts, activePart])
 
+  useEffect(() => {
+    if (sessionParticipantId) {
+      const draft = sharedState.getDraft(sessionParticipantId)
+      if (draft.speaking) {
+        setFeedbacks(draft.speaking)
+      }
+    }
+  }, [sessionParticipantId])
+
   const handleFeedbackChange = (part, questionIndex, value) => {
-    setFeedbacks(prevFeedbacks => ({
-      ...prevFeedbacks,
+    const updatedFeedbacks = {
+      ...feedbacks,
       [part]: {
-        ...prevFeedbacks[part],
+        ...feedbacks[part],
         [questionIndex]: value
       }
-    }))
+    }
+    setFeedbacks(updatedFeedbacks)
+
+    if (sessionParticipantId) {
+      sharedState.updateFeedback(sessionParticipantId, 'speaking', part, questionIndex, value)
+    }
   }
 
   if (isLoading) {

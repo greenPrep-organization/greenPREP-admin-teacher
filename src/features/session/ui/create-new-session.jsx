@@ -28,12 +28,24 @@ export default function CreateSessionModal({ open, onClose, classId }) {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields()
+      const startTime = values.startDate.toDate()
+      const endTime = values.endDate.toDate()
+      const now = new Date()
+      let status
+      if (now >= endTime) {
+        status = 'COMPLETED'
+      } else if (now >= startTime && now < endTime) {
+        status = 'IN_PROGRESS'
+      } else if (now < startTime) {
+        status = 'NOT_STARTED'
+      }
+
       const payload = {
         ...values,
         startTime: startDate?.toISOString(),
         endTime: endDate?.toISOString(),
         ClassID: classId,
-        Status: 'NOT_STARTED'
+        Status: status
       }
       await mutateAsync(payload)
       message.success('Session created successfully!')

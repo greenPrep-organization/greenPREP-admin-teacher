@@ -1,9 +1,9 @@
-import { Button, DatePicker, Form, Input, Modal } from 'antd'
-import { useEffect } from 'react'
-import dayjs from 'dayjs'
-import * as yup from 'yup'
-import { CalendarOutlined } from '@ant-design/icons'
 import { editSessionSchema } from '@/features/session/validations/edit-session.schema'
+import { CalendarOutlined } from '@ant-design/icons'
+import { Button, DatePicker, Form, Input, Modal } from 'antd'
+import dayjs from 'dayjs'
+import { useEffect } from 'react'
+import * as yup from 'yup'
 
 const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
   const [form] = Form.useForm()
@@ -13,7 +13,8 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
       form.setFieldsValue({
         ...initialValues,
         startDate: initialValues.startTime ? dayjs(initialValues.startTime) : null,
-        endDate: initialValues.endTime ? dayjs(initialValues.endTime) : null
+        endDate: initialValues.endTime ? dayjs(initialValues.endTime) : null,
+        status: initialValues.status
       })
     }
   }, [initialValues, form])
@@ -23,11 +24,25 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
       const values = await form.validateFields()
       await editSessionSchema.validate(values, { abortEarly: false })
 
+      const startTime = values.startDate.toDate()
+      const endTime = values.endDate.toDate()
+      const now = new Date()
+
+      let Status
+      if (now >= endTime) {
+        Status = 'COMPLETED'
+      } else if (now >= startTime && now < endTime) {
+        Status = 'IN_PROGRESS'
+      } else {
+        Status = 'NOT_STARTED'
+      }
+
       onUpdate({
         name: values.name,
         key: values.key,
         startTime: values.startDate.toDate(),
-        endTime: values.endDate.toDate()
+        endTime: values.endDate.toDate(),
+        status: Status
       })
     } catch (error) {
       if (error instanceof yup.ValidationError) {

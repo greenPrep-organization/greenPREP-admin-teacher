@@ -1,6 +1,8 @@
 import { Input, Button, message } from 'antd'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
+import SaveAsDraftButton from './save-as-draft-button'
+import { FlagOutlined } from '@ant-design/icons'
 
 const GradingScoringPanel = ({
   type,
@@ -11,9 +13,23 @@ const GradingScoringPanel = ({
   isFirstCompletionNotice,
   score,
   onScoreChange,
-  previousScore
+  previousScore,
+  sessionParticipantId
 }) => {
   const [error, setError] = useState('')
+  const [hasDraft, setHasDraft] = useState(false)
+
+  const checkForDraft = () => {
+    if (sessionParticipantId) {
+      const draftKey = `draft_${sessionParticipantId}`
+      const savedDraft = localStorage.getItem(draftKey)
+      setHasDraft(!!savedDraft)
+    }
+  }
+
+  useEffect(() => {
+    checkForDraft()
+  }, [sessionParticipantId])
 
   const handleScoreChange = value => {
     let numericValue = value === '' ? '' : Number(value.replace(/[^0-9]/g, ''))
@@ -104,13 +120,14 @@ const GradingScoringPanel = ({
             />
           </div>
           {error && <span className="ml-auto text-sm text-red-500">{error}</span>}
+          {hasDraft && (
+            <div className="flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-sm text-red-600">
+              <FlagOutlined />
+              <span>Drafted</span>
+            </div>
+          )}
         </div>
-        <Button
-          onClick={() => onSubmit(Number(score), type)}
-          className="h-11 rounded-lg border border-gray-200 px-6 text-base font-medium hover:bg-gray-50"
-        >
-          Save As Draft
-        </Button>
+        <SaveAsDraftButton sessionParticipantId={sessionParticipantId} onDraftSaved={checkForDraft} />
         <Button
           onClick={handleSubmit}
           className="h-11 rounded-lg bg-[#003087] px-6 text-base font-medium text-white hover:bg-[#002366]"
@@ -131,7 +148,8 @@ GradingScoringPanel.propTypes = {
   isFirstCompletionNotice: PropTypes.bool.isRequired,
   score: PropTypes.string.isRequired,
   onScoreChange: PropTypes.func.isRequired,
-  previousScore: PropTypes.string
+  previousScore: PropTypes.string,
+  sessionParticipantId: PropTypes.string.isRequired
 }
 
 export default GradingScoringPanel
