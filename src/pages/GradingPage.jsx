@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Button } from 'antd'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import StudentCard from '@features/grading/ui/student-information'
 import Speaking from '@features/grading/ui/speaking-grading'
 import Writing from '@features/grading/ui/writing-grading'
@@ -21,7 +21,13 @@ const fetchSessionDetail = async sessionId => {
 }
 
 function GradingPage() {
-  const [activeSection, setActiveSection] = useState('speaking')
+  const location = useLocation()
+  const getSectionFromQuery = () => {
+    const params = new URLSearchParams(location.search)
+    const section = params.get('section')
+    return section === 'writing' ? 'writing' : 'speaking'
+  }
+  const [activeSection, setActiveSection] = useState(getSectionFromQuery())
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const [isSpeakingGraded, setIsSpeakingGraded] = useState(false)
   const [isWritingGraded, setIsWritingGraded] = useState(false)
@@ -117,6 +123,9 @@ function GradingPage() {
     }
   }, [studentData, participantId])
 
+  useEffect(() => {
+    setActiveSection(getSectionFromQuery())
+  }, [location.search])
   const navigateToPreviousStudent = async () => {
     if (participantsData?.data) {
       const currentIndex = participantsData.data.findIndex(s => s.ID === participantId)
