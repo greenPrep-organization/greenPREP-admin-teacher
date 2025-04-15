@@ -16,31 +16,41 @@ function WritingGrade({ sessionParticipantId }) {
     if (sessionParticipantId) {
       const draft = sharedState.getDraft(sessionParticipantId)
       if (draft.writing) {
-        setFeedbacks(draft.writing)
+        const localFeedbacks = {}
+        Object.keys(draft.writing).forEach(part => {
+          localFeedbacks[part] = {}
+          Object.keys(draft.writing[part]).forEach(index => {
+            localFeedbacks[part][index] = draft.writing[part][index]?.messageContent || ''
+          })
+        })
+        setFeedbacks(localFeedbacks)
       }
     }
   }, [sessionParticipantId])
 
   const handlePartChange = key => setActivePart(key)
 
-  const handleFeedbackChange = (part, questionIndex, value) => {
+  const handleFeedbackChange = (part, questionIndex, value, studentAnswerId) => {
     const updatedFeedbacks = {
       ...feedbacks,
-      [part]: { ...feedbacks[part], [questionIndex]: value }
+      [part]: {
+        ...feedbacks[part],
+        [questionIndex]: value
+      }
     }
     setFeedbacks(updatedFeedbacks)
 
     if (sessionParticipantId) {
-      sharedState.updateFeedback(sessionParticipantId, 'writing', part, questionIndex, value)
+      sharedState.updateFeedback(sessionParticipantId, 'writing', part, questionIndex, value, studentAnswerId)
     }
   }
 
   const processApiData = () => {
     const emptyParts = {
-      part1: { questions: [], answers: [], instructions: '', subInstructions: '' },
-      part2: { questions: [], answers: [], instructions: '', subInstructions: '' },
-      part3: { questions: [], answers: [], instructions: '', subInstructions: '' },
-      part4: { questions: [], answers: [], instructions: '', subInstructions: '' }
+      part1: { questions: [], answers: [], instructions: '', subInstructions: '', studentAnswerIds: [] },
+      part2: { questions: [], answers: [], instructions: '', subInstructions: '', studentAnswerIds: [] },
+      part3: { questions: [], answers: [], instructions: '', subInstructions: '', studentAnswerIds: [] },
+      part4: { questions: [], answers: [], instructions: '', subInstructions: '', studentAnswerIds: [] }
     }
 
     if (!apiData?.data?.topic?.Parts) {
@@ -67,9 +77,9 @@ function WritingGrade({ sessionParticipantId }) {
       if (part.Questions && part.Questions.length > 0) {
         part.Questions.forEach(question => {
           parts[partKey].questions.push(question.Content || '')
-
           const answer = question.studentAnswer?.AnswerText || ''
           parts[partKey].answers.push(answer)
+          parts[partKey].studentAnswerIds.push(question.studentAnswer?.ID || null)
         })
       }
     })
@@ -78,9 +88,16 @@ function WritingGrade({ sessionParticipantId }) {
   }
 
   const processedData = processApiData()
-  const currentPart = processedData[activePart] || { questions: [], answers: [], instructions: '', subInstructions: '' }
+  const currentPart = processedData[activePart] || {
+    questions: [],
+    answers: [],
+    instructions: '',
+    subInstructions: '',
+    studentAnswerIds: []
+  }
   const questions = currentPart.questions || []
   const answers = currentPart.answers || []
+  const studentAnswerIds = currentPart.studentAnswerIds || []
   const instructions = currentPart.instructions || ''
   const subInstructions = currentPart.subInstructions || ''
 
@@ -178,7 +195,9 @@ function WritingGrade({ sessionParticipantId }) {
                       <div className="p-4">
                         <TextArea
                           value={feedbacks[activePart]?.[index] || ''}
-                          onChange={e => handleFeedbackChange(activePart, index, e.target.value)}
+                          onChange={e =>
+                            handleFeedbackChange(activePart, index, e.target.value, studentAnswerIds[index])
+                          }
                           placeholder="Enter your feedback here..."
                           autoSize={{ minRows: 3, maxRows: 6 }}
                           className="w-full rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"

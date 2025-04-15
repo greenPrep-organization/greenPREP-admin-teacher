@@ -34,9 +34,9 @@ const GradingScoringPanel = ({
   const handleScoreChange = value => {
     let numericValue = value === '' ? '' : Number(value.replace(/[^0-9]/g, ''))
     if (numericValue !== '') {
-      // @ts-ignore
+      //@ts-ignore
       if (numericValue < 0) numericValue = 0
-      // @ts-ignore
+      //@ts-ignore
       else if (numericValue > 50) numericValue = 50
     }
     onScoreChange(numericValue.toString())
