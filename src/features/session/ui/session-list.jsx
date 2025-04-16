@@ -30,7 +30,6 @@ const SessionsList = ({ classId }) => {
   })
 
   // Derive sessions and pagination values from the response
-  const totalSessions = sessionsResponse?.total || 0
 
   const updateSessionMutation = useUpdateSession(classId)
   const [editModalVisible, setEditModalVisible] = useState(false)
@@ -49,7 +48,7 @@ const SessionsList = ({ classId }) => {
     if (sessionsResponse && sessionsResponse?.sessions) {
       setSessions(sessionsResponse.sessions)
     }
-  }, [currentPage, sessionsResponse])
+  }, [sessionsResponse])
 
   const handleViewSession = useCallback(
     sessionId => {
@@ -271,11 +270,24 @@ const SessionsList = ({ classId }) => {
           columns={columns}
           rowKey="id"
           pagination={{
-            current: sessions.currentPage,
-            pageSize: limit,
-            total: totalSessions,
+            current: sessionsResponse.currentPage,
+            pageSize: sessionsResponse.limit,
+            total: sessionsResponse.total,
             showTotal: (total, range) => (total > 0 ? `Showing ${range[0]}-${range[1]} of ${total}` : 'No data'),
-            onChange: handlePageChange
+            onChange: handlePageChange,
+            itemRender: (page, type, originalElement) => {
+              if (type === 'page') {
+                return (
+                  <Button
+                    type={page === currentPage ? 'primary' : 'default'}
+                    className={page === currentPage ? 'bg-blue-700 hover:bg-blue-800' : 'bg-white hover:bg-gray-50'}
+                  >
+                    {page}
+                  </Button>
+                )
+              }
+              return originalElement
+            }
           }}
           className="overflow-x-auto"
         />
