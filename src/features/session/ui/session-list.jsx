@@ -121,7 +121,7 @@ const SessionsList = ({ classId }) => {
         key: 'startTime',
         align: 'center',
         render: date => formatDate(date),
-        sorter: (a, b) => a.startTime.getTime() - b.startTime.getTime(),
+        sorter: (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
         defaultSortOrder: 'descend'
       },
       {
@@ -136,44 +136,21 @@ const SessionsList = ({ classId }) => {
         key: 'status',
         align: 'center',
         render: (_, record) => {
-          const now = new Date()
-          const start = new Date(record.startTime)
-          const end = new Date(record.endTime)
-
-          let status = 'NOT_STARTED'
-          if (now >= end) {
-            status = 'COMPLETE'
-          } else if (now >= start && now < end) {
-            status = 'IN_PROGRESS'
-          }
-
-          const { bg, text } = getStatusColor(status)
-
+          const color = getStatusColor(record.status)
           return (
-            <span className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${bg} ${text}`}>
-              {status}
+            <span
+              className={`box-border rounded-[5px] px-6 py-1 text-center text-[13px] font-normal ${color.bg} ${color.text}`}
+            >
+              {record.status?.replace('_', ' ')}
             </span>
           )
         },
         filters: [
-          { text: 'NOT_STARTED', value: 'NOT_STARTED' },
-          { text: 'IN_PROGRESS', value: 'IN_PROGRESS' },
+          { text: 'NOT STARTED', value: 'NOT_STARTED' },
+          { text: 'ON GOING', value: 'ON_GOING' },
           { text: 'COMPLETE', value: 'COMPLETE' }
         ],
-        onFilter: (value, record) => {
-          const now = new Date()
-          const start = new Date(record.startTime)
-          const end = new Date(record.endTime)
-
-          let status = 'NOT_STARTED'
-          if (now >= end) {
-            status = 'COMPLETE'
-          } else if (now >= start && now < end) {
-            status = 'IN_PROGRESS'
-          }
-
-          return status === value
-        }
+        onFilter: (value, record) => record.status === value
       },
       {
         title: 'Action',
@@ -193,25 +170,6 @@ const SessionsList = ({ classId }) => {
     ],
     [handleViewSession, handleEdit]
   )
-
-  if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Spin size="large" />
-      </div>
-    )
-  }
-
-  if (isError) {
-    return (
-      <div className="flex h-64 flex-col items-center justify-center">
-        <div className="mb-4 text-lg text-red-500">Unable to load sessions. Please try again later.</div>
-        <Button type="primary" onClick={() => window.location.reload()}>
-          Try Again
-        </Button>
-      </div>
-    )
-  }
 
   return (
     <div className="rounded-lg bg-white p-6 shadow">
@@ -264,7 +222,18 @@ const SessionsList = ({ classId }) => {
         initialValues={selectedSession}
       />
 
-      {sessions.length > 0 ? (
+      {isLoading ? (
+        <div className="flex h-64 items-center justify-center">
+          <Spin size="large" />
+        </div>
+      ) : isError ? (
+        <div className="flex h-64 flex-col items-center justify-center">
+          <div className="mb-4 text-lg text-red-500">Unable to load sessions. Please try again later.</div>
+          <Button type="primary" onClick={() => window.location.reload()}>
+            Try Again
+          </Button>
+        </div>
+      ) : sessions.length > 0 ? (
         <Table
           dataSource={sessions}
           columns={columns}
@@ -293,7 +262,7 @@ const SessionsList = ({ classId }) => {
         />
       ) : (
         <Empty
-          description="No sessions found. Click here to create a new session."
+          description="No sessions found. To create a new session click on create session."
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       )}
