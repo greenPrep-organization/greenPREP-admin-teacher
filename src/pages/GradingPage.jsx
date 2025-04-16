@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Button } from 'antd'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import StudentCard from '@features/grading/ui/student-information'
 import Speaking from '@features/grading/ui/speaking-grading'
 import Writing from '@features/grading/ui/writing-grading'
@@ -12,6 +12,7 @@ import AppBreadcrumb from '@/shared/ui/Breadcrumb'
 import { useQuery } from '@tanstack/react-query'
 import { LeftOutlined } from '@ant-design/icons'
 import { sharedState } from '@features/grading/constants/shared-state'
+import { message } from 'antd'
 import Title from 'antd/es/typography/Title'
 
 const fetchSessionDetail = async sessionId => {
@@ -20,7 +21,13 @@ const fetchSessionDetail = async sessionId => {
 }
 
 function GradingPage() {
-  const [activeSection, setActiveSection] = useState('speaking')
+  const location = useLocation()
+  const getSectionFromQuery = () => {
+    const params = new URLSearchParams(location.search)
+    const section = params.get('section')
+    return section === 'writing' ? 'writing' : 'speaking'
+  }
+  const [activeSection, setActiveSection] = useState(getSectionFromQuery())
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const [isSpeakingGraded, setIsSpeakingGraded] = useState(false)
   const [isWritingGraded, setIsWritingGraded] = useState(false)
@@ -54,8 +61,6 @@ function GradingPage() {
     queryFn: () => fetchSessionDetail(sessionId),
     enabled: !!sessionId
   })
-
-  console.log('Session Detail:', sessionDetail)
 
   const className = sessionDetail?.Classes?.className ?? 'Loading...'
   const sessionName = sessionDetail?.sessionName ?? 'Loading...'
@@ -118,6 +123,9 @@ function GradingPage() {
     }
   }, [studentData, participantId])
 
+  useEffect(() => {
+    setActiveSection(getSectionFromQuery())
+  }, [location.search])
   const navigateToPreviousStudent = async () => {
     if (participantsData?.data) {
       const currentIndex = participantsData.data.findIndex(s => s.ID === participantId)
@@ -191,26 +199,36 @@ function GradingPage() {
 
   const handleScoreSubmit = async (score, section) => {
     try {
-      await axiosInstance.put(`/grades/participants/${studentData.id}`, {
+      const studentAnswers = sharedState.getFeedbackWithStudentAnswerId(participantId, section)
+      const payload = {
+        sessionParticipantID: participantId,
+        teacherGradedScore: parseInt(score),
         skillName: section.toUpperCase(),
-        score: parseInt(score)
-      })
+        studentAnswers
+      }
+
+      console.log('Submitting payload:', payload)
+
+      await axiosInstance.post(`/grades/teacher-grade`, payload)
 
       if (section === 'speaking') {
         setIsSpeakingGraded(true)
         setSpeakingScore(score.toString())
         if (isWritingGraded) setIsFirstCompletionNotice(false)
+        message.success('Speaking score and feedback submitted successfully!')
       } else if (section === 'writing') {
         setIsWritingGraded(true)
         setWritingScore(score.toString())
         if (isSpeakingGraded) setIsFirstCompletionNotice(false)
+        message.success('Writing score and feedback submitted successfully!')
       }
 
       if (participantId) {
         sharedState.clearDraft(participantId)
       }
     } catch (error) {
-      console.error(`Error updating ${section} score:`, error)
+      console.error(`Error submitting ${section} score and feedback:`, error)
+      message.error(`Failed to submit ${section} score and feedback. Please try again.`)
     }
   }
 
@@ -371,9 +389,6 @@ function GradingPage() {
                 Writing
               </Button>
             </div>
-            <Button className="rounded-lg bg-red-400 px-8 py-5 text-base font-medium text-white hover:bg-red-500">
-              Export to PDF
-            </Button>
           </div>
         </div>
       </div>

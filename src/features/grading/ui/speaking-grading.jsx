@@ -29,12 +29,19 @@ const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
     if (sessionParticipantId) {
       const draft = sharedState.getDraft(sessionParticipantId)
       if (draft.speaking) {
-        setFeedbacks(draft.speaking)
+        const localFeedbacks = {}
+        Object.keys(draft.speaking).forEach(part => {
+          localFeedbacks[part] = {}
+          Object.keys(draft.speaking[part]).forEach(index => {
+            localFeedbacks[part][index] = draft.speaking[part][index]?.messageContent || ''
+          })
+        })
+        setFeedbacks(localFeedbacks)
       }
     }
   }, [sessionParticipantId])
 
-  const handleFeedbackChange = (part, questionIndex, value) => {
+  const handleFeedbackChange = (part, questionIndex, value, studentAnswerId) => {
     const updatedFeedbacks = {
       ...feedbacks,
       [part]: {
@@ -45,7 +52,7 @@ const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
     setFeedbacks(updatedFeedbacks)
 
     if (sessionParticipantId) {
-      sharedState.updateFeedback(sessionParticipantId, 'speaking', part, questionIndex, value)
+      sharedState.updateFeedback(sessionParticipantId, 'speaking', part, questionIndex, value, studentAnswerId)
     }
   }
 
@@ -89,6 +96,9 @@ const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
             {part.Content}
           </Button>
         ))}
+        {activePart === 'PART 4' && (
+          <span className="inline-flex items-center font-semibold text-red-500">! 1 audio for 3 answers</span>
+        )}
       </div>
 
       <div className="space-y-6">
@@ -128,7 +138,7 @@ const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
               <div className="flex-1 p-4">
                 <TextArea
                   value={feedbacks[activePart]?.[index] || ''}
-                  onChange={e => handleFeedbackChange(activePart, index, e.target.value)}
+                  onChange={e => handleFeedbackChange(activePart, index, e.target.value, question.studentAnswer?.ID)}
                   placeholder="Enter your feedback here..."
                   className="h-full !min-h-full w-full resize-none rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"
                 />
@@ -155,9 +165,9 @@ Speaking.propTypes = {
             Content: PropTypes.string,
             ImageKeys: PropTypes.arrayOf(PropTypes.string),
             AudioKeys: PropTypes.arrayOf(PropTypes.string),
-            AnswerContent: PropTypes.shape({
-              audioUrl: PropTypes.string,
-              content: PropTypes.string
+            studentAnswer: PropTypes.shape({
+              ID: PropTypes.string,
+              AnswerAudio: PropTypes.string
             })
           })
         )
