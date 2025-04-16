@@ -8,7 +8,7 @@ const CreateClassModal = ({ visible, onClose, onSuccess }) => (
     visible={visible}
     title={
       <Title level={2} style={{ textAlign: 'center' }}>
-        Create new class
+        Create a new class
       </Title>
     }
     onCancel={onClose}
