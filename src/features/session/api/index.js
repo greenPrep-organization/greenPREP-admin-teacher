@@ -41,8 +41,9 @@ export const publishSessionResults = async sessionId => {
 export function getSessionsByClassId({ classId, sessionName = '', status = '', page, limit }) {
   return axiosInstance({
     method: 'get',
-    url: `/sessions?classId=${classId}`,
-    data: {
+    url: '/sessions',
+    params: {
+      classId,
       sessionName,
       status,
       page,
