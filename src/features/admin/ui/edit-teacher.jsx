@@ -23,7 +23,7 @@ const EditTeacherModal = ({ isVisible, teacherId, onCancel, onSave }) => {
       form.setFieldsValue({
         firstName: singleTeacherData.firstName,
         lastName: singleTeacherData.lastName,
-        email: singleTeacherData.email,
+        email: singleTeacherData.email.toLowerCase(),
         phone: singleTeacherData.phone,
         teacherCode: singleTeacherData.teacherCode,
         roleIDs: singleTeacherData.roleIDs || []

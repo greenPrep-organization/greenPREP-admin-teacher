@@ -1,9 +1,9 @@
-// @ts-nocheck
-import { DeleteOutlined, EditOutlined, LoadingOutlined, SearchOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, LoadingOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 import { useDeleteTeacher, useTeachers, useUpdateTeacherProfile } from '@features/admin/hooks'
 import { CreateTeacher } from '@features/admin/ui/create-teacher'
 import EditTeacherModal from '@features/admin/ui/edit-teacher'
-import { Button, Input, message, Pagination, Select, Space, Spin, Table, Tag } from 'antd'
+import AppBreadcrumb from '@shared/ui/Breadcrumb'
+import { Button, Input, message, Select, Space, Spin, Table, Tag } from 'antd'
 import { useEffect, useState } from 'react'
 import DeleteTeacherModal from './delete-teacher'
 import StatusConfirmationModal from './status-confirmation-modal'
@@ -20,6 +20,7 @@ const TeacherAdminList = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const deleteTeacherMutation = useDeleteTeacher()
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
+  const [filter, setfilter] = useState(undefined)
 
   const handleEditStatusClick = record => {
     setSelectedTeacher(record)
@@ -41,9 +42,9 @@ const TeacherAdminList = () => {
   } = useTeachers({
     page: currentPage,
     limit: pageSize,
-    search: searchText
+    search: searchText,
+    status: filter
   })
-  const totalItems = teachersResponse?.total || 0
 
   const handleSearch = e => {
     setSearchText(e.target.value)
@@ -51,12 +52,12 @@ const TeacherAdminList = () => {
   }
 
   const handleStatusFilterChange = value => {
-    if (value === 'active') {
-      setTeachers(teachersResponse?.teachers.filter(item => item.status === true))
-    } else if (value === 'inactive') {
-      setTeachers(teachersResponse?.teachers.filter(item => item.status === false))
+    if (value === 'true') {
+      setfilter(value)
+    } else if (value === 'false') {
+      setfilter(value)
     } else {
-      setTeachers(teachersResponse?.teachers)
+      setfilter(undefined)
     }
     setCurrentPage(1)
   }
@@ -182,9 +183,15 @@ const TeacherAdminList = () => {
   }, [teachersResponse])
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mb-2 text-sm text-gray-500">Dashboard / Teacher Account Management</div>
-      <h1 className="mb-8 text-2xl font-bold">Teacher Account Management</h1>
+    <div className="min-h-screen">
+      <AppBreadcrumb
+        items={[
+          {
+            label: 'Accounts'
+          }
+        ]}
+      />
+      <h1 className="mb-8 text-2xl font-bold">Account Management</h1>
       <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row">
         <div className="flex flex-col gap-4 md:flex-row">
           <div className="relative">
@@ -203,12 +210,12 @@ const TeacherAdminList = () => {
             className="shadow-sm"
             options={[
               { value: 'all', label: 'All Status' },
-              { value: 'active', label: 'Active' },
-              { value: 'inactive', label: 'Inactive' }
+              { value: 'true', label: 'Active' },
+              { value: 'false', label: 'Inactive' }
             ]}
           />
         </div>
-        <Button type="primary" className="bg-blue-700 shadow-sm hover:bg-blue-800" onClick={handleCreateNewAccount}>
+        <Button type="primary" icon={<PlusOutlined />} className="bg-[#013088]" onClick={handleCreateNewAccount}>
           Create New Account
         </Button>
       </div>
@@ -224,22 +231,16 @@ const TeacherAdminList = () => {
               columns={columns}
               rowKey="ID"
               dataSource={teachers}
-              pagination={false}
               rowClassName="hover:bg-gray-50"
               className="border-t border-gray-200"
-            />
-            <div className="flex flex-col items-center justify-between border-t p-4 md:flex-row">
-              <div className="mb-4 text-sm text-gray-500 md:mb-0">
-                Showing {teachers.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-
-                {Math.min(currentPage * pageSize, totalItems)} of {totalItems}
-              </div>
-              <Pagination
-                current={teachersResponse.pagination.page}
-                onChange={handlePageChange}
-                total={teachersResponse.pagination.total}
-                pageSize={teachersResponse.pagination.limit}
-                showSizeChanger={false}
-                itemRender={(page, type, originalElement) => {
+              pagination={{
+                current: teachersResponse.pagination.page,
+                pageSize: teachersResponse.pagination.limit,
+                total: teachersResponse?.pagination?.total || 0,
+                showSizeChanger: false,
+                showTotal: (total, range) => (total > 0 ? `Showing ${range[0]}-${range[1]} of ${total}` : 'No data'),
+                onChange: handlePageChange,
+                itemRender: (page, type, originalElement) => {
                   if (type === 'page') {
                     return (
                       <Button
@@ -251,9 +252,9 @@ const TeacherAdminList = () => {
                     )
                   }
                   return originalElement
-                }}
-              />
-            </div>
+                }
+              }}
+            />
           </>
         )}
       </div>

@@ -2,10 +2,11 @@ import { useSessionDetail, useStudentProfile } from '@features/student-profile/h
 import StudentSessionHistory from '@features/student-profile/ui/student-session-history'
 import StudentSessionInformation from '@features/student-profile/ui/student-session-information'
 import { getDefaultAvatar } from '@shared/lib/utils/avatarUtils'
-import { Avatar, Skeleton, Spin, message } from 'antd'
+import { Avatar, Button, Skeleton, Spin, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AppBreadcrumb from '../shared/ui/Breadcrumb/index'
+import { LeftOutlined } from '@ant-design/icons'
 
 export default function StudentProfilePage() {
   const { classId, sessionId, studentId } = useParams()
@@ -60,12 +61,15 @@ export default function StudentProfilePage() {
             </div>
           </div>
 
-          <button
-            className="mb-4 flex items-center gap-1 rounded bg-[#002B5B] px-4 py-1 text-sm font-medium text-white hover:bg-[#002B5B]/90"
-            onClick={() => navigate(-1)}
-          >
-            Back
-          </button>
+          <div className="mb-4 flex items-center">
+            <Button
+              onClick={() => navigate(-1)}
+              type="primary"
+              style={{ backgroundColor: '#013088', border: 'none', marginBottom: '16px' }}
+            >
+              <LeftOutlined /> Back
+            </Button>
+          </div>
 
           <h1 className="mb-6 text-2xl font-bold">Student Details</h1>
 

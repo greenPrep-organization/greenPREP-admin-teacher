@@ -55,7 +55,9 @@ export const resetPassword = async payload => {
 }
 export const fetchTeachersList = async payload => {
   try {
-    const { data } = await axiosInstance.post('/users/teachers', payload)
+    const { data } = await axiosInstance.get('/users/teachers', {
+      params: payload
+    })
     return data
   } catch (error) {
     console.error('Error fetching teachers list:', error)

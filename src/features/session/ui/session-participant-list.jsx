@@ -60,6 +60,29 @@ const SessionParticipantList = () => {
     }
   }
 
+  const renderScore = (score, level) => {
+    if (score === null || score === undefined) return <span>-</span>
+    const color = score >= 80 ? '#52c41a' : score >= 60 ? '#faad14' : '#ff4d4f'
+    return (
+      <span>
+        <span style={{ color, fontWeight: 500, marginRight: 8 }}>{score}</span>
+        {level && (
+          <span
+            style={{
+              padding: '2px 8px',
+              borderRadius: '12px',
+              backgroundColor: '#e6f7ff',
+              color: '#1890ff',
+              fontWeight: 500
+            }}
+          >
+            {level}
+          </span>
+        )}
+      </span>
+    )
+  }
+
   const columns = [
     {
       title: 'Student Name',
@@ -84,7 +107,7 @@ const SessionParticipantList = () => {
       key: 'grammar',
       width: '12%',
       responsive: ['md'],
-      render: text => text || '-',
+      render: (score, record) => renderScore(score, record.GrammarVocabLevel),
       align: 'center'
     },
     {
@@ -93,7 +116,7 @@ const SessionParticipantList = () => {
       key: 'listening',
       width: '12%',
       responsive: ['md'],
-      render: text => text || '-',
+      render: (score, record) => renderScore(score, record.ListeningLevel),
       align: 'center'
     },
     {
@@ -102,7 +125,7 @@ const SessionParticipantList = () => {
       key: 'reading',
       width: '12%',
       responsive: ['md'],
-      render: text => text || '-',
+      render: (score, record) => renderScore(score, record.ReadingLevel),
       align: 'center'
     },
     {
@@ -111,20 +134,21 @@ const SessionParticipantList = () => {
       key: 'speaking',
       width: '12%',
       responsive: ['md'],
-      render: (text, record) => {
-        if (!text) {
+      render: (score, record) => {
+        const level = record.SpeakingLevel
+        if (score === null || score === undefined) {
           return (
             <span
               className="cursor-pointer text-blue-600 hover:underline"
               onClick={() => {
-                navigate(`/grading/${sessionId}/${record.ID}`)
+                navigate(`/grading/${sessionId}/${record.ID}?section=speaking`)
               }}
             >
               Ungraded
             </span>
           )
         }
-        return text
+        return renderScore(score, level)
       },
       align: 'center'
     },
@@ -134,20 +158,21 @@ const SessionParticipantList = () => {
       key: 'writing',
       width: '12%',
       responsive: ['md'],
-      render: (text, record) => {
-        if (!text) {
+      render: (score, record) => {
+        const level = record.WritingLevel
+        if (score === null || score === undefined) {
           return (
             <span
               className="cursor-pointer text-blue-600 hover:underline"
               onClick={() => {
-                navigate(`/grading/${sessionId}/${record.ID}`)
+                navigate(`/grading/${sessionId}/${record.ID}?section=writing`)
               }}
             >
               Ungraded
             </span>
           )
         }
-        return text
+        return renderScore(score, level)
       },
       align: 'center'
     },
@@ -156,7 +181,10 @@ const SessionParticipantList = () => {
       dataIndex: 'Total',
       key: 'total',
       width: '10%',
-      render: text => text || '-',
+      render: score => {
+        const color = score >= 80 ? '#52c41a' : score >= 60 ? '#faad14' : '#ff4d4f'
+        return <span style={{ fontSize: '16px', fontWeight: 'bold', color }}>{score ?? '-'}</span>
+      },
       align: 'center'
     },
     {
@@ -275,7 +303,7 @@ const SessionParticipantList = () => {
             <div className="flex justify-end sm:justify-start">
               <PublishPopup
                 sessionId={sessionId}
-                disabled={readyToPublish}
+                disabled={!readyToPublish}
                 onPublishSuccess={() => setReadyToPublish(false)}
               />
             </div>
