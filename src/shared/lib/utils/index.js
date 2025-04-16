@@ -27,8 +27,8 @@ export const createSlug = text => {
 export const getStatusColor = status => {
   const statusClasses = {
     COMPLETE: {
-      bg: 'bg-complete',
-      text: 'text-white'
+      bg: 'bg-complete-bg',
+      text: 'text-complete'
     },
     IN_PROGRESS: {
       bg: 'bg-progress',
