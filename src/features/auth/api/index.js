@@ -3,6 +3,7 @@ import { ACCESS_TOKEN } from '@shared/lib/constants/auth'
 import { useMutation } from '@tanstack/react-query'
 import axiosInstance from '@shared/config/axios'
 const API_BASE_URL = 'https://dev-api-greenprep.onrender.com/api'
+
 // Hàm gọi API cơ bản
 const loginAPI = async ({ email, password }) => {
   const response = await axios.post(`${API_BASE_URL}/users/login`, {
@@ -44,6 +45,23 @@ const logoutAPI = async userId => {
   const response = await axiosInstance.post(`/users/logout/${userId}`)
   return response.data
 }
+
+// API function for publishing scores
+const publishScoresAPI = async payload => {
+  const token = localStorage.getItem(ACCESS_TOKEN)
+
+  if (!token) {
+    throw new Error('Access token not found')
+  }
+
+  const response = await axiosInstance.put('/session-participants/publish-scores', payload, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  return response.data
+}
+
 // Custom hooks sử dụng React Query
 export const useLogin = () => {
   return useMutation({
@@ -73,5 +91,11 @@ export const useResetPassword = () => {
 export const useLogout = () => {
   return useMutation({
     mutationFn: logoutAPI
+  })
+}
+
+export const usePublishScores = () => {
+  return useMutation({
+    mutationFn: publishScoresAPI
   })
 }
