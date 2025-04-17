@@ -1,5 +1,5 @@
-import { Form, Input, Modal, Button } from 'antd'
 import { EMAIL_REG, PHONE_REG } from '@/shared/lib/constants/reg'
+import { Button, Form, Input, Modal } from 'antd'
 
 const EditProfileModal = ({ open, onCancel, onSave, formData, setFormData }) => {
   const [form] = Form.useForm()
@@ -89,6 +89,14 @@ const EditProfileModal = ({ open, onCancel, onSave, formData, setFormData }) => 
             value={formData.phone}
             onChange={e => setFormData({ ...formData, phone: e.target.value })}
             placeholder="Enter phone number"
+            className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
+          />
+        </Form.Item>
+        <Form.Item label="Address" name="address" hasFeedback>
+          <Input
+            value={formData.address}
+            onChange={e => setFormData({ ...formData, address: e.target.value })}
+            placeholder="Enter your address"
             className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3"
           />
         </Form.Item>

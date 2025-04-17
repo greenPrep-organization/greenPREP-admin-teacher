@@ -2,13 +2,9 @@ import { useState, useEffect } from 'react'
 import { Button, Card, Input, Spin, Alert } from 'antd'
 import PropTypes from 'prop-types'
 import { useGetWritingData } from '@features/grading/api'
+import { sharedState } from '@features/grading/constants/shared-state'
 
 const { TextArea } = Input
-
-const STORAGE_KEY = 'writing_grading_draft'
-const FEEDBACK_STORAGE_KEY = 'writing_grading_feedback'
-
-let hasLoadedWritingDraft = false
 
 function WritingGrade({ sessionParticipantId }) {
   const [activePart, setActivePart] = useState('part1')
@@ -17,48 +13,44 @@ function WritingGrade({ sessionParticipantId }) {
   const { data: apiData, isLoading, isError } = useGetWritingData(sessionParticipantId)
 
   useEffect(() => {
-    const storedFeedbacks = JSON.parse(localStorage.getItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`) || '{}')
-    if (storedFeedbacks) {
-      setFeedbacks(storedFeedbacks)
+    if (sessionParticipantId) {
+      const draft = sharedState.getDraft(sessionParticipantId)
+      if (draft.writing) {
+        const localFeedbacks = {}
+        Object.keys(draft.writing).forEach(part => {
+          localFeedbacks[part] = {}
+          Object.keys(draft.writing[part]).forEach(index => {
+            localFeedbacks[part][index] = draft.writing[part][index]?.messageContent || ''
+          })
+        })
+        setFeedbacks(localFeedbacks)
+      }
     }
   }, [sessionParticipantId])
 
-  useEffect(() => {
-    localStorage.setItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`, JSON.stringify(feedbacks))
-  }, [feedbacks, sessionParticipantId])
-
-  useEffect(() => {
-    if (!hasLoadedWritingDraft && apiData?.data) {
-      const draftData = JSON.parse(localStorage.getItem(`${STORAGE_KEY}_${sessionParticipantId}`) || '[]')
-      if (draftData) {
-        const loadedScores = {}
-        draftData.forEach(({ part, scores: partScores }) => {
-          partScores.forEach(({ questionIndex, score }) => {
-            if (score !== null) {
-              loadedScores[`${part}_question_${questionIndex}`] = score
-            }
-          })
-        })
-        hasLoadedWritingDraft = true
-      }
-    }
-  }, [apiData, sessionParticipantId])
-
   const handlePartChange = key => setActivePart(key)
 
-  const handleFeedbackChange = (part, questionIndex, value) => {
-    setFeedbacks(prevFeedbacks => ({
-      ...prevFeedbacks,
-      [part]: { ...prevFeedbacks[part], [questionIndex]: value }
-    }))
+  const handleFeedbackChange = (part, questionIndex, value, studentAnswerId) => {
+    const updatedFeedbacks = {
+      ...feedbacks,
+      [part]: {
+        ...feedbacks[part],
+        [questionIndex]: value
+      }
+    }
+    setFeedbacks(updatedFeedbacks)
+
+    if (sessionParticipantId) {
+      sharedState.updateFeedback(sessionParticipantId, 'writing', part, questionIndex, value, studentAnswerId)
+    }
   }
 
   const processApiData = () => {
     const emptyParts = {
-      part1: { questions: [], answers: [], instructions: '', subInstructions: '' },
-      part2: { questions: [], answers: [], instructions: '', subInstructions: '' },
-      part3: { questions: [], answers: [], instructions: '', subInstructions: '' },
-      part4: { questions: [], answers: [], instructions: '', subInstructions: '' }
+      part1: { questions: [], answers: [], instructions: '', subInstructions: '', studentAnswerIds: [] },
+      part2: { questions: [], answers: [], instructions: '', subInstructions: '', studentAnswerIds: [] },
+      part3: { questions: [], answers: [], instructions: '', subInstructions: '', studentAnswerIds: [] },
+      part4: { questions: [], answers: [], instructions: '', subInstructions: '', studentAnswerIds: [] }
     }
 
     if (!apiData?.data?.topic?.Parts) {
@@ -85,9 +77,9 @@ function WritingGrade({ sessionParticipantId }) {
       if (part.Questions && part.Questions.length > 0) {
         part.Questions.forEach(question => {
           parts[partKey].questions.push(question.Content || '')
-
           const answer = question.studentAnswer?.AnswerText || ''
           parts[partKey].answers.push(answer)
+          parts[partKey].studentAnswerIds.push(question.studentAnswer?.ID || null)
         })
       }
     })
@@ -96,9 +88,16 @@ function WritingGrade({ sessionParticipantId }) {
   }
 
   const processedData = processApiData()
-  const currentPart = processedData[activePart] || { questions: [], answers: [], instructions: '', subInstructions: '' }
+  const currentPart = processedData[activePart] || {
+    questions: [],
+    answers: [],
+    instructions: '',
+    subInstructions: '',
+    studentAnswerIds: []
+  }
   const questions = currentPart.questions || []
   const answers = currentPart.answers || []
+  const studentAnswerIds = currentPart.studentAnswerIds || []
   const instructions = currentPart.instructions || ''
   const subInstructions = currentPart.subInstructions || ''
 
@@ -196,7 +195,9 @@ function WritingGrade({ sessionParticipantId }) {
                       <div className="p-4">
                         <TextArea
                           value={feedbacks[activePart]?.[index] || ''}
-                          onChange={e => handleFeedbackChange(activePart, index, e.target.value)}
+                          onChange={e =>
+                            handleFeedbackChange(activePart, index, e.target.value, studentAnswerIds[index])
+                          }
                           placeholder="Enter your feedback here..."
                           autoSize={{ minRows: 3, maxRows: 6 }}
                           className="w-full rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"

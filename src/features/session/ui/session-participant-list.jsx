@@ -60,6 +60,21 @@ const SessionParticipantList = () => {
     }
   }
 
+  const renderScore = (score, level) => {
+    const color = score <= 8 && level === 'X' ? '#ff4d4f' : score >= 8 ? '#000' : ''
+    return (
+      <div style={{ fontWeight: 500 }}>
+        <span style={{ color }}>{score ?? '-'}</span>
+        {level && (
+          <>
+            <span style={{ margin: '0 6px', color: '#000' }}>|</span>
+            <span style={{ color, textTransform: 'uppercase' }}>{level}</span>
+          </>
+        )}
+      </div>
+    )
+  }
+
   const columns = [
     {
       title: 'Student Name',
@@ -84,7 +99,7 @@ const SessionParticipantList = () => {
       key: 'grammar',
       width: '12%',
       responsive: ['md'],
-      render: text => text || '-',
+      render: (score, record) => renderScore(score, record.GrammarVocabLevel),
       align: 'center'
     },
     {
@@ -93,7 +108,7 @@ const SessionParticipantList = () => {
       key: 'listening',
       width: '12%',
       responsive: ['md'],
-      render: text => text || '-',
+      render: (score, record) => renderScore(score, record.ListeningLevel),
       align: 'center'
     },
     {
@@ -102,7 +117,7 @@ const SessionParticipantList = () => {
       key: 'reading',
       width: '12%',
       responsive: ['md'],
-      render: text => text || '-',
+      render: (score, record) => renderScore(score, record.ReadingLevel),
       align: 'center'
     },
     {
@@ -111,20 +126,18 @@ const SessionParticipantList = () => {
       key: 'speaking',
       width: '12%',
       responsive: ['md'],
-      render: (text, record) => {
-        if (!text) {
-          return (
-            <span
-              className="cursor-pointer text-blue-600 hover:underline"
-              onClick={() => {
-                navigate(`/grading/${sessionId}/${record.ID}`)
-              }}
-            >
-              Ungraded
-            </span>
-          )
-        }
-        return text
+      render: (score, record) => {
+        const level = record.SpeakingLevel
+        return (
+          <span
+            className="cursor-pointer text-blue-600 hover:underline"
+            onClick={() => {
+              navigate(`/grading/${sessionId}/${record.ID}?section=speaking`)
+            }}
+          >
+            {score === null || score === undefined ? 'Ungraded' : renderScore(score, level)}
+          </span>
+        )
       },
       align: 'center'
     },
@@ -134,20 +147,18 @@ const SessionParticipantList = () => {
       key: 'writing',
       width: '12%',
       responsive: ['md'],
-      render: (text, record) => {
-        if (!text) {
-          return (
-            <span
-              className="cursor-pointer text-blue-600 hover:underline"
-              onClick={() => {
-                navigate(`/grading/${sessionId}/${record.ID}`)
-              }}
-            >
-              Ungraded
-            </span>
-          )
-        }
-        return text
+      render: (score, record) => {
+        const level = record.WritingLevel
+        return (
+          <span
+            className="cursor-pointer text-blue-600 hover:underline"
+            onClick={() => {
+              navigate(`/grading/${sessionId}/${record.ID}?section=writing`)
+            }}
+          >
+            {score === null || score === undefined ? 'Ungraded' : renderScore(score, level)}
+          </span>
+        )
       },
       align: 'center'
     },
@@ -156,7 +167,9 @@ const SessionParticipantList = () => {
       dataIndex: 'Total',
       key: 'total',
       width: '10%',
-      render: text => text || '-',
+      render: score => {
+        return <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#000' }}>{score ?? '-'}</span>
+      },
       align: 'center'
     },
     {
@@ -275,7 +288,7 @@ const SessionParticipantList = () => {
             <div className="flex justify-end sm:justify-start">
               <PublishPopup
                 sessionId={sessionId}
-                disabled={readyToPublish}
+                disabled={!readyToPublish}
                 onPublishSuccess={() => setReadyToPublish(false)}
               />
             </div>

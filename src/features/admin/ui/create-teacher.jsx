@@ -23,7 +23,7 @@ export const CreateTeacher = ({ open, onClose, onSave }) => {
       const teacherData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
-        email: formData.email,
+        email: formData.email.toLowerCase(),
         password: formData.password,
         teacherCode: formData.teacherId,
         roleIDs: ['teacher'],

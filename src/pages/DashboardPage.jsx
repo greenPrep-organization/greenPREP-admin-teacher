@@ -63,7 +63,9 @@ const DashboardPage = () => {
     const fetchUngraded = async () => {
       try {
         const allUngraded = await Promise.all(
-          mySessions.map(session => fetchSessionParticipants(session.ID).then(res => res.filter(p => p.Total === null)))
+          mySessions.map(session =>
+            fetchSessionParticipants(session.ID).then(res => res.filter(p => p.Total === null || 0))
+          )
         )
         setUngradedCount(allUngraded.flat().length)
       } catch (error) {
@@ -78,104 +80,135 @@ const DashboardPage = () => {
 
   const statsConfig = [
     {
-      title: 'Total Student',
+      title: 'Total Students',
       value: '200',
-      subtitle: 'Students',
-      icon: <UserOutlined className="text-2xl text-blue-500" />,
-      bgColor: 'bg-blue-100',
-      trendColor: 'text-blue-600',
-      isIncrease: true
+      subtitle: 'Across all classes',
+      icon: <UserOutlined className="text-3xl" />,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200'
     },
     {
-      title: 'Total Session Completed',
+      title: 'Completed Sessions',
       value: CompleteCount,
-      subtitle: 'Session Completed',
-      icon: <FileDoneOutlined className="text-2xl text-purple-500" />,
-      bgColor: 'bg-purple-100',
-      trendColor: 'text-purple-600',
-      isIncrease: false
+      subtitle: 'This semester',
+      icon: <FileDoneOutlined className="text-3xl" />,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-200'
     },
     {
       title: 'My Classes',
       value: myClassCount,
-      subtitle: 'Classes Assigned',
-      icon: <CheckOutlined className="text-2xl text-yellow-500" />,
-      bgColor: 'bg-yellow-100',
-      trendColor: 'text-yellow-600',
-      isIncrease: true
+      subtitle: 'Assigned to you',
+      icon: <CheckOutlined className="text-3xl" />,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      borderColor: 'border-purple-200'
     },
     {
-      title: 'Total Ungrade',
+      title: 'Ungraded Exams',
       value: ungradedCount,
-      subtitle: 'Exam not graded',
-      icon: <WarningOutlined className="text-2xl text-red-500" />,
-      bgColor: 'bg-red-100',
-      trendColor: 'text-red-600',
-      isIncrease: true
+      subtitle: 'Require attention',
+      icon: <WarningOutlined className="text-3xl" />,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+      borderColor: 'border-orange-200'
     }
   ]
 
   if (isLoading || classLoading) {
     return (
-      <div style={{ textAlign: 'center', padding: '50px' }}>
-        <Spin tip="Loading..." size="large" />
+      <div className="flex h-screen items-center justify-center">
+        <Spin tip="Loading dashboard..." size="large" />
       </div>
     )
   }
 
   if (isError) {
     return (
-      <Alert
-        message="Error"
-        description={`Error fetching sessions: ${isError.message || isError}`}
-        type="error"
-        showIcon
-      />
+      <div className="p-4">
+        <Alert
+          message="Error Loading Dashboard"
+          description={`There was an error fetching your data: ${isError.message || isError}`}
+          type="error"
+          showIcon
+          closable
+        />
+      </div>
     )
   }
+
   return (
-    <div className="p-4">
-      <div className="grid grid-cols-1 gap-6 pb-5 md:grid-cols-2 lg:grid-cols-4">
+    <div className="min-h-screen">
+      <h1 className="mb-6 text-2xl font-semibold text-gray-800">Teacher Dashboard</h1>
+
+      {/* Stats Cards */}
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statsConfig.map((stat, index) => (
-          <Card
+          <div
             key={index}
-            className={`rounded-2xl p-4 shadow-md transition-all duration-300 hover:shadow-xl ${stat.bgColor}`}
-            bodyStyle={{ padding: '1rem' }}
+            className={`rounded-lg border ${stat.borderColor} ${stat.bgColor} p-4 shadow-sm transition-all hover:shadow-md`}
           >
-            <div className="flex h-full flex-col justify-between">
-              <div className="mb-4 flex items-center justify-between">
-                <div>{stat.icon}</div>
-              </div>
+            <div className="flex items-center">
+              <div className={`mr-4 rounded-full p-3 ${stat.bgColor} ${stat.color}`}>{stat.icon}</div>
               <div>
-                <div className="text-md whitespace-nowrap font-medium text-gray-600">{stat.title}</div>
-                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                <div className="h-8 w-full rounded-md">{stat.subtitle}</div>
+                <h3 className="text-sm font-medium text-gray-500">{stat.title}</h3>
+                <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
+                <p className="text-xs text-gray-500">{stat.subtitle}</p>
               </div>
             </div>
-          </Card>
+          </div>
         ))}
       </div>
-      <div className="mb-8 flex flex-col gap-6 lg:flex-row">
-        <div className="w-full space-y-6 lg:w-2/3">
+
+      <div className="flex flex-col gap-7 lg:flex-row">
+        <div className="flex-1 space-y-6 lg:w-2/3">
           <Card
-            title={<span className="text-lg text-[#ba77f2]">Student Performance by Level</span>}
-            className="min-h-[300px] shadow-md"
+            title="Student Performance by Level"
+            className="rounded-lg border-2 shadow-sm"
+            headStyle={{ borderBottom: '1px solid #f0f0f0', padding: '16px 24px' }}
+            bodyStyle={{ padding: '18px 24px' }}
           >
             <Chart
               options={{
                 chart: {
                   type: 'bar',
-                  animations: { enabled: true, speed: 800 }
+                  animations: { enabled: true, speed: 800 },
+                  toolbar: { show: false },
+                  fontFamily: 'Inter, sans-serif'
                 },
                 plotOptions: {
-                  bar: { horizontal: true, barHeight: '40%' }
+                  bar: {
+                    horizontal: true,
+                    barHeight: '60%',
+                    borderRadius: 2
+                  }
                 },
                 xaxis: {
-                  categories: performanceData.map(item => item.level)
+                  categories: performanceData.map(item => item.level),
+                  labels: {
+                    style: {
+                      colors: '#6b7280',
+                      fontSize: '12px'
+                    }
+                  }
+                },
+                yaxis: {
+                  labels: {
+                    style: {
+                      colors: '#6b7280',
+                      fontSize: '12px'
+                    }
+                  }
                 },
                 dataLabels: {
                   enabled: true,
-                  formatter: val => `${val}%`
+                  formatter: val => `${val}%`,
+                  style: {
+                    fontSize: '12px',
+                    colors: ['#fff']
+                  }
                 },
                 tooltip: {
                   y: {
@@ -186,6 +219,9 @@ const DashboardPage = () => {
                       return `${passed}/${total} students passed (${val}%)`
                     }
                   }
+                },
+                grid: {
+                  borderColor: '#f3f4f6'
                 }
               }}
               series={[
@@ -194,74 +230,117 @@ const DashboardPage = () => {
                   data: performanceData.map((item, index) => ({
                     x: item.level,
                     y: item.percentage,
-                    fillColor: ['#1890ff', '#13c2c2', '#fa8c16', '#722ed1', '#f5222d'][index % 5]
+                    fillColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'][index % 5]
                   }))
                 }
               ]}
               type="bar"
-              height={283}
+              height={255}
             />
           </Card>
 
-          <Card title="Skill Comparison Across Classes" className="min-h-[400px] shadow-md">
+          <Card
+            title="Skill Comparison Across Classes"
+            className="rounded-lg border-2 shadow-sm"
+            headStyle={{ borderBottom: '1px solid #f0f0f0', padding: '16px 24px' }}
+            bodyStyle={{ padding: '16px 24px' }}
+          >
             <Chart
               options={{
                 chart: {
                   type: 'radar',
                   toolbar: { show: false },
-                  animations: { enabled: true, speed: 800 }
+                  animations: { enabled: true, speed: 800 },
+                  fontFamily: 'Inter, sans-serif'
                 },
                 xaxis: {
-                  categories: ['Listening', 'Speaking', 'Reading', 'Writing', 'Grammar']
+                  categories: ['Listening', 'Speaking', 'Reading', 'Writing', 'Grammar'],
+                  labels: {
+                    style: {
+                      colors: '#6b7280',
+                      fontSize: '12px'
+                    }
+                  }
                 },
                 stroke: {
-                  width: 3
+                  width: 2
                 },
                 fill: {
                   opacity: 0.2
                 },
                 markers: {
-                  size: 5
+                  size: 4
                 },
                 legend: {
-                  position: 'top'
+                  position: 'top',
+                  fontSize: '14px',
+                  labels: {
+                    colors: '#374151'
+                  }
                 },
-                colors: ['#f5222d', '#1890ff', '#52c41a', '#722ed1', '#fa8c16']
+                colors: ['#ef4444', '#3b82f6', '#10b981', '#8b5cf6', '#f59e0b']
               }}
               series={Object.entries(skillComparisonData).map(([className, skills]) => ({
                 name: className,
                 data: [skills.Listening, skills.Speaking, skills.Reading, skills.Writing, skills.Grammar]
               }))}
               type="radar"
-              height={345}
+              height={300}
             />
           </Card>
         </div>
 
-        <div className="flex w-1/3 flex-col justify-between space-y-0">
-          <div className="min-h-[425px]">
-            <CalendarCard />
-          </div>
-          <Card title="Pass vs Fail Student Distribution" className="shadow-md">
+        <div className="flex flex-col gap-7 lg:w-1/3">
+          <CalendarCard />
+          <Card
+            title="Pass vs Fail Distribution"
+            className="space-y-6 rounded-lg border-2 p-2 shadow-sm"
+            headStyle={{ borderBottom: '1px solid #f0f0f0' }}
+          >
             <Chart
               options={{
-                labels: ['Pass', 'Fail'],
+                labels: ['Passed', 'Failed'],
                 chart: {
                   type: 'donut',
-                  animations: { enabled: true, speed: 800 }
+                  animations: { enabled: true, speed: 800 },
+                  fontFamily: 'Inter, sans-serif'
                 },
                 legend: {
-                  position: 'top'
+                  position: 'top',
+                  labels: {
+                    colors: '#374151'
+                  }
                 },
-                colors: ['#52c41a', '#f5222d'],
-                dataLabels: { enabled: true }
+                colors: ['#10b981', '#ef4444'],
+                dataLabels: {
+                  enabled: true,
+                  style: {
+                    fontSize: '8px',
+                    colors: ['#fff']
+                  }
+                },
+                plotOptions: {
+                  pie: {
+                    donut: {
+                      labels: {
+                        show: true,
+                        total: {
+                          show: true,
+                          label: 'Total Students',
+                          fontSize: '12px',
+                          color: '#6b7280'
+                        }
+                      }
+                    }
+                  }
+                }
               }}
               series={[
-                Object.values(studentCountData).reduce((acc, cur) => acc + cur.passed, 0),
+                Object.values(studentCountData).reduce((acc, cur) => acc + cur.passed, 120),
                 Object.values(studentCountData).reduce((acc, cur) => acc + (cur.total - cur.passed), 0)
               ]}
               type="donut"
-              height={600}
+              height={215}
             />
           </Card>
         </div>
@@ -269,4 +348,5 @@ const DashboardPage = () => {
     </div>
   )
 }
+
 export default DashboardPage

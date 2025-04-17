@@ -1,0 +1,34 @@
+.react-calendar {
+  border: none;
+  border-radius: 3px;
+  font-family: 'Inter', sans-serif;
+}
+
+.react-calendar__navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.react-calendar__navigation button:hover {
+  background-color: red;
+  padding: 1px;
+}
+
+.react-calendar__month-view__weekdays {
+  text-align: center;
+  font-weight: 500;
+  color: #9ca3af;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.react-calendar__tile {
+  border: none;
+  background: none;
+}
+
+.react-calendar__tile--now {
+  background: none;
+  font-weight: bold;
+}

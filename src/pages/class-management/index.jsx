@@ -48,7 +48,7 @@ const ClassList = () => {
       const timer = setTimeout(() => {
         setCachedData(filteredClasses)
         setIsDataReady(true)
-      }, 1000)
+      })
       return () => clearTimeout(timer)
     }
   }, [isFetching, isLoading, filteredClasses])
@@ -128,7 +128,7 @@ const ClassList = () => {
           icon={<PlusOutlined />}
           style={{ backgroundColor: '#013088', border: 'none' }}
         >
-          Create Class
+          Create a new class
         </Button>
       </div>
 

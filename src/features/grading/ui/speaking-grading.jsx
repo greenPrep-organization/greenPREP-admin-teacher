@@ -2,10 +2,9 @@ import { Button, Spin, Input } from 'antd'
 import { useState, useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import AudioPlayer from '@features/grading/ui/audio-player'
+import { sharedState } from '@features/grading/constants/shared-state'
 
 const { TextArea } = Input
-
-const FEEDBACK_STORAGE_KEY = 'speaking_grading_feedback'
 
 const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
   const [activePart, setActivePart] = useState('PART 1')
@@ -21,38 +20,40 @@ const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
   }, [testData])
 
   useEffect(() => {
-    try {
-      const storedFeedbacks = JSON.parse(localStorage.getItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`))
-      if (storedFeedbacks) {
-        setFeedbacks(storedFeedbacks)
-      }
-    } catch (error) {
-      console.error('Error loading feedbacks:', error)
-    }
-  }, [sessionParticipantId])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(`${FEEDBACK_STORAGE_KEY}_${sessionParticipantId}`, JSON.stringify(feedbacks))
-    } catch (error) {
-      console.error('Error saving feedbacks:', error)
-    }
-  }, [feedbacks, sessionParticipantId])
-
-  useEffect(() => {
     if (parts.length > 0 && !parts.find(p => p.Content === activePart)) {
       setActivePart(parts[0].Content)
     }
   }, [parts, activePart])
 
-  const handleFeedbackChange = (part, questionIndex, value) => {
-    setFeedbacks(prevFeedbacks => ({
-      ...prevFeedbacks,
+  useEffect(() => {
+    if (sessionParticipantId) {
+      const draft = sharedState.getDraft(sessionParticipantId)
+      if (draft.speaking) {
+        const localFeedbacks = {}
+        Object.keys(draft.speaking).forEach(part => {
+          localFeedbacks[part] = {}
+          Object.keys(draft.speaking[part]).forEach(index => {
+            localFeedbacks[part][index] = draft.speaking[part][index]?.messageContent || ''
+          })
+        })
+        setFeedbacks(localFeedbacks)
+      }
+    }
+  }, [sessionParticipantId])
+
+  const handleFeedbackChange = (part, questionIndex, value, studentAnswerId) => {
+    const updatedFeedbacks = {
+      ...feedbacks,
       [part]: {
-        ...prevFeedbacks[part],
+        ...feedbacks[part],
         [questionIndex]: value
       }
-    }))
+    }
+    setFeedbacks(updatedFeedbacks)
+
+    if (sessionParticipantId) {
+      sharedState.updateFeedback(sessionParticipantId, 'speaking', part, questionIndex, value, studentAnswerId)
+    }
   }
 
   if (isLoading) {
@@ -95,6 +96,9 @@ const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
             {part.Content}
           </Button>
         ))}
+        {activePart === 'PART 4' && (
+          <span className="inline-flex items-center font-semibold text-red-500">! 1 audio for 3 answers</span>
+        )}
       </div>
 
       <div className="space-y-6">
@@ -134,7 +138,7 @@ const Speaking = ({ testData, isLoading, sessionParticipantId }) => {
               <div className="flex-1 p-4">
                 <TextArea
                   value={feedbacks[activePart]?.[index] || ''}
-                  onChange={e => handleFeedbackChange(activePart, index, e.target.value)}
+                  onChange={e => handleFeedbackChange(activePart, index, e.target.value, question.studentAnswer?.ID)}
                   placeholder="Enter your feedback here..."
                   className="h-full !min-h-full w-full resize-none rounded-lg border-gray-300 focus:border-[#003087] focus:shadow-none"
                 />
@@ -161,9 +165,9 @@ Speaking.propTypes = {
             Content: PropTypes.string,
             ImageKeys: PropTypes.arrayOf(PropTypes.string),
             AudioKeys: PropTypes.arrayOf(PropTypes.string),
-            AnswerContent: PropTypes.shape({
-              audioUrl: PropTypes.string,
-              content: PropTypes.string
+            studentAnswer: PropTypes.shape({
+              ID: PropTypes.string,
+              AnswerAudio: PropTypes.string
             })
           })
         )

@@ -38,8 +38,18 @@ export const publishSessionResults = async sessionId => {
   }
 }
 
-export function getSessionsByClassId(classId) {
-  return axiosInstance.get('/sessions', { params: { classId } })
+export function getSessionsByClassId({ classId, sessionName = '', status = '', page, limit }) {
+  return axiosInstance({
+    method: 'get',
+    url: '/sessions',
+    params: {
+      classId,
+      sessionName,
+      status,
+      page,
+      limit
+    }
+  })
 }
 
 export const createSession = async data => {
@@ -53,6 +63,10 @@ export const createSession = async data => {
 
 export const getTestSets = async () => {
   const response = await axiosInstance.get('/topics')
+  return response.data
+}
+export const generationKey = async () => {
+  const response = await axiosInstance.get('/sessions/generate-key')
   return response.data
 }
 

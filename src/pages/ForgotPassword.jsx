@@ -1,8 +1,8 @@
+import { CheckCircleOutlined, MailOutlined } from '@ant-design/icons'
 import { ForgotPasswordImg } from '@assets/images'
-import { Form, Input, Button, Typography, Image, message, ConfigProvider, Row, Col } from 'antd'
-import { MailOutlined, CheckCircleOutlined } from '@ant-design/icons'
-import { useNavigate } from 'react-router-dom'
 import { useForgotPassword } from '@features/auth/api'
+import { Button, Col, ConfigProvider, Form, Image, Input, message, Row, Typography } from 'antd'
+import { useNavigate } from 'react-router-dom'
 const { Title, Paragraph } = Typography
 const ForgotPassword = () => {
   const navigate = useNavigate()
@@ -19,7 +19,7 @@ const ForgotPassword = () => {
       // @ts-ignore
       mutate(
         // @ts-ignore
-        { email: values.email, host: import.meta.env.VITE_HOST_URL },
+        { email: values.email.toLowerCase(), host: import.meta.env.VITE_HOST_URL },
         {
           onSuccess: () => {
             message.success({

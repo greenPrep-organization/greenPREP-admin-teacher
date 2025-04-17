@@ -3,7 +3,7 @@ import { useChangeUserPassword, useUpdateUserProfile, useUserProfile } from '@fe
 import ChangePasswordModal from '@features/profile/ui/change-password-profile'
 import EditProfileModal from '@features/profile/ui/edit-profile'
 import { EMAIL_REG, PHONE_REG } from '@shared/lib/constants/reg'
-import { Avatar, Button, Card, Divider, message, Spin, Tag, Tooltip } from 'antd'
+import { Avatar, Button, Card, Divider, message, Spin, Tag } from 'antd'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import * as Yup from 'yup'
@@ -34,7 +34,7 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: '',
+    email: ''.toLowerCase(),
     phone: ''
   })
   // eslint-disable-next-line no-unused-vars
@@ -149,14 +149,14 @@ const Profile = () => {
             <p className="mb-1 text-gray-600">Role</p>
             <div className="flex flex-wrap gap-2">
               {Array.isArray(userData?.roleIDs) && userData?.roleIDs?.length > 0 ? (
-                userData.roleIDs.map((role, index) => {
+                userData.roleIDs.map(role => {
                   const color = roleColors[role.toLowerCase()] || roleColors.default
                   return (
-                    <Tooltip title={`Role: ${role}`} key={index}>
+                    <>
                       <Tag color={color} icon={<UserOutlined />} className="capitalize">
                         {role}
                       </Tag>
-                    </Tooltip>
+                    </>
                   )
                 })
               ) : (
@@ -166,7 +166,7 @@ const Profile = () => {
               )}
             </div>
           </div>
-          <div>
+          {/* <div>
             <p className="mb-1 text-gray-600">Classes</p>
             {userData?.class ? (
               Array.isArray(userData.class) ? (
@@ -185,10 +185,14 @@ const Profile = () => {
             ) : (
               <p className="text-gray-500">No classes assigned</p>
             )}
+          </div> */}
+          <div>
+            <p className="mb-1 text-gray-600">Address</p>
+            <p className="text-gray-500">{userData.address}</p>
           </div>
         </div>
         <Divider className="my-6" />
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-3 gap-6 md:grid-cols-2">
           <div>
             <p className="mb-1 text-gray-600">Phone number</p>
             <p className="text-gray-500">{userData.phone}</p>

@@ -1,9 +1,10 @@
-import { Button, DatePicker, Form, Input, Modal } from 'antd'
-import { useEffect } from 'react'
-import dayjs from 'dayjs'
-import * as yup from 'yup'
-import { CalendarOutlined } from '@ant-design/icons'
+import { generationKey } from '@/features/session/api'
 import { editSessionSchema } from '@/features/session/validations/edit-session.schema'
+import { CalendarOutlined } from '@ant-design/icons'
+import { Button, DatePicker, Form, Input, Modal } from 'antd'
+import dayjs from 'dayjs'
+import { useEffect } from 'react'
+import * as yup from 'yup'
 
 const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
   const [form] = Form.useForm()
@@ -13,7 +14,8 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
       form.setFieldsValue({
         ...initialValues,
         startDate: initialValues.startTime ? dayjs(initialValues.startTime) : null,
-        endDate: initialValues.endTime ? dayjs(initialValues.endTime) : null
+        endDate: initialValues.endTime ? dayjs(initialValues.endTime) : null,
+        status: initialValues.status
       })
     }
   }, [initialValues, form])
@@ -22,7 +24,6 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
     try {
       const values = await form.validateFields()
       await editSessionSchema.validate(values, { abortEarly: false })
-
       onUpdate({
         name: values.name,
         key: values.key,
@@ -82,15 +83,38 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
           <Input placeholder="Enter session name" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
         </Form.Item>
 
-        <Form.Item
-          name="key"
-          label={
-            <span>
-              Session key <span className="text-red-500">*</span>
-            </span>
-          }
-        >
-          <Input placeholder="Enter session key" className="h-11 rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3" />
+        <Form.Item label="Session key" required style={{ marginBottom: 0 }}>
+          <div className="flex gap-2 pb-5">
+            <Form.Item
+              name="key"
+              rules={[
+                { required: true, message: 'Please generate session key' },
+                { pattern: /^[a-zA-Z0-9_-]+$/, message: 'Only letters, numbers, underscores and hyphens allowed' }
+              ]}
+              noStyle
+            >
+              <Input
+                disabled
+                placeholder="Generate session key"
+                className="h-11 w-full rounded-lg border-[#D1D5DB] bg-[#F9FAFB] px-3 !text-black !opacity-100"
+              />
+            </Form.Item>
+            <Button
+              type="primary"
+              className="h-11 bg-[#003087] px-4 text-white hover:bg-[#003087]/90"
+              onClick={async () => {
+                try {
+                  const res = await generationKey()
+                  const generatedKey = res.key
+                  form.setFieldsValue({ key: generatedKey })
+                } catch (error) {
+                  console.error('Failed to generate session key!', error)
+                }
+              }}
+            >
+              Generate
+            </Button>
+          </div>
         </Form.Item>
 
         <div className="grid grid-cols-2 gap-4">
