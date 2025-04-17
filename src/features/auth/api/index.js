@@ -5,7 +5,7 @@ import axiosInstance from '@shared/config/axios'
 const API_BASE_URL = 'https://dev-api-greenprep.onrender.com/api'
 
 const loginAPI = async ({ email, password }) => {
-  const response = await axios.post(`${API_BASE_URL}/users/login`, {
+  const response = await axiosInstance.post(`${API_BASE_URL}/users/login`, {
     email,
     password
   })
