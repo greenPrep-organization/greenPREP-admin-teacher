@@ -128,19 +128,16 @@ const SessionParticipantList = () => {
       responsive: ['md'],
       render: (score, record) => {
         const level = record.SpeakingLevel
-        if (score === null || score === undefined) {
-          return (
-            <span
-              className="cursor-pointer text-blue-600 hover:underline"
-              onClick={() => {
-                navigate(`/grading/${sessionId}/${record.ID}?section=speaking`)
-              }}
-            >
-              Ungraded
-            </span>
-          )
-        }
-        return renderScore(score, level)
+        return (
+          <span
+            className="cursor-pointer text-blue-600 hover:underline"
+            onClick={() => {
+              navigate(`/grading/${sessionId}/${record.ID}?section=speaking`)
+            }}
+          >
+            {score === null || score === undefined ? 'Ungraded' : renderScore(score, level)}
+          </span>
+        )
       },
       align: 'center'
     },
@@ -152,19 +149,16 @@ const SessionParticipantList = () => {
       responsive: ['md'],
       render: (score, record) => {
         const level = record.WritingLevel
-        if (score === null || score === undefined) {
-          return (
-            <span
-              className="cursor-pointer text-blue-600 hover:underline"
-              onClick={() => {
-                navigate(`/grading/${sessionId}/${record.ID}?section=writing`)
-              }}
-            >
-              Ungraded
-            </span>
-          )
-        }
-        return renderScore(score, level)
+        return (
+          <span
+            className="cursor-pointer text-blue-600 hover:underline"
+            onClick={() => {
+              navigate(`/grading/${sessionId}/${record.ID}?section=writing`)
+            }}
+          >
+            {score === null || score === undefined ? 'Ungraded' : renderScore(score, level)}
+          </span>
+        )
       },
       align: 'center'
     },
