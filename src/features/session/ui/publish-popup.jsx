@@ -1,5 +1,4 @@
 import { publishSessionResults } from '@features/session/api'
-import axiosInstance from '@shared/config/axios'
 import { useMutation } from '@tanstack/react-query'
 import { Button, message, Modal } from 'antd'
 import { useState } from 'react'
@@ -7,37 +6,27 @@ import { useState } from 'react'
 const PublishPopup = ({ sessionId, disabled, onPublishSuccess }) => {
   const [isModalVisible, setIsModalVisible] = useState(false)
 
-  const sendEmailToStudent = async () => {
-    try {
-      await axiosInstance.post('/send-mail', {
-        to: 'student@example.com',
-        subject: 'Session Results Published',
-        message: 'Your session results have been published successfully.'
-      })
-      message.info('Email sent to student')
-    } catch {
-      message.error('Failed to send email')
-    }
-  }
-
-  const { mutate: publishResults } = useMutation({
+  const { mutate: publishResults, isPending: isLoading } = useMutation({
     mutationFn: async () => {
-      try {
-        return await publishSessionResults(sessionId)
-      } catch {
-        throw new Error('API not responding')
+      if (!sessionId) {
+        throw new Error('Session ID not found')
       }
+      return await publishSessionResults(sessionId)
     },
     onSuccess: () => {
       message.success('Session results published successfully')
-      sendEmailToStudent()
       onPublishSuccess()
       setIsModalVisible(false)
     },
-    onError: () => {
-      message.warning('Session results published successfully (API not available)')
-      sendEmailToStudent()
-      onPublishSuccess()
+    onError: error => {
+      console.error('Publish error:', error)
+      if (error.message.includes('Server error:')) {
+        message.error('Server error occurred. Please try again later.')
+      } else if (error.message === 'Session ID not found') {
+        message.error('Session ID is required')
+      } else {
+        message.error(error.message || 'Failed to publish session results')
+      }
       setIsModalVisible(false)
     }
   })
@@ -48,10 +37,16 @@ const PublishPopup = ({ sessionId, disabled, onPublishSuccess }) => {
 
   return (
     <>
-      <Button type="primary" disabled={disabled} onClick={showModal} className="bg-[#013088]">
+      <Button type="primary" disabled={disabled} onClick={showModal} className="bg-[#013088]" loading={isLoading}>
         Ready to Publish
       </Button>
-      <Modal title="Confirm Publication" visible={isModalVisible} onOk={handleConfirm} onCancel={handleCancel}>
+      <Modal
+        title="Confirm Publication"
+        visible={isModalVisible}
+        onOk={handleConfirm}
+        onCancel={handleCancel}
+        confirmLoading={isLoading}
+      >
         <p>Are you sure you want to publish the session results?</p>
       </Modal>
     </>

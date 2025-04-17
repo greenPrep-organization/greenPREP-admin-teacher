@@ -31,9 +31,19 @@ export const updateParticipantLevelById = async (id, level) => {
 
 export const publishSessionResults = async sessionId => {
   try {
-    const response = await axiosInstance.post(`/sessions/${sessionId}/publish`)
+    const response = await axiosInstance({
+      method: 'put',
+      url: '/session-participants/publish-scores',
+      data: {
+        sessionId
+      }
+    })
     return response.data
   } catch (error) {
+    console.error('Publish error details:', error.response?.data)
+    if (error.response?.status === 500) {
+      throw new Error('Server error: ' + (error.response?.data?.message || 'Internal server error'))
+    }
     throw new Error(error.response?.data?.message || 'Failed to publish session results')
   }
 }
@@ -85,5 +95,16 @@ export const updateSession = async (sessionId, data) => {
     return response.data
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to update session')
+  }
+}
+
+export const publishParticipantScores = async sessionId => {
+  try {
+    const response = await axiosInstance.put(`/session-participants/publish-scores`, {
+      sessionId
+    })
+    return response
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to publish participant scores')
   }
 }

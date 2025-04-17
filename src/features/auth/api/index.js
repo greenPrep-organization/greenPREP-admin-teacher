@@ -3,9 +3,9 @@ import { ACCESS_TOKEN } from '@shared/lib/constants/auth'
 import { useMutation } from '@tanstack/react-query'
 import axiosInstance from '@shared/config/axios'
 const API_BASE_URL = 'https://dev-api-greenprep.onrender.com/api'
-// Hàm gọi API cơ bản
+
 const loginAPI = async ({ email, password }) => {
-  const response = await axios.post(`${API_BASE_URL}/users/login`, {
+  const response = await axiosInstance.post(`${API_BASE_URL}/users/login`, {
     email,
     password
   })
@@ -44,7 +44,18 @@ const logoutAPI = async userId => {
   const response = await axiosInstance.post(`/users/logout/${userId}`)
   return response.data
 }
-// Custom hooks sử dụng React Query
+
+const publishScoresAPI = async payload => {
+  const token = localStorage.getItem(ACCESS_TOKEN)
+
+  if (!token) {
+    throw new Error('Access token not found')
+  }
+
+  const response = await axiosInstance.put('/session-participants/publish-scores', payload, {})
+  return response.data
+}
+
 export const useLogin = () => {
   return useMutation({
     mutationFn: loginAPI
@@ -56,12 +67,6 @@ export const useForgotPassword = () => {
       const { data } = await forgotPasswordAPI(params)
       return data.data
     }
-    // onSuccess() {
-    //   message.success("Please check your email to reset your password");
-    // },
-    // onError({ response }) {
-    //   message.error(response.data.message);
-    // },
   })
 }
 export const useResetPassword = () => {
@@ -73,5 +78,11 @@ export const useResetPassword = () => {
 export const useLogout = () => {
   return useMutation({
     mutationFn: logoutAPI
+  })
+}
+
+export const usePublishScores = () => {
+  return useMutation({
+    mutationFn: publishScoresAPI
   })
 }
