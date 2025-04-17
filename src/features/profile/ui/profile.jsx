@@ -37,7 +37,6 @@ const Profile = () => {
     email: ''.toLowerCase(),
     phone: ''
   })
-  console.log(userData)
   // eslint-disable-next-line no-unused-vars
   const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' })
 
