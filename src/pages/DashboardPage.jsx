@@ -315,7 +315,7 @@ const DashboardPage = () => {
                 dataLabels: {
                   enabled: true,
                   style: {
-                    fontSize: '12px',
+                    fontSize: '8px',
                     colors: ['#fff']
                   }
                 },
@@ -327,6 +327,7 @@ const DashboardPage = () => {
                         total: {
                           show: true,
                           label: 'Total Students',
+                          fontSize: '12px',
                           color: '#6b7280'
                         }
                       }

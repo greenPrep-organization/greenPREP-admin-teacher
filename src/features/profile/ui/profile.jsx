@@ -37,6 +37,7 @@ const Profile = () => {
     email: ''.toLowerCase(),
     phone: ''
   })
+  console.log(userData)
   // eslint-disable-next-line no-unused-vars
   const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' })
 
@@ -144,7 +145,7 @@ const Profile = () => {
       </Card>
 
       <Card className="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div>
             <p className="mb-1 text-gray-600">Role</p>
             <div className="flex flex-wrap gap-2">
@@ -188,7 +189,7 @@ const Profile = () => {
           </div>
         </div>
         <Divider className="my-6" />
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-3 gap-6 md:grid-cols-3">
           <div>
             <p className="mb-1 text-gray-600">Phone number</p>
             <p className="text-gray-500">{userData.phone}</p>
@@ -196,6 +197,10 @@ const Profile = () => {
           <div>
             <p className="mb-1 text-gray-600">Teacher Code</p>
             <p className="text-gray-500">{userData.teacherCode}</p>
+          </div>
+          <div>
+            <p className="mb-1 text-gray-600">Address</p>
+            <p className="text-gray-500">{userData.address}</p>
           </div>
         </div>
       </Card>
