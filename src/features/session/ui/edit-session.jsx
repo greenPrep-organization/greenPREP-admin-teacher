@@ -24,26 +24,11 @@ const EditSession = ({ open, onCancel, onUpdate, initialValues }) => {
     try {
       const values = await form.validateFields()
       await editSessionSchema.validate(values, { abortEarly: false })
-
-      const startTime = values.startDate.toDate()
-      const endTime = values.endDate.toDate()
-      const now = new Date()
-
-      let Status
-      if (now >= endTime) {
-        Status = 'COMPLETE'
-      } else if (now >= startTime && now < endTime) {
-        Status = 'IN_PROGRESS'
-      } else {
-        Status = 'NOT_STARTED'
-      }
-
       onUpdate({
         name: values.name,
         key: values.key,
         startTime: values.startDate.toDate(),
-        endTime: values.endDate.toDate(),
-        status: Status
+        endTime: values.endDate.toDate()
       })
     } catch (error) {
       if (error instanceof yup.ValidationError) {

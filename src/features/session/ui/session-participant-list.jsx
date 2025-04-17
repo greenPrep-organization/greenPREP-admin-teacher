@@ -89,25 +89,17 @@ const SessionParticipantList = () => {
   }
 
   const renderScore = (score, level) => {
-    if (score === null || score === undefined) return <span>-</span>
-    const color = score >= 80 ? '#52c41a' : score >= 60 ? '#faad14' : '#ff4d4f'
+    const color = score <= 8 && level === 'X' ? '#ff4d4f' : score >= 8 ? '#000' : ''
     return (
-      <span>
-        <span style={{ color, fontWeight: 500, marginRight: 8 }}>{score}</span>
+      <div style={{ fontWeight: 500 }}>
+        <span style={{ color }}>{score ?? '-'}</span>
         {level && (
-          <span
-            style={{
-              padding: '2px 8px',
-              borderRadius: '12px',
-              backgroundColor: '#e6f7ff',
-              color: '#1890ff',
-              fontWeight: 500
-            }}
-          >
-            {level}
-          </span>
+          <>
+            <span style={{ margin: '0 6px', color: '#000' }}>|</span>
+            <span style={{ color, textTransform: 'uppercase' }}>{level}</span>
+          </>
         )}
-      </span>
+      </div>
     )
   }
 
@@ -164,19 +156,16 @@ const SessionParticipantList = () => {
       responsive: ['md'],
       render: (score, record) => {
         const level = record.SpeakingLevel
-        if (score === null || score === undefined) {
-          return (
-            <span
-              className="cursor-pointer text-blue-600 hover:underline"
-              onClick={() => {
-                navigate(`/grading/${sessionId}/${record.ID}?section=speaking`)
-              }}
-            >
-              Ungraded
-            </span>
-          )
-        }
-        return renderScore(score, level)
+        return (
+          <span
+            className="cursor-pointer text-blue-600 hover:underline"
+            onClick={() => {
+              navigate(`/grading/${sessionId}/${record.ID}?section=speaking`)
+            }}
+          >
+            {score === null || score === undefined ? 'Ungraded' : renderScore(score, level)}
+          </span>
+        )
       },
       align: 'center'
     },
@@ -188,19 +177,16 @@ const SessionParticipantList = () => {
       responsive: ['md'],
       render: (score, record) => {
         const level = record.WritingLevel
-        if (score === null || score === undefined) {
-          return (
-            <span
-              className="cursor-pointer text-blue-600 hover:underline"
-              onClick={() => {
-                navigate(`/grading/${sessionId}/${record.ID}?section=writing`)
-              }}
-            >
-              Ungraded
-            </span>
-          )
-        }
-        return renderScore(score, level)
+        return (
+          <span
+            className="cursor-pointer text-blue-600 hover:underline"
+            onClick={() => {
+              navigate(`/grading/${sessionId}/${record.ID}?section=writing`)
+            }}
+          >
+            {score === null || score === undefined ? 'Ungraded' : renderScore(score, level)}
+          </span>
+        )
       },
       align: 'center'
     },
@@ -210,8 +196,7 @@ const SessionParticipantList = () => {
       key: 'total',
       width: '10%',
       render: score => {
-        const color = score >= 80 ? '#52c41a' : score >= 60 ? '#faad14' : '#ff4d4f'
-        return <span style={{ fontSize: '16px', fontWeight: 'bold', color }}>{score ?? '-'}</span>
+        return <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#000' }}>{score ?? '-'}</span>
       },
       align: 'center'
     },

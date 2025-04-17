@@ -128,7 +128,7 @@ const ClassList = () => {
           icon={<PlusOutlined />}
           style={{ backgroundColor: '#013088', border: 'none' }}
         >
-          Create Class
+          Create a new class
         </Button>
       </div>
 
