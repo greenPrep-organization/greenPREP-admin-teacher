@@ -1,4 +1,6 @@
+// @ts-nocheck
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { saveToIndexedDB } from '@features/session/api/indexdb'
 import {
   useApproveSessionRequest,
   usePendingSessionRequests,
@@ -26,7 +28,8 @@ const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
   const { mutate: rejectRequest, isPending: isRejecting } = useRejectSessionRequest(sessionId)
 
   useEffect(() => {
-    console.log(pendingDataRaw)
+    setSeenPendingCount(pendingDataRaw.length)
+    saveToIndexedDB(sessionId, pendingDataRaw.length)
     if (!pendingDataRaw.length) return
 
     const filtered = pendingDataRaw.filter(
@@ -42,8 +45,6 @@ const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
       current: 1
     }))
     setPendingData(filtered.slice(0, pendingPagination.pageSize))
-    console.log(pendingDataRaw.length)
-    setSeenPendingCount(pendingDataRaw.length)
   }, [pendingDataRaw, pendingSearchText, pendingPagination.pageSize])
 
   const handleRejectStudent = async record => {

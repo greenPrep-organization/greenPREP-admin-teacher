@@ -1,7 +1,7 @@
 // @ts-nocheck
-/* eslint-disable react-hooks/exhaustive-deps */
 import { SearchOutlined } from '@ant-design/icons'
 import { getSessionParticipants, updateParticipantLevelById } from '@features/session/api'
+import { loadFromIndexedDB, saveToIndexedDB } from '@features/session/api/indexdb'
 import { Input, Select, Table, Tabs, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -24,31 +24,31 @@ const SessionParticipantList = () => {
   const [originalData, setOriginalData] = useState([])
   const navigate = useNavigate()
 
-  // Track active tab and seen pending count
   const [activeTab, setActiveTab] = useState('1')
   const [seenPendingCount, setSeenPendingCount] = useState(null)
 
-  // Poll pending data
   const { data: pendingDataRaw = [] } = usePendingSessionRequests(sessionId)
   const [pendingCount, setPendingCount] = useState(0)
+  async function loadSeen() {
+    const seen = await loadFromIndexedDB(sessionId)
+    if (seen !== null) {
+      setSeenPendingCount(seen)
+    }
+  }
 
   useEffect(() => {
     setPendingCount(pendingDataRaw.length)
+    loadSeen()
   }, [pendingDataRaw])
-  useEffect(() => {
-    console.log(seenPendingCount)
-    console.log(pendingCount)
-  }, [seenPendingCount])
 
-  // Compute unseen count
   const unseenCount = seenPendingCount === null ? pendingCount : Math.max(0, pendingCount - seenPendingCount)
   const showBadge = unseenCount > 0
 
-  // Update seen count when user views pending tab
   const handleTabChange = key => {
     setActiveTab(key)
     if (key === '2') {
       setSeenPendingCount(pendingCount)
+      saveToIndexedDB(sessionId, pendingDataRaw.length)
     }
   }
   const levelOptions = [
