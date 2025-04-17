@@ -10,7 +10,7 @@ import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { Button, Input, Table, message } from 'antd'
 import { useEffect, useState } from 'react'
 
-const PendingList = ({ sessionId, onStudentApproved }) => {
+const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
   // Include refetch from the custom hook to reload data
   const { data: pendingDataRaw = [], isLoading, isError, refetch } = usePendingSessionRequests(sessionId)
   const [pendingData, setPendingData] = useState([])
@@ -42,6 +42,8 @@ const PendingList = ({ sessionId, onStudentApproved }) => {
       current: 1
     }))
     setPendingData(filtered.slice(0, pendingPagination.pageSize))
+    console.log(pendingDataRaw.length)
+    setSeenPendingCount(pendingDataRaw.length)
   }, [pendingDataRaw, pendingSearchText, pendingPagination.pageSize])
 
   const handleRejectStudent = async record => {
