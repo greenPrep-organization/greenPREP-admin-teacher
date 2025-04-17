@@ -1,4 +1,6 @@
+// @ts-nocheck
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { saveToIndexedDB } from '@features/session/api/indexdb'
 import {
   useApproveSessionRequest,
   usePendingSessionRequests,
@@ -10,7 +12,7 @@ import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { Button, Input, Table, message } from 'antd'
 import { useEffect, useState } from 'react'
 
-const PendingList = ({ sessionId, onStudentApproved }) => {
+const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
   // Include refetch from the custom hook to reload data
   const { data: pendingDataRaw = [], isLoading, isError, refetch } = usePendingSessionRequests(sessionId)
   const [pendingData, setPendingData] = useState([])
@@ -26,7 +28,8 @@ const PendingList = ({ sessionId, onStudentApproved }) => {
   const { mutate: rejectRequest, isPending: isRejecting } = useRejectSessionRequest(sessionId)
 
   useEffect(() => {
-    console.log(pendingDataRaw)
+    setSeenPendingCount(pendingDataRaw.length)
+    saveToIndexedDB(sessionId, pendingDataRaw.length)
     if (!pendingDataRaw.length) return
 
     const filtered = pendingDataRaw.filter(

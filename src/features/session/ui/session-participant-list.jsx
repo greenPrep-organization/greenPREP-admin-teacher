@@ -1,10 +1,11 @@
 // @ts-nocheck
-/* eslint-disable react-hooks/exhaustive-deps */
 import { SearchOutlined } from '@ant-design/icons'
 import { getSessionParticipants, updateParticipantLevelById } from '@features/session/api'
+import { loadFromIndexedDB, saveToIndexedDB } from '@features/session/api/indexdb'
 import { Input, Select, Table, Tabs, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { usePendingSessionRequests } from '../../student/hooks/index'
 import PendingList from '../../student/ui/student-pending-list'
 import PublishPopup from './publish-popup'
 
@@ -23,6 +24,33 @@ const SessionParticipantList = () => {
   const [originalData, setOriginalData] = useState([])
   const navigate = useNavigate()
 
+  const [activeTab, setActiveTab] = useState('1')
+  const [seenPendingCount, setSeenPendingCount] = useState(null)
+
+  const { data: pendingDataRaw = [] } = usePendingSessionRequests(sessionId)
+  const [pendingCount, setPendingCount] = useState(0)
+  async function loadSeen() {
+    const seen = await loadFromIndexedDB(sessionId)
+    if (seen !== null) {
+      setSeenPendingCount(seen)
+    }
+  }
+
+  useEffect(() => {
+    setPendingCount(pendingDataRaw.length)
+    loadSeen()
+  }, [pendingDataRaw])
+
+  const unseenCount = seenPendingCount === null ? pendingCount : Math.max(0, pendingCount - seenPendingCount)
+  const showBadge = unseenCount > 0
+
+  const handleTabChange = key => {
+    setActiveTab(key)
+    if (key === '2') {
+      setSeenPendingCount(pendingCount)
+      saveToIndexedDB(sessionId, pendingDataRaw.length)
+    }
+  }
   const levelOptions = [
     { value: 'A1', label: 'A1' },
     { value: 'A2', label: 'A2' },
@@ -312,14 +340,21 @@ const SessionParticipantList = () => {
     {
       key: '2',
       label: (
-        <div key="pending-label" className="px-4 py-1 font-medium">
+        <div className="relative px-4 py-1 font-medium">
           Pending Request
+          {showBadge && (
+            <div className="absolute -right-3 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+              {unseenCount}
+            </div>
+          )}
         </div>
       ),
       children: (
-        <div key="pending-content">
-          <PendingList sessionId={sessionId} onStudentApproved={handleStudentApproved} />
-        </div>
+        <PendingList
+          sessionId={sessionId}
+          onStudentApproved={handleStudentApproved}
+          setSeenPendingCount={setSeenPendingCount}
+        />
       )
     }
   ]
@@ -335,6 +370,9 @@ const SessionParticipantList = () => {
           margin: 0,
           borderBottom: 'none'
         }}
+        destroyInactiveTabPane
+        activeKey={activeTab}
+        onChange={handleTabChange}
       />
     </div>
   )
