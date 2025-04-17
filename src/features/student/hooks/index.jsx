@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getPendingSessionRequests, approveSessionRequest, rejectSessionRequest } from '@features/student/api'
+import { approveSessionRequest, getPendingSessionRequests, rejectSessionRequest } from '@features/student/api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export function usePendingSessionRequests(sessionId) {
   return useQuery({
@@ -13,8 +13,8 @@ export function usePendingSessionRequests(sessionId) {
         className: item.User.class
       }))
     },
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
+    refetchInterval: 2000
   })
 }
 
