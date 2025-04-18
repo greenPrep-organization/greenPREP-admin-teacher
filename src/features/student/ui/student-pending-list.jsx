@@ -182,27 +182,39 @@ const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
 
   return (
     <div>
-      <div className="mt-8">
+      <div className="mt-4">
         <div className="mb-4 flex items-center justify-between">
-          <div className="relative">
+          <div className="relative mt-12">
             <Input
               placeholder="Search by student name, ID or class"
               prefix={<SearchOutlined className="text-text-secondary" />}
               value={pendingSearchText}
               onChange={e => handlePendingSearch(e.target.value)}
-              className="w-64"
+              className="w-72"
             />
           </div>
-          <div className="flex gap-3">
-            <Button type="default" icon={<ReloadOutlined />} onClick={refetch}>
-              Refresh
-            </Button>
-            <Button type="primary" disabled={!pendingData.length} onClick={() => setShowApproveModal(true)}>
-              Approve All
-            </Button>
-            <Button danger disabled={!pendingData.length} onClick={() => setShowRejectModal(true)}>
-              Reject All
-            </Button>
+          <div className="flex flex-col gap-y-2">
+            <div className="flex justify-end pb-5">
+              <Button type="default" icon={<ReloadOutlined />} onClick={refetch} className="w-[100px]">
+                Refresh
+              </Button>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                className="w-[100px] border-2 border-green-500 text-green-500 hover:!border-green-500 hover:!bg-green-500 hover:!text-white"
+                disabled={!pendingData.length}
+                onClick={() => setShowApproveModal(true)}
+              >
+                Approve All
+              </Button>
+              <Button
+                className="w-[100px] border-2 border-red-500 text-red-500 hover:!border-red-500 hover:!bg-red-500 hover:!text-white"
+                disabled={!pendingData.length}
+                onClick={() => setShowRejectModal(true)}
+              >
+                Reject All
+              </Button>
+            </div>
           </div>
         </div>
       </div>
