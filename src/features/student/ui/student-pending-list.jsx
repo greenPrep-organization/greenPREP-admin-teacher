@@ -180,10 +180,33 @@ const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
               className="w-64"
             />
           </div>
-          {/* Refresh Button */}
-          <Button type="default" icon={<ReloadOutlined />} onClick={refetch}>
-            Refresh
-          </Button>
+          <div className="flex gap-3">
+            <Button type="default" icon={<ReloadOutlined />} onClick={refetch}>
+              Refresh
+            </Button>
+            <Button
+              danger
+              disabled={!pendingData.length}
+              onClick={async () => {
+                try {
+                  const keys = pendingData.map(item => item.key)
+                  for (const key of keys) {
+                    await rejectRequest(key)
+                  }
+                  setPendingData([])
+                  setPendingPagination(prev => ({
+                    ...prev,
+                    total: 0
+                  }))
+                  message.success('All pending requests have been rejected.')
+                } catch {
+                  message.error('Failed to reject all requests')
+                }
+              }}
+            >
+              Reject All
+            </Button>
+          </div>
         </div>
       </div>
       <Table
