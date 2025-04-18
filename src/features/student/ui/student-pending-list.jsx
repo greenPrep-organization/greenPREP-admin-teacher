@@ -11,6 +11,7 @@ import RejectSessionPopup from '@features/student/ui/reject-session-request'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { Button, Input, Table, message } from 'antd'
 import { useEffect, useState } from 'react'
+import RejectAllConfirmModal from './reject-modal'
 
 const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
   // Include refetch from the custom hook to reload data
@@ -21,6 +22,7 @@ const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
     size: 'default'
   })
   const [pendingSearchText, setPendingSearchText] = useState('')
+  const [showRejectModal, setShowRejectModal] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false)
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false)
@@ -46,6 +48,11 @@ const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
     }))
     setPendingData(filtered.slice(0, pendingPagination.pageSize))
   }, [pendingDataRaw, pendingSearchText, pendingPagination.pageSize])
+
+  const handleRejectSuccess = () => {
+    setPendingData([])
+    setPendingPagination(prev => ({ ...prev, total: 0 }))
+  }
 
   const handleRejectStudent = async record => {
     setSelectedRequest(record)
@@ -184,26 +191,7 @@ const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
             <Button type="default" icon={<ReloadOutlined />} onClick={refetch}>
               Refresh
             </Button>
-            <Button
-              danger
-              disabled={!pendingData.length}
-              onClick={async () => {
-                try {
-                  const keys = pendingData.map(item => item.key)
-                  for (const key of keys) {
-                    await rejectRequest(key)
-                  }
-                  setPendingData([])
-                  setPendingPagination(prev => ({
-                    ...prev,
-                    total: 0
-                  }))
-                  message.success('All pending requests have been rejected.')
-                } catch {
-                  message.error('Failed to reject all requests')
-                }
-              }}
-            >
+            <Button danger disabled={!pendingData.length} onClick={() => setShowRejectModal(true)}>
               Reject All
             </Button>
           </div>
@@ -236,6 +224,12 @@ const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
         onReject={handleConfirmReject}
         studentName={selectedRequest?.studentName}
         loading={isRejecting}
+      />
+      <RejectAllConfirmModal
+        isOpen={showRejectModal}
+        onClose={() => setShowRejectModal(false)}
+        pendingData={pendingData}
+        onRejectSuccess={handleRejectSuccess}
       />
     </div>
   )
