@@ -49,7 +49,7 @@ const ClassForm = ({ initialData, onSuccess, isEditMode, onClose }) => {
       // @ts-ignore
       updateClassMutation.mutate({ id: initialData.ID, className: values.className })
     } else {
-      createClassMutation.mutate({ ...values, userId: userId })
+      createClassMutation.mutate({ ...values, UserID: userId })
     }
   }
 
