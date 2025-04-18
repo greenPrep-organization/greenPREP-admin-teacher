@@ -11,7 +11,8 @@ import RejectSessionPopup from '@features/student/ui/reject-session-request'
 import { DEFAULT_PAGINATION } from '@shared/lib/constants/pagination'
 import { Button, Input, Table, message } from 'antd'
 import { useEffect, useState } from 'react'
-import RejectAllConfirmModal from './reject-modal'
+import ApproveAllConfirmModal from './approve-all-modal'
+import RejectAllConfirmModal from './reject-all-modal'
 
 const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
   // Include refetch from the custom hook to reload data
@@ -23,6 +24,7 @@ const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
   })
   const [pendingSearchText, setPendingSearchText] = useState('')
   const [showRejectModal, setShowRejectModal] = useState(false)
+  const [showApproveModal, setShowApproveModal] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false)
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false)
@@ -50,6 +52,10 @@ const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
   }, [pendingDataRaw, pendingSearchText, pendingPagination.pageSize])
 
   const handleRejectSuccess = () => {
+    setPendingData([])
+    setPendingPagination(prev => ({ ...prev, total: 0 }))
+  }
+  const handleApproveSuccess = () => {
     setPendingData([])
     setPendingPagination(prev => ({ ...prev, total: 0 }))
   }
@@ -191,6 +197,9 @@ const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
             <Button type="default" icon={<ReloadOutlined />} onClick={refetch}>
               Refresh
             </Button>
+            <Button type="primary" disabled={!pendingData.length} onClick={() => setShowApproveModal(true)}>
+              Approve All
+            </Button>
             <Button danger disabled={!pendingData.length} onClick={() => setShowRejectModal(true)}>
               Reject All
             </Button>
@@ -230,6 +239,14 @@ const PendingList = ({ sessionId, onStudentApproved, setSeenPendingCount }) => {
         onClose={() => setShowRejectModal(false)}
         pendingData={pendingData}
         onRejectSuccess={handleRejectSuccess}
+        rejectRequest={rejectRequest}
+      />
+      <ApproveAllConfirmModal
+        isOpen={showApproveModal}
+        onClose={() => setShowApproveModal(false)}
+        pendingData={pendingData}
+        onApproveSuccess={handleApproveSuccess}
+        approveRequest={approveRequest}
       />
     </div>
   )
