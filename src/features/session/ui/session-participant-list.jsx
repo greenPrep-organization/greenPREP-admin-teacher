@@ -90,9 +90,10 @@ const SessionParticipantList = () => {
 
   const renderScore = (score, level) => {
     const color = score <= 8 && level === 'X' ? '#ff4d4f' : score >= 8 ? '#000' : ''
+    const displayScore = score !== null && score !== undefined ? score : '-'
     return (
       <div style={{ fontWeight: 500 }}>
-        <span style={{ color }}>{score ?? '-'}</span>
+        <span style={{ color }}>{displayScore ?? '-'}</span>
         {level && (
           <>
             <span style={{ margin: '0 6px', color: '#000' }}>|</span>
