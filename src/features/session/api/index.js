@@ -11,7 +11,13 @@ export const getSessionDetail = async sessionId => {
 
 export const getSessionParticipants = async (sessionId, params = {}) => {
   try {
-    const response = await axiosInstance.get(`/session-participants/${sessionId}`, { params })
+    const response = await axiosInstance.get(`/session-participants/${sessionId}`, {
+      params: {
+        ...params,
+        page: 1,
+        limit: 1000
+      }
+    })
     return response.data
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to fetch participants')
