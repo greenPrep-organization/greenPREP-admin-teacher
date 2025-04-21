@@ -21,7 +21,6 @@ const SessionParticipantList = () => {
   const [searchText, setSearchText] = useState('')
   const [readyToPublish, setReadyToPublish] = useState(false)
   const { sessionId } = useParams()
-  const [originalData, setOriginalData] = useState([])
   const navigate = useNavigate()
 
   const [activeTab, setActiveTab] = useState('1')
@@ -51,6 +50,7 @@ const SessionParticipantList = () => {
       saveToIndexedDB(sessionId, pendingDataRaw.length)
     }
   }
+
   const levelOptions = [
     { value: 'A1', label: 'A1' },
     { value: 'A2', label: 'A2' },
@@ -225,11 +225,10 @@ const SessionParticipantList = () => {
       const response = await getSessionParticipants(sessionId, {
         page: params.current,
         limit: params.pageSize,
-        search: searchText
+        search: ''
       })
 
       const responseData = response.data || []
-      setOriginalData(responseData)
       setData(responseData)
       setPagination({
         current: params.current || 1,
@@ -253,26 +252,20 @@ const SessionParticipantList = () => {
   }, [sessionId])
 
   useEffect(() => {
-    if (originalData.length > 0) {
-      if (!searchText.trim()) {
-        setData(originalData)
-        setPagination(prev => ({
-          ...prev,
-          total: originalData.length
-        }))
-      } else {
-        const filtered = originalData.filter(item => {
-          const fullName = item.User?.fullName?.toLowerCase() || ''
-          return fullName.includes(searchText.toLowerCase())
-        })
-        setData(filtered)
-        setPagination(prev => ({
-          ...prev,
-          total: filtered.length
-        }))
-      }
+    if (!searchText.trim()) {
+      fetchData(pagination)
+    } else {
+      const filtered = data.filter(item => {
+        const fullName = item.User?.fullName?.toLowerCase() || ''
+        return fullName.includes(searchText.toLowerCase())
+      })
+      setData(filtered)
+      setPagination(prev => ({
+        ...prev,
+        total: filtered.length
+      }))
     }
-  }, [searchText, originalData])
+  }, [searchText])
 
   const handleTableChange = newPagination => {
     fetchData({
