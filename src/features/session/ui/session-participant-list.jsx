@@ -24,13 +24,13 @@ const SessionParticipantList = () => {
   const navigate = useNavigate()
 
   const [activeTab, setActiveTab] = useState('1')
-  const [seenPendingCount, setSeenPendingCount] = useState(null)
+  const [seenPendingCount, setSeenPendingCount] = useState(0)
 
   const { data: pendingDataRaw = [] } = usePendingSessionRequests(sessionId)
   const [pendingCount, setPendingCount] = useState(0)
   async function loadSeen() {
     const seen = await loadFromIndexedDB(sessionId)
-    if (seen !== null) {
+    if (seen) {
       setSeenPendingCount(seen)
     }
   }
