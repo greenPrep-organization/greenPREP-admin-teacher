@@ -1,4 +1,4 @@
-import { Warning } from '@assets/images'
+import { CheckCircleOutlined } from '@ant-design/icons'
 import { Button, message, Modal } from 'antd'
 import { useState } from 'react'
 
@@ -47,7 +47,7 @@ const ApproveAllConfirmModal = ({ isOpen, onClose, pendingData = [], onApproveSu
       bodyStyle={{ padding: '24px' }}
     >
       <div className="flex flex-col items-center">
-        <img src={Warning} alt="Warning" className="mb-4 h-12 w-12 text-yellow-500" />
+        <CheckCircleOutlined className="mb-4 text-[50px] text-green-500" />
         <p className="mb-6 text-center text-lg">
           Are you sure you want to approve all {pendingData.length} pending requests?
         </p>
